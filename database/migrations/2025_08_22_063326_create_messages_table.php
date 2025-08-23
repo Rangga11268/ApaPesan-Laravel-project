@@ -21,14 +21,13 @@ return new class extends Migration
             $table->timestamps();
         });
 
-          Schema::create('groups', function (Blueprint $table) {
-             $table->foreignId('last_message_id')->nullable()->constrained('messages');
-          });
+        Schema::table('groups', function (Blueprint $table) {
+            $table->foreignId('last_message_id')->nullable()->constrained('messages');
+        });
 
-          Schema::create('conversations', function (Blueprint $table) {
-             $table->foreignId('last_message_id')->nullable()->constrained('messages');
-          });
-
+        Schema::table('conversations', function (Blueprint $table) {
+            $table->foreignId('last_message_id')->nullable()->constrained('messages');
+        });
     }
 
     /**
