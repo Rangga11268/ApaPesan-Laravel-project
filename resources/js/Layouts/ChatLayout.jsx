@@ -1,3 +1,4 @@
+import ConversationItem from "@/Components/App/ConversationItem";
 import TextInput from "@/Components/TextInput";
 import { PencilSquareIcon } from "@heroicons/react/24/outline";
 import { usePage } from "@inertiajs/react";
@@ -5,14 +6,14 @@ import { useEffect, useState } from "react";
 
 const ChatLayout = ({ children }) => {
     const page = usePage();
-    const coversation = page.props.coversation || []; // Add default empty array
+    const conversation = page.props.conversation;
     const selectedConversation = page.props.selectedConversation;
     const [localConversation, setLocalConversation] = useState([]); // Initialize with empty array
     const [sortedConversation, setSortedConversation] = useState([]);
     const [onlineUsers, setOnlineUsers] = useState({});
     const isUserOnline = (userId) => onlineUsers[userId];
 
-    console.log("conversation", coversation);
+    console.log("conversation", conversation);
     console.log("selectedConversation", selectedConversation);
 
     const onSearch = (ev) => {
@@ -52,8 +53,8 @@ const ChatLayout = ({ children }) => {
     }, [localConversation]);
 
     useEffect(() => {
-        setLocalConversation(coversation);
-    }, [coversation]);
+        setLocalConversation(conversation);
+    }, [conversation]);
 
     useEffect(() => {
         window.Echo.join("online")
@@ -121,7 +122,7 @@ const ChatLayout = ({ children }) => {
                     {/* Conversation */}
                     <div className="flex-1 overflow-auto">
                         {sortedConversation &&
-                            sortedConversation.map((conversation) => {
+                            sortedConversation.map((conversation) => (
                                 <ConversationItem
                                     key={`${
                                         conversation.is_group
@@ -131,8 +132,8 @@ const ChatLayout = ({ children }) => {
                                     conversation={conversation}
                                     online={!!isUserOnline(conversation.id)}
                                     selectedConversation={selectedConversation}
-                                />;
-                            })}
+                                />
+                            ))}
                     </div>
                 </div>
                 <div className="flex-1 flex flex-col overflow-hidden">
