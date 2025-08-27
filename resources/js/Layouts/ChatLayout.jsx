@@ -8,7 +8,7 @@ const ChatLayout = ({ children }) => {
     const page = usePage();
     const conversation = page.props.conversation;
     const selectedConversation = page.props.selectedConversation;
-    const [localConversation, setLocalConversation] = useState([]); // Initialize with empty array
+    const [localConversation, setLocalConversation] = useState([]); 
     const [sortedConversation, setSortedConversation] = useState([]);
     const [onlineUsers, setOnlineUsers] = useState({});
     const isUserOnline = (userId) => onlineUsers[userId];
@@ -26,7 +26,7 @@ const ChatLayout = ({ children }) => {
     };
 
     useEffect(() => {
-        if (!Array.isArray(localConversation)) return; // Add safety check
+        if (!Array.isArray(localConversation)) return;
 
         setSortedConversation(
             [...localConversation].sort((a, b) => {
@@ -57,37 +57,43 @@ const ChatLayout = ({ children }) => {
     }, [conversation]);
 
     useEffect(() => {
-        window.Echo.join("online")
+        if (!window.Echo) {
+            console.error("Echo is not initialized");
+            return;
+        }
+
+        console.log("Connecting to presence channel...");
+
+        const channel = window.Echo.join("online");
+        channel
             .here((users) => {
+                console.log("Users currently online:", users);
                 const onlineUsersObj = Object.fromEntries(
-                    users.map((user) => [user.id, user])
+                    users.map((user) => [user.id.toString(), user])
                 );
-                setOnlineUsers((prevOnlineUsers) => {
-                    return {
-                        ...prevOnlineUsers,
-                        ...onlineUsersObj,
-                    };
-                });
+                setOnlineUsers(onlineUsersObj);
             })
             .joining((user) => {
-                setOnlineUsers((prevOnlineUsers) => {
-                    const updatedUsers = { ...prevOnlineUsers };
-                    updatedUsers[user.id] = user;
-                    return updatedUsers;
-                });
+                console.log("User joined:", user);
+                setOnlineUsers((prev) => ({
+                    ...prev,
+                    [user.id.toString()]: user,
+                }));
             })
             .leaving((user) => {
-                setOnlineUsers((prevOnlineUsers) => {
-                    const updatedUsers = { ...prevOnlineUsers };
-                    delete updatedUsers[user.id];
-                    return updatedUsers;
+                console.log("User left:", user);
+                setOnlineUsers((prev) => {
+                    const updated = { ...prev };
+                    delete updated[user.id.toString()];
+                    return updated;
                 });
             })
             .error((error) => {
-                console.error("error", error);
+                console.error("Echo connection error:", error);
             });
 
         return () => {
+            console.log("Leaving presence channel...");
             window.Echo.leave("online");
         };
     }, []);
@@ -130,7 +136,11 @@ const ChatLayout = ({ children }) => {
                                             : "user_"
                                     }${conversation.id}`}
                                     conversation={conversation}
-                                    online={!!isUserOnline(conversation.id)}
+                                    online={
+                                        conversation.is_user
+                                            ? !!isUserOnline(conversation.id)
+                                            : null
+                                    }
                                     selectedConversation={selectedConversation}
                                 />
                             ))}

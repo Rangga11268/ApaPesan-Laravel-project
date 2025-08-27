@@ -36,9 +36,11 @@ const ConversationItem = ({
             }
             preserveState
             className={
-                "conversation-item flex items-center gap-2 p-2 text-gray-300 transition-all cursor-pointer border-1-4 hover:bg-black/30" +
+                "conversation-item flex items-center gap-2 p-2 text-gray-300 transition-all cursor-pointer border-l-4 hover:bg-black/30 " +
                 classes +
-                (conversation.is_user && currentUser.is_admin ? "pr-2" : "pr-4")
+                (conversation.is_user && currentUser.is_admin
+                    ? " pr-2"
+                    : " pr-4")
             }
         >
             {conversation.is_user && (

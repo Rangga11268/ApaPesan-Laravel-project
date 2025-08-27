@@ -10,44 +10,36 @@ import axios from "axios";
 import { Fragment } from "react";
 
 export default function UserOptionsDropdown({ conversation }) {
-    const changeUserRole = () => {
-        console.log("Changing user role");
-        if (!conversation.is_user) {
-            return;
-        }
+    const changeUserRole = async () => {
+        if (!conversation.is_user) return;
 
-        // kirim axios post request untuk ganti user role dan kirim notif sukes
-        axios
-            .post(route("user.changeRole", conversation.id))
-            .then((res) => {
-                console.log(res.data);
-            })
-            .catch((err) => {
-                console.error(err);
-            });
+        try {
+            const response = await axios.post(
+                route("user.changeRole", conversation.id)
+            );
+            console.log(response.data);
+        } catch (error) {
+            console.error("Failed to change user role:", error);
+        }
     };
 
-    const onBlockUser = () => {
-        console.log("Blocking user");
-        if (!conversation.is_user) {
-            return;
-        }
+    const onBlockUser = async () => {
+        if (!conversation.is_user) return;
 
-        // kirim axios post request untuk block user dan kirim notif sukes
-        axios
-            .post(route("user.blockUnblock", conversation.id))
-            .then((res) => {
-                console.log(res.data);
-            })
-            .catch((err) => {
-                console.error(err);
-            });
+        try {
+            const response = await axios.post(
+                route("user.blockUnblock", conversation.id)
+            );
+            console.log(response.data);
+        } catch (error) {
+            console.error("Failed to block/unblock user:", error);
+        }
     };
 
     return (
-        <div>
+        <div className="relative">
             <Menu as="div" className="relative inline-block text-left">
-                <Menu.Button className="flex justify-center items-center w-8 h-8 rounded-full hover:bg-black/40">
+                <Menu.Button className="flex justify-center items-center w-8 h-8 rounded-full hover:bg-gray-700 transition-colors">
                     <EllipsisVerticalIcon className="h-5 w-5" />
                 </Menu.Button>
                 <Transition
@@ -59,17 +51,15 @@ export default function UserOptionsDropdown({ conversation }) {
                     leaveFrom="transform opacity-100 scale-100"
                     leaveTo="transform opacity-0 scale-95"
                 >
-                    <Menu.Items className="absolute right-0 mt-2 w-48 rounded-md bg-gray-800 shadow-lg z-50">
+                    <Menu.Items className="absolute right-0 mt-2 w-48 rounded-md bg-gray-800 shadow-lg z-50 ring-1 ring-black ring-opacity-5 focus:outline-none">
                         <div className="px-1 py-1">
                             <Menu.Item>
                                 {({ active }) => (
                                     <button
                                         onClick={onBlockUser}
                                         className={`${
-                                            active
-                                                ? "bg-black/30 text-white"
-                                                : "text-gray-100"
-                                        } group flex w-full items-center rounded-md px-2 py-2 text-sm`}
+                                            active ? "bg-gray-700" : ""
+                                        } group flex w-full items-center rounded-md px-2 py-2 text-sm text-gray-100 hover:bg-gray-700 transition-colors`}
                                     >
                                         {conversation.blocked_at ? (
                                             <>
@@ -92,10 +82,8 @@ export default function UserOptionsDropdown({ conversation }) {
                                     <button
                                         onClick={changeUserRole}
                                         className={`${
-                                            active
-                                                ? "bg-black/30 text-white"
-                                                : "text-gray-100"
-                                        } group flex w-full items-center rounded-md px-2 py-2 text-sm`}
+                                            active ? "bg-gray-700" : ""
+                                        } group flex w-full items-center rounded-md px-2 py-2 text-sm text-gray-100 hover:bg-gray-700 transition-colors`}
                                     >
                                         {conversation.is_admin ? (
                                             <>

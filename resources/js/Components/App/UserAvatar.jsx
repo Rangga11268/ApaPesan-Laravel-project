@@ -1,30 +1,37 @@
 const UserAvatar = ({ user, online = null, profile = false }) => {
-    let onlineClass =
-        online === true ? "online" : online === false ? "offline" : "";
+    console.log("UserAvatar online status:", online); // Add debug log
 
-    const sizeClass = profile ? "w-40" : "w-8";
+    const onlineClass =
+        online === true
+            ? "after:absolute after:block after:w-2 after:h-2 after:bg-green-500 after:rounded-full after:right-1 after:bottom-1 after:border-2 after:border-slate-800"
+            : online === false
+            ? "after:absolute after:block after:w-2 after:h-2 after:bg-gray-500 after:rounded-full after:right-1 after:bottom-1 after:border-2 after:border-slate-800"
+            : "";
+
+    const sizeClass = profile ? "w-40 h-40" : "w-8 h-8";
 
     return (
-        <>
-            {user.avatar_url && (
-                <div className={`chat-image avatar ${onlineClass}`}>
-                    <div className={`rounded-full ${sizeClass}`}>
-                        <img src={user.avatar_url} alt={user.name} />
-                    </div>
+        <div className="relative inline-block">
+            {user.avatar_url ? (
+                <div className={onlineClass}>
+                    <img
+                        src={user.avatar_url}
+                        alt={user.name}
+                        className={`rounded-full object-cover ${sizeClass}`}
+                    />
                 </div>
-            )}
-            {!user.avatar_url && (
-                <div className={`chat-image avatar placeholder ${onlineClass}`}>
+            ) : (
+                <div className={onlineClass}>
                     <div
-                        className={`bg-gray-400 text-gray-800 rounded-full ${sizeClass}`}
+                        className={`flex items-center justify-center bg-gray-400 text-gray-800 rounded-full ${sizeClass}`}
                     >
-                        <span className="text-xl">
-                            {user.name.substring(0, 1)}
+                        <span className={profile ? "text-4xl" : "text-sm"}>
+                            {user.name.substring(0, 1).toUpperCase()}
                         </span>
                     </div>
                 </div>
             )}
-        </>
+        </div>
     );
 };
 
