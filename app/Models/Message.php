@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -37,8 +38,8 @@ class Message extends Model
         return $this->belongsTo(Group::class);
     }
 
-    public function attachments(): BelongsTo
+    public function attachments(): HasMany
     {
-        return $this->belongsTo(MessageAttachment::class);
+        return $this->hasMany(MessageAttachment::class);
     }
 }

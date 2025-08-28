@@ -1,5 +1,5 @@
 const UserAvatar = ({ user, online = null, profile = false }) => {
-    console.log("UserAvatar online status:", online); // Add debug log
+    console.log("UserAvatar online status:", online); 
 
     const onlineClass =
         online === true
