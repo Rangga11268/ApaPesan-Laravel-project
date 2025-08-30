@@ -1,25 +1,27 @@
 import ConversationItem from "@/Components/App/ConversationItem";
 import TextInput from "@/Components/TextInput";
+import { useEventBus } from "@/EventBus";
 import { PencilSquareIcon } from "@heroicons/react/24/outline";
 import { usePage } from "@inertiajs/react";
 import { useEffect, useState } from "react";
 
 const ChatLayout = ({ children }) => {
     const page = usePage();
-    const conversation = page.props.conversation;
+    const conversations = page.props.conversation;
     const selectedConversation = page.props.selectedConversation;
-    const [localConversation, setLocalConversation] = useState([]); 
+    const [localConversation, setLocalConversation] = useState([]);
     const [sortedConversation, setSortedConversation] = useState([]);
     const [onlineUsers, setOnlineUsers] = useState({});
     const isUserOnline = (userId) => onlineUsers[userId];
+    const { on } = useEventBus();
 
-    console.log("conversation", conversation);
+    console.log("conversation", conversations);
     console.log("selectedConversation", selectedConversation);
 
     const onSearch = (ev) => {
         const search = ev.target.value.toLowerCase();
         setLocalConversation(
-            conversation.filter((conversation) => {
+            conversations.filter((conversation) => {
                 return conversation.name.toLowerCase().includes(search);
             })
         );
@@ -53,8 +55,41 @@ const ChatLayout = ({ children }) => {
     }, [localConversation]);
 
     useEffect(() => {
-        setLocalConversation(conversation);
-    }, [conversation]);
+        setLocalConversation(conversations);
+    }, [conversations]);
+
+    useEffect(() => {
+        const offMessageCreated = on("message.created", (message) => {
+            setLocalConversation((prevConversations) => {
+                const convIndex = prevConversations.findIndex(
+                    (c) =>
+                        (message.group_id &&
+                            c.is_group &&
+                            c.id == message.group_id) ||
+                        (!message.group_id &&
+                            c.is_user &&
+                            (c.id == message.sender_id ||
+                                c.id == message.receiver_id))
+                );
+
+                if (convIndex > -1) {
+                    const newConversations = [...prevConversations];
+                    const conversationToUpdate = {
+                        ...newConversations[convIndex],
+                    };
+                    conversationToUpdate.last_message = message.message;
+                    conversationToUpdate.last_message_date = message.created_at;
+                    newConversations[convIndex] = conversationToUpdate;
+                    return newConversations;
+                }
+                return prevConversations;
+            });
+        });
+
+        return () => {
+            offMessageCreated();
+        };
+    }, [on]);
 
     useEffect(() => {
         if (!window.Echo) {

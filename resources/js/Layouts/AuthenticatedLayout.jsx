@@ -2,15 +2,73 @@ import ApplicationLogo from "@/Components/ApplicationLogo";
 import Dropdown from "@/Components/Dropdown";
 import NavLink from "@/Components/NavLink";
 import ResponsiveNavLink from "@/Components/ResponsiveNavLink";
+import { useEventBus } from "@/EventBus";
 import { Link, usePage } from "@inertiajs/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function AuthenticatedLayout({ header, children }) {
     const page = usePage();
     const user = page.props.auth.user;
+    const conversation = page.props.conversation;
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
+
+    const { emit } = useEventBus();
+
+    useEffect(() => {
+        conversation.forEach((conv) => {
+            let channel = `message.group.${conv.id}`;
+
+            if (conv.is_user) {
+                channel = `message.user.${[parseInt(user.id), parseInt(conv.id)]
+                    .sort((a, b) => a - b)
+                    .join("-")}`;
+            }
+
+            window.Echo.private(channel)
+                .error((error) => {
+                    console.error(error);
+                })
+                .listen("SocketMessage", (e) => {
+                    console.log("SocketMessage", e);
+                    const message = e.message;
+
+                    emit("message.created", message);
+                    if (message.sender_id === user.id) {
+                        return;
+                    }
+                    emit("newMessageNotification", {
+                        user: message.sender,
+                        group_id: message.group_id,
+                        message:
+                            message.message ||
+                            `Shared ${
+                                message.attachments.length === 1
+                                    ? "an attachment"
+                                    : message.attachments.length +
+                                      " attachments"
+                            }`,
+                    });
+                });
+        });
+
+        return () => {
+            conversation.forEach((conv) => {
+                let channel = `message.group.${conv.id}`;
+
+                if (conv.is_user) {
+                    channel = `message.user.${[
+                        parseInt(user.id),
+                        parseInt(conv.id),
+                    ]
+                        .sort((a, b) => a - b)
+                        .join("-")}`;
+                }
+                window.Echo.leave(channel);
+            });
+        };
+    }, [conversation]);
 
     return (
         <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex flex-col h-screen">
