@@ -9,9 +9,10 @@ const ChatLayout = ({ children }) => {
     const page = usePage();
     const conversations = page.props.conversation;
     const selectedConversation = page.props.selectedConversation;
-    const [localConversation, setLocalConversation] = useState([]);
-    const [sortedConversation, setSortedConversation] = useState([]);
+    const [localConversations, setLocalConversations] = useState([]);
+    const [sortedConversations, setSortedConversations] = useState([]);
     const [onlineUsers, setOnlineUsers] = useState({});
+    const [searchTerm, setSearchTerm] = useState("");
     const isUserOnline = (userId) => onlineUsers[userId];
     const { on } = useEventBus();
 
@@ -19,19 +20,18 @@ const ChatLayout = ({ children }) => {
     console.log("selectedConversation", selectedConversation);
 
     const onSearch = (ev) => {
-        const search = ev.target.value.toLowerCase();
-        setLocalConversation(
-            conversations.filter((conversation) => {
-                return conversation.name.toLowerCase().includes(search);
-            })
-        );
+        setSearchTerm(ev.target.value.toLowerCase());
     };
 
     useEffect(() => {
-        if (!Array.isArray(localConversation)) return;
+        if (!Array.isArray(localConversations)) return;
 
-        setSortedConversation(
-            [...localConversation].sort((a, b) => {
+        const filtered = localConversations.filter((conv) =>
+            conv.name.toLowerCase().includes(searchTerm)
+        );
+
+        setSortedConversations(
+            [...filtered].sort((a, b) => {
                 if (a.blocked_at && b.blocked_at) {
                     return a.blocked_at > b.blocked_at ? 1 : -1;
                 } else if (a.blocked_at) {
@@ -52,15 +52,15 @@ const ChatLayout = ({ children }) => {
                 }
             })
         );
-    }, [localConversation]);
+    }, [localConversations, searchTerm]);
 
     useEffect(() => {
-        setLocalConversation(conversations);
+        setLocalConversations(conversations);
     }, [conversations]);
 
     useEffect(() => {
         const offMessageCreated = on("message.created", (message) => {
-            setLocalConversation((prevConversations) => {
+            setLocalConversations((prevConversations) => {
                 const convIndex = prevConversations.findIndex(
                     (c) =>
                         (message.group_id &&
@@ -162,8 +162,8 @@ const ChatLayout = ({ children }) => {
                     </div>
                     {/* Conversation */}
                     <div className="flex-1 overflow-auto">
-                        {sortedConversation &&
-                            sortedConversation.map((conversation) => (
+                        {sortedConversations &&
+                            sortedConversations.map((conversation) => (
                                 <ConversationItem
                                     key={`${
                                         conversation.is_group
