@@ -1,6 +1,7 @@
 import defaultTheme from "tailwindcss/defaultTheme";
 import forms from "@tailwindcss/forms";
 import daisyui from "daisyui";
+import typography from "@tailwindcss/typography";
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -24,10 +25,11 @@ export default {
             lg: "1024px",
             xl: "1280px",
             "2xl": "1536px",
-        }
+        },
     },
 
     plugins: [forms, require("daisyui")],
+    plugins: [forms, typography, daisyui],
 
     // daisyUI config (optional - here are the default values)
     daisyui: {
