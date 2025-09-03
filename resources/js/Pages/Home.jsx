@@ -1,6 +1,7 @@
 // import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import AttachmentPreviewModal from "@/Components/App/AttachmentPreview";
 import ConversationHeader from "@/Components/App/ConversationHeader";
+import { isPreviewable } from "@/helpers";
 import MessageInput from "@/Components/App/MessageInput";
 import MessageItem from "@/Components/App/MessageItem";
 import { useEventBus } from "@/EventBus";
@@ -148,15 +149,17 @@ function Home({ selectedConversation = null, messages = null }) {
     }, [localMessages, noMoreMessages, loadMoreMessages]);
 
     const onAttachmentClick = (attachments, ind) => {
+        const clickedAttachment = attachments[ind];
+        if (!isPreviewable(clickedAttachment)) {
+            return;
+        }
+
         setPreviewAttachment({
             attachments,
             ind,
         });
         setShowAttachmentPreview(true);
     };
-
-    if (showAttachmentPreview) {
-    }
 
     return (
         <>
@@ -204,7 +207,7 @@ function Home({ selectedConversation = null, messages = null }) {
             {previewAttachment.attachments && (
                 <AttachmentPreviewModal
                     attachments={previewAttachment.attachments}
-                    ind={previewAttachment.ind}
+                    index={previewAttachment.ind}
                     show={showAttachmentPreview}
                     onClose={() => setShowAttachmentPreview(false)}
                 />

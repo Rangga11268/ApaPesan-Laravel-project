@@ -69,24 +69,28 @@ export const isYesterday = (date) => {
 
 export const isImage = (attachment) => {
     let mime = attachment.mime || attachment.type;
+    if (!mime) return false;
     mime = mime.split("/");
     return mime[0].toLowerCase() === "image";
 };
 
 export const isVideo = (attachment) => {
     let mime = attachment.mime || attachment.type;
+    if (!mime) return false;
     mime = mime.split("/");
     return mime[0].toLowerCase() === "video";
 };
 
 export const isAudio = (attachment) => {
     let mime = attachment.mime || attachment.type;
+    if (!mime) return false;
     mime = mime.split("/");
     return mime[0].toLowerCase() === "audio";
 };
 
 export const isPDF = (attachment) => {
     let mime = attachment.mime || attachment.type;
+    if (!mime) return false;
     return mime === "application/pdf";
 };
 export const isPreviewable = (attachment) => {

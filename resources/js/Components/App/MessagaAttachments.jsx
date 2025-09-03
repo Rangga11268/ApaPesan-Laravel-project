@@ -36,10 +36,12 @@ const MessageAttachments = ({ attachments, attachmentClick }) => {
                             )}
 
                             {isImage(attachment) && (
-                                <img
-                                    src={attachment.url}
-                                    className="object-contain aspect-square"
-                                />
+                                <div className="relative flex justify-center items-center">
+                                    <img
+                                        src={attachment.url}
+                                        className="object-contain aspect-square"
+                                    />
+                                </div>
                             )}
                             {isVideo(attachment) && (
                                 <div className="relative flex justify-center items-center">

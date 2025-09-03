@@ -1,4 +1,4 @@
-import { Fragment, use, useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import {
     PaperClipIcon,
@@ -14,29 +14,38 @@ export default function AttachmentPreviewModal({
     show = false,
     onClose = () => {},
 }) {
-    const [currentIndex, setCurrentIndex] = useState(index);
+    const [currentIndex, setCurrentIndex] = useState(0);
 
-    const attachment = useMemo(() => {
-        return attachments[currentIndex];
-    }, [attachments, currentIndex]);
-
-    const previewAbleAttachments = useMemo(() => {
+    const previewableAttachments = useMemo(() => {
         return attachments.filter((attachment) => isPreviewable(attachment));
     }, [attachments]);
+
+    const attachment = useMemo(() => {
+        return previewableAttachments[currentIndex];
+    }, [previewableAttachments, currentIndex]);
+
+    useEffect(() => {
+        if (show) {
+            const clickedAttachment = attachments[index];
+            if (!clickedAttachment) return;
+            const newIndex = previewableAttachments.findIndex(
+                (a) => a.id === clickedAttachment.id
+            );
+            setCurrentIndex(newIndex >= 0 ? newIndex : 0);
+        }
+    }, [show, index, attachments, previewableAttachments]);
 
     const close = () => {
         onClose();
     };
 
     const prev = () => {
-        if (currentIndex === 0) {
-            return;
-        }
+        if (currentIndex === 0) return;
         setCurrentIndex(currentIndex - 1);
     };
 
     const next = () => {
-        if (currentIndex === previewAbleAttachments.length - 1) {
+        if (currentIndex === previewableAttachments.length - 1) {
             return;
         }
         setCurrentIndex(currentIndex + 1);
@@ -83,70 +92,71 @@ export default function AttachmentPreviewModal({
                                 >
                                     <XMarkIcon className="w-6 h-6" />
                                 </button>
-                                <div className="relative group h-full">
+                                <div className="relative group h-full w-full">
                                     {currentIndex > 0 && (
                                         <div
                                             onClick={prev}
                                             className="absolute opacity-100 text-gray-100 cursor-pointer
                                     flex items-center justify-center w-16 h-16 left-4 top-1/2 -translate-y-1/2 rounded-full bg-black/50
-                                    z-30"
+                                    z-40"
                                         >
                                             <ChevronLeftIcon className="w-12" />
                                         </div>
                                     )}
+                                    {attachment && (
+                                        <div className="flex items-center justify-center w-full h-full p-3">
+                                            {isImage(attachment) && (
+                                                <img
+                                                    src={attachment.url}
+                                                    className="max-w-full max-h-full"
+                                                />
+                                            )}
+                                            {isVideo(attachment) && (
+                                                <div className="flex items-center">
+                                                    <video
+                                                        src={attachment.url}
+                                                        controls
+                                                        autoPlay
+                                                    ></video>
+                                                </div>
+                                            )}
+                                            {isAudio(attachment) && (
+                                                <div className="relative flex justify-center items-center">
+                                                    <audio
+                                                        src={attachment.url}
+                                                        controls
+                                                        autoPlay
+                                                    ></audio>
+                                                </div>
+                                            )}
+                                            {isPDF(attachment) && (
+                                                <iframe
+                                                    src={attachment.url}
+                                                    className="w-full h-full"
+                                                ></iframe>
+                                            )}
+                                            {!isPreviewable(attachment) && (
+                                                <div className="p-32 flex flex-col justify-center items-center text-gray-100">
+                                                    <PaperClipIcon className="w-10 h-10 mb-3" />
+                                                    <small>
+                                                        {attachment.name}
+                                                    </small>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                    {currentIndex <
+                                        previewableAttachments.length - 1 && (
+                                        <div
+                                            onClick={next}
+                                            className="absolute opacity-100 text-gray-100 cursor-pointer
+                                    flex items-center justify-center w-16 h-16 right-4 top-1/2 -translate-y-1/2 rounded-full bg-black/50
+                                    z-40"
+                                        >
+                                            <ChevronRightIcon className="w-12" />
+                                        </div>
+                                    )}
                                 </div>
-                                {currentIndex <
-                                    previewAbleAttachments.length - 1 && (
-                                    <div
-                                        onClick={next}
-                                        className="absolute opacity-100 text-gray-100 cursor-pointer
-                                flex items-center justify-center w-16 h-16 right-4 top-1/2 -translate-y-1/2 rounded-full bg-black/50
-                                z-30"
-                                    >
-                                        <ChevronRightIcon className="w-12" />
-                                    </div>
-                                )}
-
-                                {attachment && (
-                                    <div className="flex items-center justify-center w-full h-full p-3">
-                                        {isImage(attachment) && (
-                                            <img
-                                                src={attachment.url}
-                                                className="max-w-full max-h-full"
-                                            />
-                                        )}
-                                        {isVideo(attachment) && (
-                                            <div className="flex items-center">
-                                                <video
-                                                    src={attachment.url}
-                                                    controls
-                                                    autoPlay
-                                                ></video>
-                                            </div>
-                                        )}
-                                        {isAudio(attachment) && (
-                                            <div className="relative flex justify-center items-center">
-                                                <audio
-                                                    src={attachment.url}
-                                                    controls
-                                                    autoPlay
-                                                ></audio>
-                                            </div>
-                                        )}
-                                        {isPDF(attachment) && (
-                                            <iframe
-                                                src={attachment.url}
-                                                className="w-full h-full"
-                                            ></iframe>
-                                        )}
-                                        {!isPreviewable(attachment) && (
-                                            <div className="p-32 flex flex-col justify-center items-center text-gray-100">
-                                                <PaperClipIcon className="w-10 h-10 mb-3" />
-                                                <small>{attachment.name}</small>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
                             </Dialog.Panel>
                         </Transition.Child>
                     </div>

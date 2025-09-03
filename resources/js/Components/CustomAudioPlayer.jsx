@@ -13,8 +13,6 @@ const CustomAudioPlayer = ({ file, showVolume = true }) => {
         if (isPlaying) {
             audio.pause();
         } else {
-            console.log(audio, audio.duration);
-            setDuration(audio.duration);
             audio.play();
         }
         setIsPlaying(!isPlaying);
@@ -26,9 +24,7 @@ const CustomAudioPlayer = ({ file, showVolume = true }) => {
         setVolume(volume);
     };
 
-    const handleTimeUpdate = () => {
-        const audio = audioRef.current;
-        setDuration(audio.duration);
+    const handleTimeUpdate = (e) => {
         setCurrentTime(e.target.currentTime);
     };
 
@@ -42,40 +38,43 @@ const CustomAudioPlayer = ({ file, showVolume = true }) => {
         setCurrentTime(time);
     };
 
-    return;
-    <div className="w-full flex items-center gap-2 py-2 px-3 rounded-md bg-slate-800">
-        <audio
-            ref={audioRef}
-            src={file.url}
-            controls
-            onTimeUpdate={handleTimeUpdate}
-            onLoadedMetadata={handleLoadedMetaData}
-            className="hidden"
-        />
-        <button onClick={togglePlayPause}>
-            {isPlaying && <PauseCircleIcon className="w-6 text-gray-400" />}
-            {!isPlaying && <PlayCircleIcon className="w-6 text-gray-400" />}
-        </button>
-        {showVolume && (
+    return (
+        <div className="w-full flex items-center gap-2 py-2 px-3 rounded-md bg-slate-800">
+            <audio
+                ref={audioRef}
+                src={file.url}
+                onTimeUpdate={handleTimeUpdate}
+                onLoadedMetadata={handleLoadedMetaData}
+                className="hidden"
+            />
+            <button onClick={togglePlayPause}>
+                {isPlaying ? (
+                    <PauseCircleIcon className="w-6 text-gray-400" />
+                ) : (
+                    <PlayCircleIcon className="w-6 text-gray-400" />
+                )}
+            </button>
+            {showVolume && (
+                <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value={volume}
+                    onChange={handleVolumeChange}
+                />
+            )}
             <input
                 type="range"
+                className="flex-1"
                 min="0"
-                max="1"
+                max={duration}
                 step="0.01"
-                value={volume}
-                onChange={handleVolumeChange}
+                value={currentTime}
+                onChange={handleSeekChange}
             />
-        )}
-        <input
-            type="range"
-            className="flex-1"
-            min="0"
-            max={duration}
-            step="0.01"
-            value={currentTime}
-            onChange={handleSeekChange}
-        />
-    </div>;
+        </div>
+    );
 };
 
 export default CustomAudioPlayer;
