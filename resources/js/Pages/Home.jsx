@@ -1,4 +1,5 @@
 // import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import AttachmentPreviewModal from "@/Components/App/AttachmentPreview";
 import ConversationHeader from "@/Components/App/ConversationHeader";
 import MessageInput from "@/Components/App/MessageInput";
 import MessageItem from "@/Components/App/MessageItem";
@@ -12,15 +13,19 @@ import {
     useState,
     useRef,
     useCallback,
+    useMemo,
     useLayoutEffect,
 } from "react";
 
 function Home({ selectedConversation = null, messages = null }) {
     const [localMessages, setLocalMessages] = useState([]);
     const [noMoreMessages, setNoMoreMessages] = useState(false);
+    const [loadingOlder, setLoadingOlder] = useState(false);
     const [scrollFromBottom, setScrollFromBottom] = useState(0);
     const loadMoreIntersect = useRef(null);
     const messagesCtrRef = useRef(null);
+    const [showAttachmentPreview, setShowAttachmentPreview] = useState(false);
+    const [previewAttachment, setPreviewAttachment] = useState({});
     const { on } = useEventBus();
 
     const messageCreated = useCallback(
@@ -41,7 +46,12 @@ function Home({ selectedConversation = null, messages = null }) {
                       50
                     : true;
 
-                setLocalMessages((prevMessages) => [...prevMessages, message]);
+                setLocalMessages((prevMessages) => {
+                    if (prevMessages.some((m) => m.id === message.id)) {
+                        return prevMessages;
+                    }
+                    return [...prevMessages, message];
+                });
 
                 if (atBottom) {
                     setScrollFromBottom(0);
@@ -52,12 +62,14 @@ function Home({ selectedConversation = null, messages = null }) {
     );
 
     const loadMoreMessages = useCallback(() => {
-        if (noMoreMessages) {
+        if (noMoreMessages || loadingOlder) {
             return;
         }
+        setLoadingOlder(true);
 
         const firstMessage = localMessages[0];
         if (!firstMessage) {
+            setLoadingOlder(false);
             return;
         }
         axios
@@ -74,8 +86,11 @@ function Home({ selectedConversation = null, messages = null }) {
                 setLocalMessages((prevMessages) => {
                     return [...data.data.reverse(), ...prevMessages];
                 });
+            })
+            .finally(() => {
+                setLoadingOlder(false);
             });
-    }, [localMessages, noMoreMessages]);
+    }, [localMessages, noMoreMessages, loadingOlder]);
 
     useEffect(() => {
         setTimeout(() => {
@@ -114,7 +129,9 @@ function Home({ selectedConversation = null, messages = null }) {
 
         const observer = new IntersectionObserver(
             (entries) =>
-                entries.forEach((entry) => entry.isIntersecting && loadMoreMessages()),
+                entries.forEach(
+                    (entry) => entry.isIntersecting && loadMoreMessages()
+                ),
             {
                 rootMargin: "0px 0px 250px 0px",
             }
@@ -129,6 +146,17 @@ function Home({ selectedConversation = null, messages = null }) {
             observer.disconnect();
         };
     }, [localMessages, noMoreMessages, loadMoreMessages]);
+
+    const onAttachmentClick = (attachments, ind) => {
+        setPreviewAttachment({
+            attachments,
+            ind,
+        });
+        setShowAttachmentPreview(true);
+    };
+
+    if (showAttachmentPreview) {
+    }
 
     return (
         <>
@@ -163,6 +191,7 @@ function Home({ selectedConversation = null, messages = null }) {
                                     <MessageItem
                                         key={message.id}
                                         message={message}
+                                        attachmentClick={onAttachmentClick}
                                     />
                                 ))}
                             </div>
@@ -170,6 +199,15 @@ function Home({ selectedConversation = null, messages = null }) {
                     </div>
                     <MessageInput conversation={selectedConversation} />
                 </>
+            )}
+
+            {previewAttachment.attachments && (
+                <AttachmentPreviewModal
+                    attachments={previewAttachment.attachments}
+                    ind={previewAttachment.ind}
+                    show={showAttachmentPreview}
+                    onClose={() => setShowAttachmentPreview(false)}
+                />
             )}
         </>
     );
