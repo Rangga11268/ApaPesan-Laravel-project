@@ -26,16 +26,17 @@
 
 -----
 
+
 ### 💻 Tumpukan Teknologi
 
-| Teknologi                                                                                                  | Deskripsi                |
-| :--------------------------------------------------------------------------------------------------------- | :----------------------- |
-| \<img src="[https://skillicons.dev/icons?i=laravel](https://www.google.com/search?q=https://skillicons.dev/icons%3Fi%3Dlaravel)" width="25" alt="Laravel"/\> **Laravel** | *Backend Framework* |
-| \<img src="[https://skillicons.dev/icons?i=react](https://www.google.com/search?q=https://skillicons.dev/icons%3Fi%3Dreact)" width="25" alt="React"/\> **React.js** | *Frontend Library* |
-| \<img src="[https://skillicons.dev/icons?i=tailwind](https://www.google.com/search?q=https://skillicons.dev/icons%3Fi%3Dtailwind)" width="25" alt="Tailwind CSS"/\> **Tailwind CSS** | *CSS Framework* |
-| \<img src="[https://user-images.githubusercontent.com/22839356/151320295-81a17960-d27a-426a-b286-35b86a877918.png](https://www.google.com/search?q=https://user-images.githubusercontent.com/22839356/151320295-81a17960-d27a-426a-b286-35b86a877918.png)" width="25" alt="Inertia.js"/\> **Inertia.js** | *Modern Monolith* |
-| \<img src="[https://raw.githubusercontent.com/laravel/reverb/main/art/logo.svg](https://www.google.com/search?q=https://raw.githubusercontent.com/laravel/reverb/main/art/logo.svg)" width="25" alt="Laravel Reverb"/\> **Laravel Reverb** | *Real-time WebSocket Server* |
-| \<img src="[https://skillicons.dev/icons?i=sqlite](https://www.google.com/search?q=https://skillicons.dev/icons%3Fi%3Dsqlite)" width="25" alt="SQLite"/\> **SQLite** | *Database* (Default)     |
+| Teknologi | Deskripsi |
+| :--- | :--- |
+| <img src="https://skillicons.dev/icons?i=laravel" width="25" alt="Laravel"/> **Laravel** | Backend Framework |
+| <img src="https://skillicons.dev/icons?i=react" width="25" alt="React"/> **React.js** | Frontend Library |
+| <img src="https://skillicons.dev/icons?i=tailwind" width="25" alt="Tailwind CSS"/> **Tailwind CSS** | CSS Framework |
+| <img src="https://user-images.githubusercontent.com/22839356/151320295-81a17960-d27a-426a-b286-35b86a877918.png" width="25" alt="Inertia.js"/> **Inertia.js** | Modern Monolith |
+| <img src="https://raw.githubusercontent.com/laravel/reverb/main/art/logo.svg" width="25" alt="Laravel Reverb"/> **Laravel Reverb** | Real-time WebSocket Server |
+| <img src="https://skillicons.dev/icons?i=sqlite" width="25" alt="SQLite"/> **SQLite** | Database (Default) |
 
 -----
 
