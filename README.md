@@ -1,6 +1,3 @@
-Tentu, ini draf README.md yang lebih menarik dengan ikon dan penyesuaian untuk proyek Anda.
-
------
 
 \<div align="center"\>
 
