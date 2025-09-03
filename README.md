@@ -36,7 +36,6 @@
 | <img src="https://skillicons.dev/icons?i=tailwind" width="25" alt="Tailwind CSS"/> **Tailwind CSS** | CSS Framework |
 | <img src="https://user-images.githubusercontent.com/22839356/151320295-81a17960-d27a-426a-b286-35b86a877918.png" width="25" alt="Inertia.js"/> **Inertia.js** | Modern Monolith |
 | <img src="https://raw.githubusercontent.com/laravel/reverb/main/art/logo.svg" width="25" alt="Laravel Reverb"/> **Laravel Reverb** | Real-time WebSocket Server |
-| <img src="https://skillicons.dev/icons?i=sqlite" width="25" alt="SQLite"/> **SQLite** | Database (Default) |
 
 -----
 
