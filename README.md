@@ -1,6 +1,4 @@
 
-\<div align="center"\>
-
 # 💬 ApaPesan - Chat App
 
 **Aplikasi obrolan web *real-time* yang dibangun dengan Laravel & React.js.**
