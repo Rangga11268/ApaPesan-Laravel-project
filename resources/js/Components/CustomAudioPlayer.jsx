@@ -38,12 +38,6 @@ const CustomAudioPlayer = ({ file, showVolume = true }) => {
         setCurrentTime(time);
     };
 
-    const handleEnded = () => {
-        setIsPlaying(false);
-        audioRef.current.currentTime = 0;
-        setCurrentTime(0);
-    };
-
     return (
         <div className="w-full flex items-center gap-2 py-2 px-3 rounded-md bg-slate-800">
             <audio
@@ -51,7 +45,6 @@ const CustomAudioPlayer = ({ file, showVolume = true }) => {
                 src={file.url}
                 onTimeUpdate={handleTimeUpdate}
                 onLoadedMetadata={handleLoadedMetaData}
-                onEnded={handleEnded}
                 className="hidden"
             />
             <button onClick={togglePlayPause}>
@@ -71,21 +64,15 @@ const CustomAudioPlayer = ({ file, showVolume = true }) => {
                     onChange={handleVolumeChange}
                 />
             )}
-            <div className="flex-1 flex items-center gap-2">
-                <input
-                    type="range"
-                    className="flex-1"
-                    min="0"
-                    max={duration}
-                    step="0.01"
-                    value={currentTime}
-                    onChange={handleSeekChange}
-                />
-                <span className="text-sm text-gray-400">
-                    {new Date(currentTime * 1000).toISOString().substr(14, 5)} /{" "}
-                    {new Date(duration * 1000).toISOString().substr(14, 5)}
-                </span>
-            </div>
+            <input
+                type="range"
+                className="flex-1"
+                min="0"
+                max={duration}
+                step="0.01"
+                value={currentTime}
+                onChange={handleSeekChange}
+            />
         </div>
     );
 };

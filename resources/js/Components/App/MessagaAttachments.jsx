@@ -1,10 +1,9 @@
 import {
     PaperClipIcon,
     ArrowDownTrayIcon,
+    PlayCircleIcon,
 } from "@heroicons/react/24/outline";
 import { isAudio, isImage, isPDF, isPreviewable, isVideo } from "@/helpers";
-import CustomAudioPlayer from "../CustomAudioPlayer";
-import { PlayCircleIcon } from "@heroicons/react/24/outline";
 
 const MessageAttachments = ({ attachments, attachmentClick }) => {
     return (
@@ -17,14 +16,9 @@ const MessageAttachments = ({ attachments, attachmentClick }) => {
                 >
                     {attachments.map((attachment, ind) => (
                         <div
-                            onClick={(ev) =>
-                                !isAudio(attachment) &&
-                                attachmentClick(attachments, ind)
-                            }
+                            onClick={(ev) => attachmentClick(attachments, ind)}
                             key={attachment.id}
-                            className={`group relative flex justify-center items-center overflow-hidden rounded-lg ${
-                                !isAudio(attachment) ? "cursor-pointer" : ""
-                            } ${
+                            className={`group relative flex justify-center items-center cursor-pointer overflow-hidden rounded-lg ${
                                 attachments.length > 1 ? "w-32 h-32" : "w-full"
                             }`}
                         >
@@ -33,7 +27,11 @@ const MessageAttachments = ({ attachments, attachmentClick }) => {
                                     onClick={(ev) => ev.stopPropagation()}
                                     download
                                     href={attachment.url}
-                                    className="z-20 opacity-0 group-hover:opacity-100 transition-all w-8 h-8 flex items-center justify-center text-gray-100 bg-gray-700/70 rounded-full absolute right-2 top-2 cursor-pointer hover:bg-gray-800"
+                                    className="z-20 opacity-0 group-hover:opacity-100
+                                     transition-all w-8 h-8 flex items-center
+                                     justify-center text-gray-100 bg-gray-700/70
+                                     rounded-full absolute right-2 top-2 cursor-pointer
+                                      hover:bg-gray-800"
                                 >
                                     <ArrowDownTrayIcon className="w-4 h-4" />
                                 </a>
@@ -56,11 +54,11 @@ const MessageAttachments = ({ attachments, attachmentClick }) => {
                                 </>
                             )}
                             {isAudio(attachment) && (
-                                <div className="w-full flex items-center justify-center bg-slate-800 rounded-lg">
-                                    <CustomAudioPlayer
-                                        file={attachment}
-                                        showVolume={false}
-                                    />
+                                <div className="relative flex justify-center items-center">
+                                    <audio
+                                        src={attachment.url}
+                                        controls
+                                    ></audio>
                                 </div>
                             )}
                             {isPDF(attachment) && (
