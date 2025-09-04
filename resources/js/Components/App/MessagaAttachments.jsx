@@ -1,9 +1,10 @@
 import {
     PaperClipIcon,
     ArrowDownTrayIcon,
-    PlayCircleIcon,
 } from "@heroicons/react/24/outline";
 import { isAudio, isImage, isPDF, isPreviewable, isVideo } from "@/helpers";
+import CustomAudioPlayer from "../CustomAudioPlayer";
+import { PlayCircleIcon } from "@heroicons/react/24/outline";
 
 const MessageAttachments = ({ attachments, attachmentClick }) => {
     return (
@@ -16,12 +17,15 @@ const MessageAttachments = ({ attachments, attachmentClick }) => {
                 >
                     {attachments.map((attachment, ind) => (
                         <div
-                            onClick={(ev) => attachmentClick(attachments, ind)}
+                            onClick={(ev) =>
+                                !isAudio(attachment) &&
+                                attachmentClick(attachments, ind)
+                            }
                             key={attachment.id}
-                            className={`group relative flex justify-center items-center cursor-pointer overflow-hidden rounded-lg ${
-                                attachments.length > 1
-                                    ? "w-32 h-32"
-                                    : "w-full"
+                            className={`group relative flex justify-center items-center overflow-hidden rounded-lg ${
+                                !isAudio(attachment) ? "cursor-pointer" : ""
+                            } ${
+                                attachments.length > 1 ? "w-32 h-32" : "w-full"
                             }`}
                         >
                             {!isAudio(attachment) && (
@@ -52,11 +56,12 @@ const MessageAttachments = ({ attachments, attachmentClick }) => {
                                 </>
                             )}
                             {isAudio(attachment) && (
-                                <audio
-                                    src={attachment.url}
-                                    controls
-                                    className="w-full"
-                                ></audio>
+                                <div className="w-full flex items-center justify-center bg-slate-800 rounded-lg">
+                                    <CustomAudioPlayer
+                                        file={attachment}
+                                        showVolume={false}
+                                    />
+                                </div>
                             )}
                             {isPDF(attachment) && (
                                 <div className="w-full h-full flex justify-center items-center bg-gray-800">
