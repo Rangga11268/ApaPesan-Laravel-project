@@ -156,29 +156,22 @@ function Home({ selectedConversation = null, messages = null }) {
         };
     }, [selectedConversation, on, messageCreated, MessageDeleted]);
 
-    useEffect(() => {
-        if (messages) {
-            // Ensure messages are unique and sorted
-            const uniqueMessages = messages.data
-                .filter((message, index, self) => 
-                    index === self.findIndex(m => m.id === message.id)
-                )
-                .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-            
-            setLocalMessages(uniqueMessages);
-        } else {
-            setLocalMessages([]);
-        }
+    const processedMessages = useMemo(() => {
+        if (!messages) return [];
+        
+        // Ensure messages are unique and sorted
+        const uniqueMessages = messages.data
+            .filter((message, index, self) => 
+                index === self.findIndex(m => m.id === message.id)
+            )
+            .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+        
+        return uniqueMessages;
     }, [messages]);
 
-    useLayoutEffect(() => {
-        if (messagesCtrRef.current && scrollFromBottom !== null) {
-            messagesCtrRef.current.scrollTop =
-                messagesCtrRef.current.scrollHeight -
-                messagesCtrRef.current.offsetHeight -
-                scrollFromBottom;
-        }
-    }, [localMessages]);
+    useEffect(() => {
+        setLocalMessages(processedMessages);
+    }, [processedMessages]);
 
     useEffect(() => {
         if (noMoreMessages) {

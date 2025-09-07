@@ -1,9 +1,8 @@
 import { usePage } from "@inertiajs/react";
 import ReactMarkdown from "react-markdown";
-import React from "react";
 import UserAvatar from "./UserAvatar";
 import { formatMessageDateLong } from "@/helpers";
-import MessageAttachments from "./MessagaAttachments";
+import MessageAttachments from "./MessageAttachments";
 import MessageOptionsDropdown from "./MessageOptionsDropdown";
 
 const MessageItem = ({ message, attachmentClick }) => {

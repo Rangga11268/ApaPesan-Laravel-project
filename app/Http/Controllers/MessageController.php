@@ -21,12 +21,14 @@ class MessageController extends Controller
     public function byUser(User $user)
     {
         $authUserId = Auth::id();
-        $messages = Message::where('sender_id', $authUserId)
-            ->where('receiver_id', $user->id)
-            ->orWhere('sender_id', $user->id)
-            ->where('receiver_id', $authUserId)
-            ->latest()
-            ->paginate(10);
+        $messages = Message::where(function($query) use ($authUserId, $user) {
+            $query->where('sender_id', $authUserId)
+                ->where('receiver_id', $user->id);
+        })->orWhere(function($query) use ($authUserId, $user) {
+            $query->where('sender_id', $user->id)
+                ->where('receiver_id', $authUserId);
+        })->latest()
+        ->paginate(10);
 
         return inertia('Home', [
             'selectedConversation' => $user->toConversationArray(),
@@ -57,8 +59,10 @@ class MessageController extends Controller
             $messages = Message::where('created_at', '<', $message->created_at)
                 ->where(function ($query) use ($message) {
                     $query->where('sender_id', $message->sender_id)
-                        ->where('receiver_id', $message->receiver_id)
-                        ->orWhere('sender_id', $message->receiver_id)
+                        ->where('receiver_id', $message->receiver_id);
+                })
+                ->orWhere(function ($query) use ($message) {
+                    $query->where('sender_id', $message->receiver_id)
                         ->where('receiver_id', $message->sender_id);
                 })
                 ->latest()
@@ -115,6 +119,12 @@ class MessageController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
+        // Store the message data before deleting for response
+        $messageData = new MessageResource($message);
+        
+        // Dispatch event for real-time deletion BEFORE deleting the message
+        \App\Events\SocketMessageDeleted::dispatch($message);
+
         $group = null;
         $conversation = null;
         //cek jika message is group
@@ -124,13 +134,7 @@ class MessageController extends Controller
             $conversation = Conversation::where('last_message_id', $message->id)->first();
         }
 
-        // Store the message data before deleting for response
-        $messageData = new MessageResource($message);
-
         $message->delete();
-        
-        // Dispatch event for real-time deletion
-        \App\Events\SocketMessageDeleted::dispatch($message);
         
         $lastMessage = null;
         if ($group) {

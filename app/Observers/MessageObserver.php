@@ -30,6 +30,10 @@ class MessageObserver
                 if ($prevMessage) {
                     $group->last_message_id = $prevMessage->id;
                     $group->save();
+                } else {
+                    // If no previous message, clear the last_message_id
+                    $group->last_message_id = null;
+                    $group->save();
                 }
             }
         } else {
@@ -37,18 +41,23 @@ class MessageObserver
             if ($conversation) {
                 $prevMessage = Message::where(function ($query) use ($message) {
                     $query->where('sender_id', $message->sender_id)
-                        ->where('receiver_id', $message->receiver_id)
-                        ->orWhere('sender_id', $message->receiver_id)
-                        ->where('receiver_id', $message->sender_id)
-                        ->where('id', '!=', $message->id);
+                        ->where('receiver_id', $message->receiver_id);
                 })
-                    ->where('id', '!=', $message->id)
-                    ->latest()
-                    ->limit(1)
-                    ->first();
+                ->orWhere(function ($query) use ($message) {
+                    $query->where('sender_id', $message->receiver_id)
+                        ->where('receiver_id', $message->sender_id);
+                })
+                ->where('id', '!=', $message->id)
+                ->latest()
+                ->limit(1)
+                ->first();
 
                 if ($prevMessage) {
                     $conversation->last_message_id = $prevMessage->id;
+                    $conversation->save();
+                } else {
+                    // If no previous message, clear the last_message_id
+                    $conversation->last_message_id = null;
                     $conversation->save();
                 }
             }

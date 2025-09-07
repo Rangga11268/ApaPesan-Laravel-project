@@ -60,7 +60,7 @@ export default function AuthenticatedLayout({ header, children }) {
                     
                     emit("message.deleted", {
                         message,
-                        prevMessage: null,
+                        prevMessage: null, // This will be handled by the ChatLayout component
                     });
                 });
         });

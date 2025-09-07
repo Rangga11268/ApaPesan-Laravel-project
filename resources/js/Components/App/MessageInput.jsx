@@ -1,4 +1,4 @@
-import { useState, Fragment } from "react";
+import { useState, Fragment, useCallback } from "react";
 import {
     PaperClipIcon,
     PhotoIcon,
@@ -23,7 +23,7 @@ const MessageInput = ({ conversation = null }) => {
     const [chosenFiles, setChosenFiles] = useState([]);
     const [uploadProgress, setUploadProgress] = useState(0);
 
-    const onFileChange = (ev) => {
+    const onFileChange = useCallback((ev) => {
         const files = ev.target.files;
 
         const updatedFiles = [...files].map((file) => {
@@ -36,9 +36,9 @@ const MessageInput = ({ conversation = null }) => {
         setChosenFiles((prevFiles) => {
             return [...prevFiles, ...updatedFiles];
         });
-    };
+    }, []);
 
-    const onSendClick = () => {
+    const onSendClick = useCallback(() => {
         if (messageSending) {
             return;
         }
@@ -60,48 +60,24 @@ const MessageInput = ({ conversation = null }) => {
         } else if (conversation.is_group) {
             formData.append("group_id", conversation.id);
         }
+        axios.post(route("message.store"), formData);
+        setNewMessage("");
+        setChosenFiles([]);
+    }, [newMessage, chosenFiles, conversation, messageSending]);
 
-        setMessageSending(true);
-        axios
-            .post(route("message.store"), formData, {
-                onUploadProgress: (ProgressEvent) => {
-                    const progress = Math.round(
-                        (ProgressEvent.loaded / ProgressEvent.total) * 100
-                    );
-                    console.log(`Upload progress: ${progress}%`);
-                    setUploadProgress(progress);
-                },
-            })
-            .then((response) => {
-                setNewMessage("");
-                setMessageSending(false);
-                setUploadProgress(0);
-                setChosenFiles([]);
-            })
-            .catch((error) => {
-                setMessageSending(false);
-                setChosenFiles([]);
-                const message = error?.response?.data?.message;
-                setInputErrorMessage(
-                    message || "Something went wrong, please try again"
-                );
-            });
-    };
-
-    const onLikeClick = () => {
+    const onLikeClick = useCallback(() => {
         if (messageSending) {
             return;
         }
-        const data = {
-            message: "👍",
-        };
+        const formData = new FormData();
+        formData.append("message", "👍");
         if (conversation.is_user) {
-            data["receiver_id"] = conversation.id;
+            formData.append("receiver_id", conversation.id);
         } else if (conversation.is_group) {
-            data["group_id"] = conversation.id;
+            formData.append("group_id", conversation.id);
         }
-        axios.post(route("message.store"), data);
-    };
+        axios.post(route("message.store"), formData);
+    }, [conversation, messageSending]);
 
     const recordedAudioReady = (file, url) => {
         setChosenFiles((prevFiles) => [...prevFiles, { file, url }]);

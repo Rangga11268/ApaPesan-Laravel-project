@@ -1,11 +1,12 @@
 import { useEventBus } from "@/EventBus";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { EllipsisVerticalIcon, TrashIcon } from "@heroicons/react/24/outline";
 import axios from "axios";
 
 export default function MessageOptionsDropdown({ message }) {
     const { emit } = useEventBus();
     const [isOpen, setIsOpen] = useState(false);
+    const dropdownRef = useRef(null);
 
     const onDeleteMessage = useCallback((e) => {
         e.stopPropagation();
@@ -38,33 +39,32 @@ export default function MessageOptionsDropdown({ message }) {
         setIsOpen(prev => !prev);
     }, []);
 
-    const closeDropdown = useCallback(() => {
-        setIsOpen(false);
-    }, []);
-
     // Close dropdown when clicking outside
-    const handleClickOutside = useCallback((e) => {
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsOpen(false);
+            }
+        };
+
         if (isOpen) {
-            closeDropdown();
+            document.addEventListener('mousedown', handleClickOutside);
         }
-    }, [isOpen, closeDropdown]);
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isOpen]);
 
     return (
         <div className="absolute right-full text-gray-100 top-1/2 -translate-y-1/2 z-10">
-            <div className="relative inline-block text-left">
+            <div className="relative inline-block text-left" ref={dropdownRef}>
                 <button
                     onClick={toggleDropdown}
                     className="flex justify-center items-center w-8 h-8 rounded-full hover:bg-gray-700 transition-colors"
                 >
                     <EllipsisVerticalIcon className="h-5 w-5" />
                 </button>
-                
-                {isOpen && (
-                    <div 
-                        className="fixed inset-0 z-40" 
-                        onClick={handleClickOutside}
-                    />
-                )}
                 
                 {isOpen && (
                     <div className="absolute left-0 mt-2 w-48 rounded-md bg-gray-800 shadow-lg z-50 ring-1 ring-black ring-opacity-5">

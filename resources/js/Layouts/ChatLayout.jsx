@@ -3,60 +3,54 @@ import TextInput from "@/Components/TextInput";
 import { useEventBus } from "@/EventBus";
 import { PencilSquareIcon } from "@heroicons/react/24/outline";
 import { usePage } from "@inertiajs/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 
 const ChatLayout = ({ children }) => {
     const page = usePage();
     const conversations = page.props.conversation;
     const selectedConversation = page.props.selectedConversation;
     const [localConversations, setLocalConversations] = useState([]);
-    const [sortedConversations, setSortedConversations] = useState([]);
     const [onlineUsers, setOnlineUsers] = useState({});
     const [searchTerm, setSearchTerm] = useState("");
     const isUserOnline = (userId) => onlineUsers[userId];
     const { on } = useEventBus();
-
-    console.log("conversation", conversations);
-    console.log("selectedConversation", selectedConversation);
 
     const onSearch = (ev) => {
         setSearchTerm(ev.target.value.toLowerCase());
     };
 
     useEffect(() => {
-        if (!Array.isArray(localConversations)) return;
+        setLocalConversations(conversations);
+    }, [conversations]);
+
+    const sortedConversations = useMemo(() => {
+        if (!Array.isArray(localConversations)) return [];
 
         const filtered = localConversations.filter((conv) =>
             conv.name.toLowerCase().includes(searchTerm)
         );
 
-        setSortedConversations(
-            [...filtered].sort((a, b) => {
-                if (a.blocked_at && b.blocked_at) {
-                    return a.blocked_at > b.blocked_at ? 1 : -1;
-                } else if (a.blocked_at) {
-                    return 1;
-                } else if (b.blocked_at) {
-                    return -1;
-                }
-                if (a.last_message_date && b.last_message_date) {
-                    return b.last_message_date.localeCompare(
-                        a.last_message_date
-                    );
-                } else if (a.last_message_date) {
-                    return -1;
-                } else if (b.last_message_date) {
-                    return 1;
-                } else {
-                    return 0;
-                }
-            })
-        );
+        return [...filtered].sort((a, b) => {
+            if (a.blocked_at && b.blocked_at) {
+                return a.blocked_at > b.blocked_at ? 1 : -1;
+            } else if (a.blocked_at) {
+                return 1;
+            } else if (b.blocked_at) {
+                return -1;
+            }
+            if (a.last_message_date && b.last_message_date) {
+                return b.last_message_date.localeCompare(
+                    a.last_message_date
+                );
+            } else if (a.last_message_date) {
+                return -1;
+            } else if (b.last_message_date) {
+                return 1;
+            } else {
+                return 0;
+            }
+        });
     }, [localConversations, searchTerm]);
-
-    useEffect(() => {
-        setLocalConversations(conversations);
-    }, [conversations]);
 
     useEffect(() => {
         const offMessageCreated = on("message.created", (message) => {

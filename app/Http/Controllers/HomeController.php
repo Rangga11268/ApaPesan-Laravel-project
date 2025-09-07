@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Conversation;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
@@ -11,7 +13,12 @@ class HomeController extends Controller
      */
     public function home()
     {
-        return inertia('Home',);
+        $user = auth()->user();
+        $conversations = Conversation::getConversationForSidebar($user);
+        
+        return inertia('Home', [
+            'conversation' => $conversations
+        ]);
     }
 
     /**
