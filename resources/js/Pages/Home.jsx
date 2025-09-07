@@ -62,6 +62,24 @@ function Home({ selectedConversation = null, messages = null }) {
         [selectedConversation]
     );
 
+    const MessageDeleted = useCallback(
+        ({ message }) => {
+            if (
+                selectedConversation &&
+                ((selectedConversation.is_group &&
+                    selectedConversation.id == message.group_id) ||
+                    (selectedConversation.is_user &&
+                        (selectedConversation.id == message.sender_id ||
+                            selectedConversation.id == message.receiver_id)))
+            ) {
+                setLocalMessages((prevMessages) => {
+                    return prevMessages.filter((m) => m.id !== message.id);
+                });
+            }
+        },
+        [selectedConversation]
+    );
+
     const loadMoreMessages = useCallback(() => {
         if (noMoreMessages || loadingOlder) {
             return;
@@ -102,11 +120,13 @@ function Home({ selectedConversation = null, messages = null }) {
         }, 10);
 
         const offCreated = on("message.created", messageCreated);
+        const offDeleted = on("message.deleted", MessageDeleted);
         setScrollFromBottom(0);
         setNoMoreMessages(false);
 
         return () => {
             offCreated();
+            offDeleted();
         };
     }, [selectedConversation, on, messageCreated]);
 

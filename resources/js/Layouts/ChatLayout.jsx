@@ -85,9 +85,40 @@ const ChatLayout = ({ children }) => {
                 return prevConversations;
             });
         });
+        const offMessageDeleted = on(
+            "message.deleted",
+            ({ message, prevMessage }) => {
+                setLocalConversations((prevConversations) => {
+                    const convIndex = prevConversations.findIndex(
+                        (c) =>
+                            (message.group_id &&
+                                c.is_group &&
+                                c.id == message.group_id) ||
+                            (!message.group_id &&
+                                c.is_user &&
+                                (c.id == message.sender_id ||
+                                    c.id == message.receiver_id))
+                    );
+
+                    if (convIndex > -1) {
+                        const newConversations = [...prevConversations];
+                        const conversationToUpdate = {
+                            ...newConversations[convIndex],
+                        };
+                        conversationToUpdate.last_message = prevMessage.message;
+                        conversationToUpdate.last_message_date =
+                            prevMessage.created_at;
+                        newConversations[convIndex] = conversationToUpdate;
+                        return newConversations;
+                    }
+                    return prevConversations;
+                });
+            }
+        );
 
         return () => {
             offMessageCreated();
+            offMessageDeleted();
         };
     }, [on]);
 

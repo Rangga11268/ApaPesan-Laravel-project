@@ -50,6 +50,12 @@ class Group extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function lastMessage(): BelongsTo
+    {
+        return $this->belongsTo(Message::class, 'last_message_id');
+    }
+
+
     public static function getGroupsForUsers(User $user)
     {
         $query = self::select(['groups.*', 'messages.message as last_message', 'messages.created_at as last_message_date'])
