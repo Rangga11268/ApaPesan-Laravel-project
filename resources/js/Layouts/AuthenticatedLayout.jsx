@@ -53,6 +53,15 @@ export default function AuthenticatedLayout({ header, children }) {
                                       " attachments"
                             }`,
                     });
+                })
+                .listen("SocketMessageDeleted", (e) => {
+                    console.log("SocketMessageDeleted", e);
+                    const message = e.message;
+                    
+                    emit("message.deleted", {
+                        message,
+                        prevMessage: null,
+                    });
                 });
         });
 

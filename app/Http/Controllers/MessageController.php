@@ -109,8 +109,10 @@ class MessageController extends Controller
 
     public function destroy(Message $message)
     {
-        if ($message->sender_id !== Auth::id()) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        // Allow both sender and receiver to delete messages
+        $authId = Auth::id();
+        if ($message->sender_id !== $authId && $message->receiver_id !== $authId) {
+            return response()->json(['error' => 'Unauthorized'], 403);
         }
 
         $group = null;
@@ -122,8 +124,15 @@ class MessageController extends Controller
             $conversation = Conversation::where('last_message_id', $message->id)->first();
         }
 
+        // Store the message data before deleting for response
+        $messageData = new MessageResource($message);
 
         $message->delete();
+        
+        // Dispatch event for real-time deletion
+        \App\Events\SocketMessageDeleted::dispatch($message);
+        
+        $lastMessage = null;
         if ($group) {
             $group = Group::find($group->id);
             $lastMessage = $group->lastMessage;
@@ -131,6 +140,10 @@ class MessageController extends Controller
             $conversation = Conversation::find($conversation->id);
             $lastMessage = $conversation->lastMessage;
         }
-        return response()->json(['message' => $lastMessage ? new MessageResource($lastMessage) : null]);
+        
+        return response()->json([
+            'message' => $lastMessage ? new MessageResource($lastMessage) : null,
+            'deleted_message' => $messageData
+        ]);
     }
 }

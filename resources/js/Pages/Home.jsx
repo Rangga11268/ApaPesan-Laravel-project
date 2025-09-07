@@ -48,10 +48,15 @@ function Home({ selectedConversation = null, messages = null }) {
                     : true;
 
                 setLocalMessages((prevMessages) => {
+                    // Check if message already exists
                     if (prevMessages.some((m) => m.id === message.id)) {
                         return prevMessages;
                     }
-                    return [...prevMessages, message];
+                    // Add the new message and ensure it's sorted properly
+                    const newMessages = [...prevMessages, message];
+                    return newMessages.sort((a, b) => 
+                        new Date(a.created_at) - new Date(b.created_at)
+                    );
                 });
 
                 if (atBottom) {
@@ -63,7 +68,7 @@ function Home({ selectedConversation = null, messages = null }) {
     );
 
     const MessageDeleted = useCallback(
-        ({ message }) => {
+        ({ message, prevMessage }) => {
             if (
                 selectedConversation &&
                 ((selectedConversation.is_group &&
@@ -73,6 +78,11 @@ function Home({ selectedConversation = null, messages = null }) {
                             selectedConversation.id == message.receiver_id)))
             ) {
                 setLocalMessages((prevMessages) => {
+                    // Check if the message actually exists in the current list
+                    const messageExists = prevMessages.some((m) => m.id === message.id);
+                    if (!messageExists) {
+                        return prevMessages; // No change needed
+                    }
                     return prevMessages.filter((m) => m.id !== message.id);
                 });
             }
@@ -103,7 +113,11 @@ function Home({ selectedConversation = null, messages = null }) {
                 const clientHeight = messagesCtrRef.current.clientHeight;
                 setScrollFromBottom(scrollHeight - scrollTop - clientHeight);
                 setLocalMessages((prevMessages) => {
-                    return [...data.data.reverse(), ...prevMessages];
+                    // Filter out any duplicates
+                    const newMessages = data.data.filter(
+                        newMsg => !prevMessages.some(existingMsg => existingMsg.id === newMsg.id)
+                    );
+                    return [...newMessages.reverse(), ...prevMessages];
                 });
             })
             .finally(() => {
@@ -112,6 +126,20 @@ function Home({ selectedConversation = null, messages = null }) {
     }, [localMessages, noMoreMessages, loadingOlder]);
 
     useEffect(() => {
+        // Only set up event listeners if we have a selected conversation
+        if (!selectedConversation) return;
+
+        // Clean up any existing listeners first
+        let offCreated, offDeleted;
+        
+        const setupListeners = () => {
+            offCreated = on("message.created", messageCreated);
+            offDeleted = on("message.deleted", MessageDeleted);
+        };
+
+        // Set up the listeners
+        setupListeners();
+
         setTimeout(() => {
             if (messagesCtrRef.current) {
                 messagesCtrRef.current.scrollTop =
@@ -119,19 +147,28 @@ function Home({ selectedConversation = null, messages = null }) {
             }
         }, 10);
 
-        const offCreated = on("message.created", messageCreated);
-        const offDeleted = on("message.deleted", MessageDeleted);
         setScrollFromBottom(0);
         setNoMoreMessages(false);
 
         return () => {
-            offCreated();
-            offDeleted();
+            if (offCreated) offCreated();
+            if (offDeleted) offDeleted();
         };
-    }, [selectedConversation, on, messageCreated]);
+    }, [selectedConversation, on, messageCreated, MessageDeleted]);
 
     useEffect(() => {
-        setLocalMessages(messages ? messages.data.reverse() : []);
+        if (messages) {
+            // Ensure messages are unique and sorted
+            const uniqueMessages = messages.data
+                .filter((message, index, self) => 
+                    index === self.findIndex(m => m.id === message.id)
+                )
+                .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+            
+            setLocalMessages(uniqueMessages);
+        } else {
+            setLocalMessages([]);
+        }
     }, [messages]);
 
     useLayoutEffect(() => {

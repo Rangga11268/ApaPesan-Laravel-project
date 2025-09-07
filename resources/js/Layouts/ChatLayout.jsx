@@ -105,9 +105,18 @@ const ChatLayout = ({ children }) => {
                         const conversationToUpdate = {
                             ...newConversations[convIndex],
                         };
-                        conversationToUpdate.last_message = prevMessage.message;
-                        conversationToUpdate.last_message_date =
-                            prevMessage.created_at;
+                        
+                        // Handle case where prevMessage is null (last message deleted)
+                        if (prevMessage) {
+                            conversationToUpdate.last_message = prevMessage.message;
+                            conversationToUpdate.last_message_date =
+                                prevMessage.created_at;
+                        } else {
+                            // Clear the last message fields when there's no previous message
+                            conversationToUpdate.last_message = null;
+                            conversationToUpdate.last_message_date = null;
+                        }
+                        
                         newConversations[convIndex] = conversationToUpdate;
                         return newConversations;
                     }

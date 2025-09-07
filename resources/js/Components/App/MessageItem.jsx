@@ -9,6 +9,9 @@ import MessageOptionsDropdown from "./MessageOptionsDropdown";
 const MessageItem = ({ message, attachmentClick }) => {
     const currentUser = usePage().props.auth.user;
 
+    // Show delete option for both sender and receiver
+    const canDeleteMessage = message.sender_id === currentUser.id || message.receiver_id === currentUser.id;
+
     return (
         <div
             className={
@@ -37,7 +40,7 @@ const MessageItem = ({ message, attachmentClick }) => {
                         : "")
                 }
             >
-                {message.sender_id === currentUser.id && (
+                {canDeleteMessage && (
                     <MessageOptionsDropdown message={message} />
                 )}
                 <div className="chat-message">

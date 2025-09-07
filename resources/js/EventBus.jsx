@@ -3,27 +3,35 @@ import React from "react";
 export const EventBusContext = React.createContext();
 
 export const EventBusProvider = ({ children }) => {
-    const [events, setEvents] = React.useState({});
+    const eventsRef = React.useRef({});
 
     const emit = (name, data) => {
-        if (events[name]) {
-            for (let cb of events[name]) {
+        if (eventsRef.current[name]) {
+            // Create a copy of the callbacks array to avoid issues during iteration
+            const callbacks = [...eventsRef.current[name]];
+            for (let cb of callbacks) {
                 cb(data);
             }
         }
     };
 
     const on = (name, cb) => {
-        if (!events[name]) {
-            events[name] = [];
+        if (!eventsRef.current[name]) {
+            eventsRef.current[name] = [];
         }
-
-        events[name].push(cb);
+        eventsRef.current[name].push(cb);
 
         return () => {
-            events[name] = events[name].filter((callback) => callback !== cb);
+            if (eventsRef.current[name]) {
+                eventsRef.current[name] = eventsRef.current[name].filter((callback) => callback !== cb);
+                // Clean up empty arrays
+                if (eventsRef.current[name].length === 0) {
+                    delete eventsRef.current[name];
+                }
+            }
         };
     };
+    
     return (
         <EventBusContext.Provider value={{ emit, on }}>
             {children}
