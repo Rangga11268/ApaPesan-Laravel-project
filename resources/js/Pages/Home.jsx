@@ -69,6 +69,7 @@ function Home({ selectedConversation = null, messages = null }) {
 
     const MessageDeleted = useCallback(
         ({ message, prevMessage }) => {
+            console.log("Received message.deleted event", { message, prevMessage, selectedConversation });
             if (
                 selectedConversation &&
                 ((selectedConversation.is_group &&
@@ -77,14 +78,20 @@ function Home({ selectedConversation = null, messages = null }) {
                         (selectedConversation.id == message.sender_id ||
                             selectedConversation.id == message.receiver_id)))
             ) {
+                console.log("Processing message deletion for current conversation");
                 setLocalMessages((prevMessages) => {
                     // Check if the message actually exists in the current list
                     const messageExists = prevMessages.some((m) => m.id === message.id);
+                    console.log("Message exists in current list:", messageExists);
                     if (!messageExists) {
                         return prevMessages; // No change needed
                     }
-                    return prevMessages.filter((m) => m.id !== message.id);
+                    const newMessages = prevMessages.filter((m) => m.id !== message.id);
+                    console.log("Messages after deletion:", newMessages);
+                    return newMessages;
                 });
+            } else {
+                console.log("Message not in current conversation, ignoring");
             }
         },
         [selectedConversation]

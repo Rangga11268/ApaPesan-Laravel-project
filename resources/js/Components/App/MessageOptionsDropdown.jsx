@@ -19,6 +19,7 @@ export default function MessageOptionsDropdown({ message }) {
         axios
             .delete(url)
             .then((res) => {
+                console.log("Message deleted successfully", res.data);
                 emit("message.deleted", {
                     message,
                     prevMessage: res.data.message,
