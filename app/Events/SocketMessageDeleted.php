@@ -18,15 +18,18 @@ class SocketMessageDeleted implements ShouldBroadcastNow
     /**
      * Create a new event instance.
      */
-    public function __construct(public Message $message)
-    {
+    public function __construct(
+        public Message $message,
+        public ?Message $previousMessage = null
+    ) {
         //
     }
 
     public function broadcastWith(): array
     {
         return [
-            'message' => new MessageResource($this->message)
+            'message' => new MessageResource($this->message),
+            'prevMessage' => $this->previousMessage ? new MessageResource($this->previousMessage) : null
         ];
     }
 

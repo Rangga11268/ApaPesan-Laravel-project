@@ -171,18 +171,20 @@ const ChatLayout = ({ children }) => {
         <>
             <div className="flex-1 w-full flex overflow-hidden">
                 <div
-                    className={`transition-all w-full sm:w-[220px] md:w-[300px]  bg-slate-800 flex flex-col overflow-hidden
+                    className={`transition-all w-full sm:w-[220px] md:w-[300px] glass-effect flex flex-col overflow-hidden border-r border-slate-700/50
                 ${selectedConversation ? "-ml-[100%] sm:ml-0" : ""} `}
                 >
                     {/* Title */}
-                    <div className="flex items-center justify-between py-2 px-3 text-xl font-medium">
-                        My Conversations
+                    <div className="flex items-center justify-between py-3 px-4 text-xl font-medium border-b border-slate-700/50">
+                        <span className="bg-gradient-to-r from-primary-400 to-accent-400 bg-clip-text text-transparent font-bold">
+                            My Conversations
+                        </span>
                         <div
                             className="tooltip tooltip-left"
                             data-tip="Create new group"
                         >
-                            <button className="text-gray-400 hover:text-gray-200">
-                                <PencilSquareIcon className="w-4 h-4 inline-block ml-2" />
+                            <button className="text-gray-400 hover:text-primary-400 transition-colors hover:bg-slate-700/50 p-2 rounded-lg">
+                                <PencilSquareIcon className="w-5 h-5" />
                             </button>
                         </div>
                     </div>

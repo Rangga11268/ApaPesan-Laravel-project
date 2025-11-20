@@ -17,3 +17,20 @@ window.Echo = new Echo({
     forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? "https") === "https",
     enabledTransports: ["ws", "wss"],
 });
+
+// Add connection state logging
+window.Echo.connector.pusher.connection.bind('connected', () => {
+    console.log('✅ WebSocket connected successfully');
+});
+
+window.Echo.connector.pusher.connection.bind('disconnected', () => {
+    console.log('⚠️ WebSocket disconnected');
+});
+
+window.Echo.connector.pusher.connection.bind('error', (err) => {
+    console.error('❌ WebSocket connection error:', err);
+});
+
+window.Echo.connector.pusher.connection.bind('state_change', (states) => {
+    console.log('WebSocket state:', states.current);
+});

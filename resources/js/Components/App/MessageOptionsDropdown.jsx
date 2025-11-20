@@ -21,7 +21,7 @@ export default function MessageOptionsDropdown({ message }) {
             .then((res) => {
                 console.log("Message deleted successfully", res.data);
                 emit("message.deleted", {
-                    message,
+                    message: res.data.deleted_message, // Use the deleted message from response
                     prevMessage: res.data.message,
                 });
                 setIsOpen(false); // Close the dropdown after deletion

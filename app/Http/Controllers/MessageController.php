@@ -120,9 +120,9 @@ class MessageController extends Controller
             'receiver_id' => $message->receiver_id
         ]);
 
-        // Allow both sender and receiver to delete messages
+        // Only allow users to delete their own messages (sent by them)
         $authId = Auth::id();
-        if ($message->sender_id !== $authId && $message->receiver_id !== $authId) {
+        if ($message->sender_id !== $authId) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
@@ -200,11 +200,32 @@ class MessageController extends Controller
         $message->attachments()->delete();
 
         \Log::info('Dispatching SocketMessageDeleted event', [
-            'message_id' => $message->id
-        ]);
+        'message_id' => $message->id
+    ]);
 
-        // Dispatch event for real-time deletion BEFORE deleting the message
-        \App\Events\SocketMessageDeleted::dispatch($message);
+    // Find the previous message before dispatching deletion event
+    $prevMessage = null;
+    if ($message->group_id) {
+        $prevMessage = Message::where('group_id', $message->group_id)
+            ->where('id', '!=', $message->id)
+            ->latest()
+            ->first();
+    } else {
+        $prevMessage = Message::where(function ($query) use ($message) {
+            $query->where('sender_id', $message->sender_id)
+                ->where('receiver_id', $message->receiver_id);
+        })
+        ->orWhere(function ($query) use ($message) {
+            $query->where('sender_id', $message->receiver_id)
+                ->where('receiver_id', $message->sender_id);
+        })
+        ->where('id', '!=', $message->id)
+        ->latest()
+        ->first();
+    }
+
+    // Dispatch event for real-time deletion BEFORE deleting the message
+    \App\Events\SocketMessageDeleted::dispatch($message, $prevMessage);
 
         // Now delete the message
         $message->delete();

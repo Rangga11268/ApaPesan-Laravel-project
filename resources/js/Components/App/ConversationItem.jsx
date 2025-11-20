@@ -17,7 +17,7 @@ const ConversationItem = ({
         selectedConversation.is_group == conversation.is_group;
 
     const classes = isSelected
-        ? "border-blue-500 bg-black/20"
+        ? "border-l-primary-500 bg-primary-500/10 glass-light active"
         : "border-transparent";
     return (
         <Link
@@ -27,7 +27,7 @@ const ConversationItem = ({
                     : route("chat.user", conversation)
             }
             preserveState
-            className={`conversation-item flex items-center gap-2 p-2 text-gray-300 transition-all cursor-pointer border-l-4 hover:bg-black/30 ${classes}${
+            className={`conversation-item flex items-center gap-2 p-3 text-gray-300 transition-all cursor-pointer border-l-4 ${classes}${
                 conversation.is_user && currentUser.is_admin ? " pr-2" : " pr-4"
             }`}
         >

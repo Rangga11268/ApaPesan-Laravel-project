@@ -57,10 +57,11 @@ export default function AuthenticatedLayout({ header, children }) {
                 .listen("SocketMessageDeleted", (e) => {
                     console.log("SocketMessageDeleted", e);
                     const message = e.message;
+                    const prevMessage = e.prevMessage || null;
                     
                     emit("message.deleted", {
                         message,
-                        prevMessage: null, // This will be handled by the ChatLayout component
+                        prevMessage,
                     });
                 });
         });

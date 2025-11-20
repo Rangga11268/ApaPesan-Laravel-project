@@ -73,10 +73,10 @@ function Home({ selectedConversation = null, messages = null }) {
             if (
                 selectedConversation &&
                 ((selectedConversation.is_group &&
-                    selectedConversation.id == message.group_id) ||
+                    selectedConversation.id === message.group_id) ||
                     (selectedConversation.is_user &&
-                        (selectedConversation.id == message.sender_id ||
-                            selectedConversation.id == message.receiver_id)))
+                        (selectedConversation.id === message.sender_id ||
+                            selectedConversation.id === message.receiver_id)))
             ) {
                 console.log("Processing message deletion for current conversation");
                 setLocalMessages((prevMessages) => {
@@ -235,7 +235,7 @@ function Home({ selectedConversation = null, messages = null }) {
                     />
                     <div
                         ref={messagesCtrRef}
-                        className="flex-1 overflow-y-auto p-5"
+                        className="flex-1 overflow-y-auto p-5 bg-gradient-to-b from-slate-900/50 to-slate-800/50"
                     >
                         {localMessages.length === 0 && (
                             <div className="flex justify-center items-center h-full">
