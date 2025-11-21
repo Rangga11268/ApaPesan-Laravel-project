@@ -235,7 +235,7 @@ function Home({ selectedConversation = null, messages = null }) {
                     />
                     <div
                         ref={messagesCtrRef}
-                        className="flex-1 overflow-y-auto p-5 bg-gradient-to-b from-slate-900/50 to-slate-800/50"
+                        className="flex-1 overflow-y-auto p-5 bg-gradient-to-b from-slate-900/40 via-slate-900/30 to-indigo-950/40"
                     >
                         {localMessages.length === 0 && (
                             <div className="flex justify-center items-center h-full">
