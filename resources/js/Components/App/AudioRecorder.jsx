@@ -14,6 +14,14 @@ const AudioRecorder = ({ fileReady }) => {
             }
             return;
         }
+
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            alert(
+                "Audio recording is not supported in this browser or context."
+            );
+            return;
+        }
+
         setRecording(true);
         try {
             const stream = await navigator.mediaDevices.getUserMedia({
@@ -48,10 +56,14 @@ const AudioRecorder = ({ fileReady }) => {
     return (
         <button
             onClick={onMicrophoneClick}
-            className="p-1 text-gray-400 hover:text-gray-200"
+            className="p-2 text-primary-300 hover:text-white hover:bg-white/10 rounded-full transition-all relative group tooltip tooltip-top"
+            data-tip={recording ? "Berhenti Merekam" : "Rekam Suara"}
         >
-            {recording && <StopCircleIcon className="w-6 text-red-600" />}
-            {!recording && <MicrophoneIcon className="w-6" />}
+            {recording ? (
+                <StopCircleIcon className="w-6 h-6 text-red-500 animate-pulse" />
+            ) : (
+                <MicrophoneIcon className="w-6 h-6" />
+            )}
         </button>
     );
 };

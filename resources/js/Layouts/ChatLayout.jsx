@@ -151,11 +151,11 @@ const ChatLayout = ({ children }) => {
                 <div className="p-6 pb-4">
                     <div className="flex items-center justify-between mb-6">
                         <h1 className="font-display font-bold text-3xl text-white tracking-tight drop-shadow-lg">
-                            Chats
+                            Obrolan
                         </h1>
                         <div
                             className="tooltip tooltip-bottom"
-                            data-tip="New Group"
+                            data-tip="Grup Baru"
                         >
                             <button className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all group border border-white/5">
                                 <PencilSquareIcon className="w-5 h-5 text-gray-400 group-hover:text-primary-400" />
@@ -166,7 +166,7 @@ const ChatLayout = ({ children }) => {
                     <div className="relative group">
                         <TextInput
                             onKeyUp={onSearch}
-                            placeholder="Search..."
+                            placeholder="Cari..."
                             className="glass-input w-full pl-10 py-3 rounded-xl border-none bg-black/20 focus:bg-black/40"
                         />
                         <div className="absolute left-3 top-3.5 text-gray-500 group-focus-within:text-primary-400 transition-colors">
@@ -208,7 +208,7 @@ const ChatLayout = ({ children }) => {
                             <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-4">
                                 <PencilSquareIcon className="w-8 h-8" />
                             </div>
-                            <p className="text-sm">No conversations found</p>
+                            <p className="text-sm">Belum ada percakapan</p>
                         </div>
                     )}
                 </div>
@@ -247,7 +247,7 @@ const ChatLayout = ({ children }) => {
                                 href={route("profile.edit")}
                                 className="hover:bg-white/10 hover:text-primary-300 px-4 py-3 flex items-center gap-2 transition-colors"
                             >
-                                <UserCircleIcon className="w-5 h-5" /> Profile
+                                <UserCircleIcon className="w-5 h-5" /> Profil
                             </Dropdown.Link>
                             <div className="h-px bg-white/10 my-1"></div>
                             <Dropdown.Link
@@ -257,7 +257,7 @@ const ChatLayout = ({ children }) => {
                                 className="hover:bg-red-500/10 hover:text-red-400 px-4 py-3 flex items-center gap-2 w-full text-left transition-colors"
                             >
                                 <ArrowLeftOnRectangleIcon className="w-5 h-5" />{" "}
-                                Log Out
+                                Keluar
                             </Dropdown.Link>
                         </Dropdown.Content>
                     </Dropdown>

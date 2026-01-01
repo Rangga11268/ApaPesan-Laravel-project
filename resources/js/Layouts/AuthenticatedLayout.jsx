@@ -15,8 +15,10 @@ export default function AuthenticatedLayout({ children }) {
     useEffect(() => {
         // Echo listeners
         const handleNewMessage = (e) => {
-            if (e.message.sender_id === user.id) return;
-            setNewMessage(e.message);
+            const message = e.message;
+            emit("message.created", message);
+            if (message.sender_id === user.id) return;
+            setNewMessage(message);
             setShowNewMessageNotification(true);
             setTimeout(() => {
                 setShowNewMessageNotification(false);

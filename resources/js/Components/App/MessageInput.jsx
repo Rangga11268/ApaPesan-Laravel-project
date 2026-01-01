@@ -9,12 +9,14 @@ import {
 } from "@heroicons/react/24/outline";
 import NewMessageInput from "./NewMessageInput";
 import CustomAudioPlayer from "../CustomAudioPlayer";
-import AttachmentPreview from "./AttachmentPreviewModal";
+import AttachmentPreview from "./AttachmentPreview";
 import { isAudio, isImage } from "@/helpers";
 import axios from "axios";
 import { Popover, Transition } from "@headlessui/react";
 import EmojiPicker from "emoji-picker-react";
 import AudioRecorder from "./AudioRecorder";
+
+import { useEventBus } from "@/EventBus";
 
 const MessageInput = ({ conversation = null }) => {
     const [newMessage, setNewMessage] = useState("");
@@ -22,6 +24,7 @@ const MessageInput = ({ conversation = null }) => {
     const [messageSending, setMessageSending] = useState(false);
     const [chosenFiles, setChosenFiles] = useState([]);
     const [uploadProgress, setUploadProgress] = useState(0);
+    const { emit } = useEventBus();
 
     const onFileChange = useCallback((ev) => {
         const files = ev.target.files;
@@ -43,7 +46,7 @@ const MessageInput = ({ conversation = null }) => {
             return;
         }
         if (newMessage.trim() === "" && chosenFiles.length === 0) {
-            setInputErrorMessage("Type something or choose a file");
+            setInputErrorMessage("Ketik sesuatu atau pilih berkas");
             setTimeout(() => setInputErrorMessage(""), 3000);
             return;
         }
@@ -68,17 +71,20 @@ const MessageInput = ({ conversation = null }) => {
                     setUploadProgress(percentCompleted);
                 },
             })
-            .then(() => {
+            .then((response) => {
                 setMessageSending(false);
                 setNewMessage("");
                 setChosenFiles([]);
                 setUploadProgress(0);
+                // Emit event to update UI immediately
+                emit("message.created", response.data);
             })
-            .catch(() => {
+            .catch((error) => {
                 setMessageSending(false);
                 setUploadProgress(0);
+                console.error(error);
             });
-    }, [newMessage, chosenFiles, conversation, messageSending]);
+    }, [newMessage, chosenFiles, conversation, messageSending, emit]);
 
     const onLikeClick = useCallback(() => {
         if (messageSending) return;
@@ -89,8 +95,10 @@ const MessageInput = ({ conversation = null }) => {
         } else if (conversation.is_group) {
             formData.append("group_id", conversation.id);
         }
-        axios.post(route("message.store"), formData);
-    }, [conversation, messageSending]);
+        axios.post(route("message.store"), formData).then((response) => {
+            emit("message.created", response.data);
+        });
+    }, [conversation, messageSending, emit]);
 
     const recordedAudioReady = (file, url) => {
         setChosenFiles((prevFiles) => [...prevFiles, { file, url }]);

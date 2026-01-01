@@ -20,25 +20,43 @@ function Home({ selectedConversation = null, messages = null }) {
     const { on } = useEventBus();
 
     const messageCreated = (message) => {
-        if (
-            selectedConversation &&
-            ((selectedConversation.is_group &&
-                selectedConversation.id == message.group_id) ||
-                (selectedConversation.is_user &&
-                    (selectedConversation.id == message.sender_id ||
-                        selectedConversation.id == message.receiver_id)))
-        ) {
-            setLocalMessages((prevMessages) => [...prevMessages, message]);
+        if (selectedConversation) {
+            let isCurrentConversation = false;
 
-            // Auto scroll to bottom smoothly
-            setTimeout(() => {
-                if (messagesCtrRef.current) {
-                    messagesCtrRef.current.scrollTo({
-                        top: messagesCtrRef.current.scrollHeight,
-                        behavior: "smooth",
-                    });
+            if (
+                selectedConversation.is_group &&
+                selectedConversation.id == message.group_id
+            ) {
+                isCurrentConversation = true;
+            } else if (selectedConversation.is_user) {
+                // If I am the sender, the receiver_id should match the selected conversation
+                // If I am the receiver, the sender_id should match the selected conversation
+                if (
+                    message.receiver_id == selectedConversation.id ||
+                    message.sender_id == selectedConversation.id
+                ) {
+                    isCurrentConversation = true;
                 }
-            }, 100);
+            }
+
+            if (isCurrentConversation) {
+                setLocalMessages((prevMessages) => {
+                    if (prevMessages.some((m) => m.id === message.id)) {
+                        return prevMessages;
+                    }
+                    return [...prevMessages, message];
+                });
+
+                // Auto scroll to bottom smoothly
+                setTimeout(() => {
+                    if (messagesCtrRef.current) {
+                        messagesCtrRef.current.scrollTo({
+                            top: messagesCtrRef.current.scrollHeight,
+                            behavior: "smooth",
+                        });
+                    }
+                }, 100);
+            }
         }
     };
 
