@@ -1,113 +1,68 @@
-// import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import AttachmentPreviewModal from "@/Components/App/AttachmentPreview";
-import ConversationHeader from "@/Components/App/ConversationHeader";
-import { isPreviewable } from "@/helpers";
-import MessageInput from "@/Components/App/MessageInput";
-import MessageItem from "@/Components/App/MessageItem";
-import { useEventBus } from "@/EventBus";
-import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import ChatLayout from "@/Layouts/ChatLayout";
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { ChatBubbleLeftRightIcon } from "@heroicons/react/24/outline";
+import ConversationHeader from "@/Components/App/ConversationHeader";
+import MessageItem from "@/Components/App/MessageItem";
+import MessageInput from "@/Components/App/MessageInput";
+import { useEventBus } from "@/EventBus";
 import axios from "axios";
-import {
-    useEffect,
-    useState,
-    useRef,
-    useCallback,
-    useMemo,
-    useLayoutEffect,
-} from "react";
+import AttachmentPreviewModal from "@/Components/App/AttachmentPreviewModal";
 
 function Home({ selectedConversation = null, messages = null }) {
     const [localMessages, setLocalMessages] = useState([]);
     const [noMoreMessages, setNoMoreMessages] = useState(false);
-    const [loadingOlder, setLoadingOlder] = useState(false);
     const [scrollFromBottom, setScrollFromBottom] = useState(0);
-    const loadMoreIntersect = useRef(null);
     const messagesCtrRef = useRef(null);
+    const loadMoreIntersect = useRef(null);
     const [showAttachmentPreview, setShowAttachmentPreview] = useState(false);
     const [previewAttachment, setPreviewAttachment] = useState({});
     const { on } = useEventBus();
 
-    const messageCreated = useCallback(
-        (message) => {
-            if (
-                selectedConversation &&
-                ((selectedConversation.is_group &&
-                    selectedConversation.id == message.group_id) ||
-                    (selectedConversation.is_user &&
-                        (selectedConversation.id == message.sender_id ||
-                            selectedConversation.id == message.receiver_id)))
-            ) {
-                const container = messagesCtrRef.current;
-                const atBottom = container
-                    ? container.scrollHeight -
-                          container.scrollTop -
-                          container.clientHeight <
-                      50
-                    : true;
+    const messageCreated = (message) => {
+        if (
+            selectedConversation &&
+            ((selectedConversation.is_group &&
+                selectedConversation.id == message.group_id) ||
+                (selectedConversation.is_user &&
+                    (selectedConversation.id == message.sender_id ||
+                        selectedConversation.id == message.receiver_id)))
+        ) {
+            setLocalMessages((prevMessages) => [...prevMessages, message]);
 
-                setLocalMessages((prevMessages) => {
-                    // Check if message already exists
-                    if (prevMessages.some((m) => m.id === message.id)) {
-                        return prevMessages;
-                    }
-                    // Add the new message and ensure it's sorted properly
-                    const newMessages = [...prevMessages, message];
-                    return newMessages.sort((a, b) => 
-                        new Date(a.created_at) - new Date(b.created_at)
-                    );
-                });
-
-                if (atBottom) {
-                    setScrollFromBottom(0);
+            // Auto scroll to bottom smoothly
+            setTimeout(() => {
+                if (messagesCtrRef.current) {
+                    messagesCtrRef.current.scrollTo({
+                        top: messagesCtrRef.current.scrollHeight,
+                        behavior: "smooth",
+                    });
                 }
-            }
-        },
-        [selectedConversation]
-    );
+            }, 100);
+        }
+    };
 
-    const MessageDeleted = useCallback(
-        ({ message, prevMessage }) => {
-            console.log("Received message.deleted event", { message, prevMessage, selectedConversation });
-            if (
-                selectedConversation &&
-                ((selectedConversation.is_group &&
-                    selectedConversation.id === message.group_id) ||
-                    (selectedConversation.is_user &&
-                        (selectedConversation.id === message.sender_id ||
-                            selectedConversation.id === message.receiver_id)))
-            ) {
-                console.log("Processing message deletion for current conversation");
-                setLocalMessages((prevMessages) => {
-                    // Check if the message actually exists in the current list
-                    const messageExists = prevMessages.some((m) => m.id === message.id);
-                    console.log("Message exists in current list:", messageExists);
-                    if (!messageExists) {
-                        return prevMessages; // No change needed
-                    }
-                    const newMessages = prevMessages.filter((m) => m.id !== message.id);
-                    console.log("Messages after deletion:", newMessages);
-                    return newMessages;
-                });
-            } else {
-                console.log("Message not in current conversation, ignoring");
-            }
-        },
-        [selectedConversation]
-    );
+    const messageDeleted = ({ message }) => {
+        if (
+            selectedConversation &&
+            ((selectedConversation.is_group &&
+                selectedConversation.id == message.group_id) ||
+                (selectedConversation.is_user &&
+                    (selectedConversation.id == message.sender_id ||
+                        selectedConversation.id == message.receiver_id)))
+        ) {
+            setLocalMessages((prevMessages) => {
+                return prevMessages.filter((m) => m.id !== message.id);
+            });
+        }
+    };
 
     const loadMoreMessages = useCallback(() => {
-        if (noMoreMessages || loadingOlder) {
-            return;
-        }
-        setLoadingOlder(true);
+        if (noMoreMessages) return;
 
         const firstMessage = localMessages[0];
-        if (!firstMessage) {
-            setLoadingOlder(false);
-            return;
-        }
+        if (!firstMessage) return;
+
         axios
             .get(route("message.loadOlder", firstMessage.id))
             .then(({ data }) => {
@@ -118,99 +73,17 @@ function Home({ selectedConversation = null, messages = null }) {
                 const scrollHeight = messagesCtrRef.current.scrollHeight;
                 const scrollTop = messagesCtrRef.current.scrollTop;
                 const clientHeight = messagesCtrRef.current.clientHeight;
-                setScrollFromBottom(scrollHeight - scrollTop - clientHeight);
+                const tmpScrollFromBottom =
+                    scrollHeight - scrollTop - clientHeight;
+
+                setScrollFromBottom(tmpScrollFromBottom);
                 setLocalMessages((prevMessages) => {
-                    // Filter out any duplicates
-                    const newMessages = data.data.filter(
-                        newMsg => !prevMessages.some(existingMsg => existingMsg.id === newMsg.id)
-                    );
-                    return [...newMessages.reverse(), ...prevMessages];
+                    return [...data.data.reverse(), ...prevMessages];
                 });
-            })
-            .finally(() => {
-                setLoadingOlder(false);
             });
-    }, [localMessages, noMoreMessages, loadingOlder]);
-
-    useEffect(() => {
-        // Only set up event listeners if we have a selected conversation
-        if (!selectedConversation) return;
-
-        // Clean up any existing listeners first
-        let offCreated, offDeleted;
-        
-        const setupListeners = () => {
-            offCreated = on("message.created", messageCreated);
-            offDeleted = on("message.deleted", MessageDeleted);
-        };
-
-        // Set up the listeners
-        setupListeners();
-
-        setTimeout(() => {
-            if (messagesCtrRef.current) {
-                messagesCtrRef.current.scrollTop =
-                    messagesCtrRef.current.scrollHeight;
-            }
-        }, 10);
-
-        setScrollFromBottom(0);
-        setNoMoreMessages(false);
-
-        return () => {
-            if (offCreated) offCreated();
-            if (offDeleted) offDeleted();
-        };
-    }, [selectedConversation, on, messageCreated, MessageDeleted]);
-
-    const processedMessages = useMemo(() => {
-        if (!messages) return [];
-        
-        // Ensure messages are unique and sorted
-        const uniqueMessages = messages.data
-            .filter((message, index, self) => 
-                index === self.findIndex(m => m.id === message.id)
-            )
-            .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-        
-        return uniqueMessages;
-    }, [messages]);
-
-    useEffect(() => {
-        setLocalMessages(processedMessages);
-    }, [processedMessages]);
-
-    useEffect(() => {
-        if (noMoreMessages) {
-            return;
-        }
-
-        const observer = new IntersectionObserver(
-            (entries) =>
-                entries.forEach(
-                    (entry) => entry.isIntersecting && loadMoreMessages()
-                ),
-            {
-                rootMargin: "0px 0px 250px 0px",
-            }
-        );
-        if (loadMoreIntersect.current) {
-            setTimeout(() => {
-                observer.observe(loadMoreIntersect.current);
-            }, 100);
-        }
-
-        return () => {
-            observer.disconnect();
-        };
-    }, [localMessages, noMoreMessages, loadMoreMessages]);
+    }, [localMessages, noMoreMessages]);
 
     const onAttachmentClick = (attachments, ind) => {
-        const clickedAttachment = attachments[ind];
-        if (!isPreviewable(clickedAttachment)) {
-            return;
-        }
-
         setPreviewAttachment({
             attachments,
             ind,
@@ -218,48 +91,116 @@ function Home({ selectedConversation = null, messages = null }) {
         setShowAttachmentPreview(true);
     };
 
+    useEffect(() => {
+        setTimeout(() => {
+            if (messagesCtrRef.current) {
+                messagesCtrRef.current.scrollTop =
+                    messagesCtrRef.current.scrollHeight;
+            }
+        }, 10);
+
+        const offCreated = on("message.created", messageCreated);
+        const offDeleted = on("message.deleted", messageDeleted);
+
+        setLocalMessages(messages ? messages.data.reverse() : []);
+        setNoMoreMessages(false);
+
+        return () => {
+            offCreated();
+            offDeleted();
+        };
+    }, [selectedConversation]);
+
+    useEffect(() => {
+        if (messagesCtrRef.current && scrollFromBottom !== null) {
+            messagesCtrRef.current.scrollTop =
+                messagesCtrRef.current.scrollHeight -
+                messagesCtrRef.current.clientHeight -
+                scrollFromBottom;
+        }
+    }, [localMessages]);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting) {
+                    loadMoreMessages();
+                }
+            },
+            { root: messagesCtrRef.current, threshold: 1.0 }
+        );
+
+        if (loadMoreIntersect.current) {
+            setTimeout(() => {
+                observer.observe(loadMoreIntersect.current);
+            }, 500);
+        }
+
+        return () => {
+            observer.disconnect();
+        };
+    }, [localMessages]);
+
+    // Render Empty State
+    if (!selectedConversation) {
+        return (
+            <div className="flex flex-col gap-6 items-center justify-center h-full text-center p-8 opacity-60 animate-enter">
+                <div className="w-32 h-32 rounded-3xl bg-gradient-to-tr from-primary-600/20 to-accent-600/20 flex items-center justify-center backdrop-blur-3xl shadow-[0_0_50px_rgba(124,58,237,0.2)]">
+                    <ChatBubbleLeftRightIcon className="w-16 h-16 text-white/50" />
+                </div>
+                <div className="max-w-md space-y-2">
+                    <h3 className="text-3xl font-display font-bold text-white drop-shadow-lg">
+                        Welcome to ApaPesan
+                    </h3>
+                    <p className="text-gray-400 font-light leading-relaxed">
+                        Select a conversation from the sidebar to start
+                        chatting. <br />
+                        Experience the new{" "}
+                        <span className="text-primary-400 font-medium">
+                            Midnight Aurora
+                        </span>{" "}
+                        interface.
+                    </p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <>
-            {!messages && (
-                <div className="flex flex-col gap-8 justify-center items-center text-center h-full opacity-35">
-                    <div className="text-2xl md:text-4xl p-16 text-slate-200">
-                        Please select conversation to see messages
+            <ConversationHeader selectedConversation={selectedConversation} />
+
+            <div
+                ref={messagesCtrRef}
+                className="flex-1 overflow-y-auto p-5 space-y-2 custom-scrollbar scroll-smooth"
+            >
+                {localMessages.length === 0 && (
+                    <div className="flex flex-col items-center justify-center h-full opacity-30">
+                        <p className="text-gray-400 text-sm">
+                            No messages yet. Say hello!
+                        </p>
                     </div>
-                    <ChatBubbleLeftRightIcon className="h-32 w-32 inline-block" />
-                </div>
-            )}
-            {messages && (
-                <>
-                    <ConversationHeader
-                        selectedConversation={selectedConversation}
-                    />
+                )}
+
+                {localMessages.length > 0 && (
                     <div
-                        ref={messagesCtrRef}
-                        className="flex-1 overflow-y-auto p-5 bg-gradient-to-b from-slate-900/40 via-slate-900/30 to-indigo-950/40"
+                        className="h-4 flex items-center justify-center shrink-0"
+                        ref={loadMoreIntersect}
                     >
-                        {localMessages.length === 0 && (
-                            <div className="flex justify-center items-center h-full">
-                                <div className="text-lg text-slate-200 ">
-                                    No messages found.
-                                </div>
-                            </div>
-                        )}
-                        {localMessages.length > 0 && (
-                            <div className="flex-1 flex flex-col">
-                                <div ref={loadMoreIntersect}></div>
-                                {localMessages.map((message) => (
-                                    <MessageItem
-                                        key={message.id}
-                                        message={message}
-                                        attachmentClick={onAttachmentClick}
-                                    />
-                                ))}
-                            </div>
-                        )}
+                        <div className="loading loading-spinner loading-xs text-primary-500/50"></div>
                     </div>
-                    <MessageInput conversation={selectedConversation} />
-                </>
-            )}
+                )}
+
+                {localMessages.map((message) => (
+                    <MessageItem
+                        key={message.id}
+                        message={message}
+                        attachmentClick={onAttachmentClick}
+                    />
+                ))}
+            </div>
+
+            <MessageInput conversation={selectedConversation} />
 
             {previewAttachment.attachments && (
                 <AttachmentPreviewModal
@@ -273,12 +214,10 @@ function Home({ selectedConversation = null, messages = null }) {
     );
 }
 
-Home.layout = (page) => {
-    return (
-        <AuthenticatedLayout user={page.props.auth.user}>
-            <ChatLayout children={page} />
-        </AuthenticatedLayout>
-    );
-};
+Home.layout = (page) => (
+    <AuthenticatedLayout>
+        <ChatLayout children={page} />
+    </AuthenticatedLayout>
+);
 
 export default Home;

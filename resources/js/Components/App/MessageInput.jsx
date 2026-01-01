@@ -43,11 +43,8 @@ const MessageInput = ({ conversation = null }) => {
             return;
         }
         if (newMessage.trim() === "" && chosenFiles.length === 0) {
-            setInputErrorMessage("Message cannot be empty");
-
-            setTimeout(() => {
-                setInputErrorMessage("");
-            }, 3000);
+            setInputErrorMessage("Type something or choose a file");
+            setTimeout(() => setInputErrorMessage(""), 3000);
             return;
         }
         const formData = new FormData();
@@ -60,15 +57,31 @@ const MessageInput = ({ conversation = null }) => {
         } else if (conversation.is_group) {
             formData.append("group_id", conversation.id);
         }
-        axios.post(route("message.store"), formData);
-        setNewMessage("");
-        setChosenFiles([]);
+
+        setMessageSending(true);
+        axios
+            .post(route("message.store"), formData, {
+                onUploadProgress: (progressEvent) => {
+                    const percentCompleted = Math.round(
+                        (progressEvent.loaded * 100) / progressEvent.total
+                    );
+                    setUploadProgress(percentCompleted);
+                },
+            })
+            .then(() => {
+                setMessageSending(false);
+                setNewMessage("");
+                setChosenFiles([]);
+                setUploadProgress(0);
+            })
+            .catch(() => {
+                setMessageSending(false);
+                setUploadProgress(0);
+            });
     }, [newMessage, chosenFiles, conversation, messageSending]);
 
     const onLikeClick = useCallback(() => {
-        if (messageSending) {
-            return;
-        }
+        if (messageSending) return;
         const formData = new FormData();
         formData.append("message", "👍");
         if (conversation.is_user) {
@@ -84,123 +97,156 @@ const MessageInput = ({ conversation = null }) => {
     };
 
     return (
-        <div className="flex flex-wrap items-start border-t border-slate-700 py-3">
-            <div className="order-2 flex-1 xs:flex-none xs:order-1 p-2">
-                <button className="p-1 text-gray-400 hover:text-gray-300 relative">
-                    <PaperClipIcon className="w-6" />
-                    <input
-                        type="file"
-                        multiple
-                        onChange={onFileChange}
-                        className="absolute left-0 top-0 right-0 bottom-0 z-20 opacity-0 cursor-pointer"
-                    />
-                </button>
-                <button className="p-1 text-gray-400 hover:text-gray-300 relative">
-                    <PhotoIcon className="w-6" />
-                    <input
-                        type="file"
-                        multiple
-                        accept="image/*"
-                        onChange={onFileChange}
-                        className="absolute left-0 top-0 right-0 bottom-0 z-20 opacity-0 cursor-pointer"
-                    />
-                </button>
-                <AudioRecorder fileReady={recordedAudioReady} />
-            </div>
-            <div className="order-1 px-3 xs:p-0 min-w-[220px] basis-full xs:basis-0 xs:order-2 flex-1 relative">
-                <div className="flex">
-                    <NewMessageInput
-                        value={newMessage}
-                        onSend={onSendClick}
-                        onChange={(ev) => setNewMessage(ev.target.value)}
-                    />
-                    <button
-                        onClick={onSendClick}
-                        disabled={messageSending}
-                        className="btn btn-info rounded-l-none"
-                    >
-                        {/* {messageSending && (
-                            <span className="loading loading-spinner loading-xs"></span>
-                        )} */}
-                        <PaperAirplaneIcon className="w-6" />
-                        <span className="hidden sm:inline">Send</span>
-                    </button>
-                </div>
-                {""}
-                {!!uploadProgress && (
-                    <progress
-                        className="progress progress-info w-full"
-                        value={uploadProgress}
-                        max="100"
-                    ></progress>
-                )}
-                {inputErrorMessage && (
-                    <p className="text-xs text-red-400">{inputErrorMessage}</p>
-                )}
-                <div className="flex flex-wrap gap-1 mt-2">
-                    {chosenFiles.map((file) => (
-                        <div
-                            key={file.file.name}
-                            className={
-                                `relative flex justify-between cursor-pointer` +
-                                (!isImage(file.file) ? "w-[240px]" : "")
-                            }
-                        >
-                            {isImage(file.file) && (
-                                <img
-                                    src={file.url}
-                                    alt=""
-                                    className="w-16 h-16 object-cover"
-                                />
-                            )}
-                            {isAudio(file.file) && (
-                                <CustomAudioPlayer
-                                    file={file}
-                                    showVolume={false}
-                                />
-                            )}
-                            {!isAudio(file.file) && !isImage(file.file) && (
-                                <AttachmentPreview file={file} />
-                            )}
+        <div className="px-5 pb-6 pt-2 shrink-0">
+            {/* Floating Glass Capsule */}
+            <div
+                className={`
+                glass-light border border-white/10 rounded-2xl shadow-2xl backdrop-blur-2xl transition-all duration-300
+                ${chosenFiles.length > 0 ? "p-4" : "p-2"}
+            `}
+            >
+                {/* Attachments Preview Area */}
+                {(chosenFiles.length > 0 ||
+                    uploadProgress > 0 ||
+                    inputErrorMessage) && (
+                    <div className="mb-3 px-2 border-b border-white/5 pb-3">
+                        {!!uploadProgress && (
+                            <div className="w-full bg-gray-700/50 rounded-full h-1 mb-2 overflow-hidden">
+                                <div
+                                    className="bg-primary-500 h-1 rounded-full transition-all duration-300"
+                                    style={{ width: `${uploadProgress}%` }}
+                                ></div>
+                            </div>
+                        )}
+                        {inputErrorMessage && (
+                            <p className="text-xs text-red-400 mb-2 font-medium bg-red-500/10 px-2 py-1 rounded inline-block border border-red-500/20">
+                                {inputErrorMessage}
+                            </p>
+                        )}
+                        <div className="flex flex-wrap gap-3 max-h-[120px] overflow-y-auto custom-scrollbar">
+                            {chosenFiles.map((file) => (
+                                <div
+                                    key={file.file.name}
+                                    className={`relative group flex justify-between items-center p-2 rounded-xl bg-black/20 border border-white/5 ${
+                                        !isImage(file.file) ? "w-[240px]" : ""
+                                    }`}
+                                >
+                                    {isImage(file.file) && (
+                                        <img
+                                            src={file.url}
+                                            alt=""
+                                            className="w-16 h-16 object-cover rounded-lg"
+                                        />
+                                    )}
+                                    {isAudio(file.file) && (
+                                        <CustomAudioPlayer
+                                            file={file}
+                                            showVolume={false}
+                                        />
+                                    )}
+                                    {!isAudio(file.file) &&
+                                        !isImage(file.file) && (
+                                            <AttachmentPreview file={file} />
+                                        )}
 
-                            <button
-                                onClick={() =>
-                                    setChosenFiles(
-                                        chosenFiles.filter(
-                                            (f) =>
-                                                f.file.name !== file.file.name
-                                        )
-                                    )
-                                }
-                                className="absolute w-6 h-6 rounded-full bg-gray-800 -right-2 -top-2 text-gray-300 flex
-                                hover:text-gray-100 z-10"
-                            >
-                                <XCircleIcon className="w-6" />
-                            </button>
+                                    <button
+                                        onClick={() =>
+                                            setChosenFiles(
+                                                chosenFiles.filter(
+                                                    (f) =>
+                                                        f.file.name !==
+                                                        file.file.name
+                                                )
+                                            )
+                                        }
+                                        className="absolute -right-2 -top-2 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 shadow-md transition-all opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100"
+                                    >
+                                        <XCircleIcon className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            ))}
                         </div>
-                    ))}
-                </div>
-            </div>
-            <div className="order-3 xs:order-3 p-2 flex">
-                <Popover className="relative">
-                    <Popover.Button className="p-1 text-gray-400 hover:text-gray-300">
-                        <FaceSmileIcon className="w-6 h-6" />
-                    </Popover.Button>
-                    <Popover.Panel className="absolute bottom-full right-0 z-10">
-                        <EmojiPicker
-                            theme="dark"
-                            onEmojiClick={(ev) =>
-                                setNewMessage(newMessage + ev.emoji)
-                            }
+                    </div>
+                )}
+
+                {/* Input Controls */}
+                <div className="flex items-end gap-2">
+                    {/* Left Actions (File/Audio) */}
+                    <div className="flex items-center gap-1 pb-1 pl-1">
+                        <button
+                            className="p-2 text-primary-300 hover:text-white hover:bg-white/10 rounded-full transition-all relative group tooltip tooltip-top"
+                            data-tip="Attach File"
+                        >
+                            <PaperClipIcon className="w-6 h-6" />
+                            <input
+                                type="file"
+                                multiple
+                                onChange={onFileChange}
+                                className="absolute inset-0 z-20 opacity-0 cursor-pointer"
+                            />
+                        </button>
+                        <button
+                            className="p-2 text-primary-300 hover:text-white hover:bg-white/10 rounded-full transition-all relative group tooltip tooltip-top"
+                            data-tip="Send Image"
+                        >
+                            <PhotoIcon className="w-6 h-6" />
+                            <input
+                                type="file"
+                                multiple
+                                accept="image/*"
+                                onChange={onFileChange}
+                                className="absolute inset-0 z-20 opacity-0 cursor-pointer"
+                            />
+                        </button>
+                        <AudioRecorder fileReady={recordedAudioReady} />
+                    </div>
+
+                    {/* Text Input */}
+                    <div className="flex-1 relative bg-black/20 rounded-xl border border-white/5 focus-within:border-primary-500/50 focus-within:ring-1 focus-within:ring-primary-500/20 transition-all">
+                        <NewMessageInput
+                            value={newMessage}
+                            onSend={onSendClick}
+                            onChange={(ev) => setNewMessage(ev.target.value)}
+                            className="bg-transparent border-none text-gray-100 placeholder-gray-500 focus:ring-0 w-full py-3 px-4 min-h-[44px] max-h-[120px]"
                         />
-                    </Popover.Panel>
-                </Popover>
-                <button
-                    onClick={onLikeClick}
-                    className="p-1 text-gray-400 hover:text-gray-300"
-                >
-                    <HandThumbUpIcon className="w-6 h-6" />
-                </button>
+                    </div>
+
+                    {/* Right Actions (Emoji/Like/Send) */}
+                    <div className="flex items-center gap-1 pb-1 pr-1">
+                        <Popover className="relative">
+                            <Popover.Button className="p-2 text-primary-300 hover:text-white hover:bg-white/10 rounded-full transition-all">
+                                <FaceSmileIcon className="w-6 h-6" />
+                            </Popover.Button>
+                            <Popover.Panel className="absolute bottom-full right-0 z-50 mb-4 origin-bottom-right">
+                                <div className="shadow-2xl rounded-2xl overflow-hidden border border-white/5">
+                                    <EmojiPicker
+                                        theme="dark"
+                                        onEmojiClick={(ev) =>
+                                            setNewMessage(newMessage + ev.emoji)
+                                        }
+                                    />
+                                </div>
+                            </Popover.Panel>
+                        </Popover>
+
+                        {newMessage.trim() || chosenFiles.length > 0 ? (
+                            <button
+                                onClick={onSendClick}
+                                disabled={messageSending}
+                                className="btn btn-circle border-none bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-500 hover:to-accent-500 text-white shadow-[0_0_15px_rgba(124,58,237,0.4)] hover:shadow-[0_0_25px_rgba(124,58,237,0.6)] transition-all transform hover:scale-105"
+                            >
+                                <PaperAirplaneIcon className="w-5 h-5 -ml-0.5" />
+                            </button>
+                        ) : (
+                            <button
+                                onClick={onLikeClick}
+                                className="p-2 text-primary-300 hover:text-white hover:bg-white/10 rounded-full transition-all hover:scale-110 active:scale-95"
+                            >
+                                <HandThumbUpIcon className="w-6 h-6" />
+                            </button>
+                        )}
+                    </div>
+                </div>
             </div>
         </div>
     );
