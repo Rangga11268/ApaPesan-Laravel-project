@@ -145,7 +145,11 @@ const ChatLayout = ({ children }) => {
             <div
                 className={`
                 glass-panel w-full sm:w-[320px] flex flex-col transition-all duration-500 ease-in-out z-20 border-r border-white/5
-                ${selectedConversation ? "hidden sm:flex" : "flex"}
+                ${
+                    selectedConversation || route().current("profile.edit")
+                        ? "hidden sm:flex"
+                        : "flex"
+                }
             `}
             >
                 {/* Header Area */}
@@ -221,12 +225,19 @@ const ChatLayout = ({ children }) => {
                             <button className="flex items-center w-full p-2 rounded-xl hover:bg-white/5 transition-colors gap-3 group">
                                 <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary-600 to-accent-600 p-[2px] shadow-lg shadow-primary-500/20">
                                     <div className="w-full h-full rounded-full bg-[#05070a] flex items-center justify-center overflow-hidden">
-                                        {/* Fallback avatar if no image usage, currently just initials */}
-                                        <span className="font-display font-bold text-sm text-white">
-                                            {user.name
-                                                .substring(0, 2)
-                                                .toUpperCase()}
-                                        </span>
+                                        {user.avatar_url ? (
+                                            <img
+                                                src={user.avatar_url}
+                                                alt={user.name}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            <span className="font-display font-bold text-sm text-white">
+                                                {user.name
+                                                    .substring(0, 2)
+                                                    .toUpperCase()}
+                                            </span>
+                                        )}
                                     </div>
                                 </div>
                                 <div className="text-left flex-1 min-w-0">
@@ -243,7 +254,12 @@ const ChatLayout = ({ children }) => {
                                 </div>
                             </button>
                         </Dropdown.Trigger>
-                        <Dropdown.Content contentClasses="glass-panel text-white rounded-xl mb-2 w-56 bottom-full left-0 origin-bottom-left border border-white/10">
+                        <Dropdown.Content
+                            align="left"
+                            direction="up"
+                            width="56"
+                            contentClasses="glass-panel text-white rounded-xl w-56 border border-white/10"
+                        >
                             <Dropdown.Link
                                 href={route("profile.edit")}
                                 className="hover:bg-white/10 hover:text-primary-300 px-4 py-3 flex items-center gap-2 transition-colors"
@@ -270,7 +286,7 @@ const ChatLayout = ({ children }) => {
                 className={`
                 flex-1 flex flex-col h-full relative z-10 transition-all duration-300 bg-gradient-to-br from-transparent to-black/40
                 ${
-                    !selectedConversation
+                    !selectedConversation && !route().current("profile.edit")
                         ? "hidden sm:flex items-center justify-center"
                         : "flex"
                 }

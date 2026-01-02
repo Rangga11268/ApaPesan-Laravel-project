@@ -9,6 +9,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Facades\Storage;
 
 class User extends Authenticatable
 {
@@ -38,6 +39,25 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
+
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array
+     */
+    protected $appends = [
+        'avatar_url',
+    ];
+
+    /**
+     * Get the URL to the user's avatar.
+     *
+     * @return string|null
+     */
+    public function getAvatarUrlAttribute()
+    {
+        return $this->avatar ? Storage::url($this->avatar) : null;
+    }
 
     /**
      * Get the attributes that should be cast.
@@ -98,6 +118,7 @@ class User extends Authenticatable
             'blocked_at' => $this->blocked_at,
             'last_message' => $this->last_message,
             'last_message_date' => $this->last_message_date ? Carbon::parse($this->last_message_date)->setTimezone('UTC') : null,
+            'avatar_url' => $this->avatar ? Storage::url($this->avatar) : null,
         ];
     }
 }

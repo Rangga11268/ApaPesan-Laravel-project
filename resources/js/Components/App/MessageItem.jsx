@@ -18,7 +18,7 @@ const MessageItem = ({ message, attachmentClick }) => {
             <div className="chat-image avatar">
                 <UserAvatar
                     user={message.sender}
-                    profileClassName={`w-10 h-10 border shadow-lg ${
+                    className={`w-10 h-10 border shadow-lg ${
                         isCurrentUser
                             ? "border-primary-500/50"
                             : "border-white/10"

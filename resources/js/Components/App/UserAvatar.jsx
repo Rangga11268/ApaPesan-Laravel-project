@@ -1,5 +1,10 @@
-const UserAvatar = ({ user, online = null, profile = false }) => {
-    console.log("UserAvatar online status:", online); 
+const UserAvatar = ({
+    user,
+    online = null,
+    profile = false,
+    className = "",
+}) => {
+    // console.log("UserAvatar online status:", online);
 
     const onlineClass =
         online === true
@@ -8,7 +13,8 @@ const UserAvatar = ({ user, online = null, profile = false }) => {
             ? "after:absolute after:block after:w-2 after:h-2 after:bg-gray-500 after:rounded-full after:right-1 after:bottom-1 after:border-2 after:border-slate-800"
             : "";
 
-    const sizeClass = profile ? "w-40 h-40" : "w-8 h-8";
+    const defaultSize = profile ? "w-40 h-40" : "w-8 h-8";
+    const finalClass = className || defaultSize;
 
     return (
         <div className="relative inline-block">
@@ -17,13 +23,13 @@ const UserAvatar = ({ user, online = null, profile = false }) => {
                     <img
                         src={user.avatar_url}
                         alt={user.name}
-                        className={`rounded-full object-cover ${sizeClass}`}
+                        className={`rounded-full object-cover ${finalClass}`}
                     />
                 </div>
             ) : (
                 <div className={onlineClass}>
                     <div
-                        className={`flex items-center justify-center bg-gray-400 text-gray-800 rounded-full ${sizeClass}`}
+                        className={`flex items-center justify-center bg-gray-400 text-gray-800 rounded-full ${finalClass}`}
                     >
                         <span className={profile ? "text-4xl" : "text-sm"}>
                             {user.name.substring(0, 1).toUpperCase()}

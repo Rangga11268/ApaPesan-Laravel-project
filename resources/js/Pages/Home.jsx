@@ -103,7 +103,15 @@ function Home({
 
                 setScrollFromBottom(tmpScrollFromBottom);
                 setLocalMessages((prevMessages) => {
-                    return [...data.data.reverse(), ...prevMessages];
+                    const newMessages = data.data.reverse();
+                    // Filter out any messages that are already in the list to prevent duplicates
+                    const uniqueNewMessages = newMessages.filter(
+                        (newMsg) =>
+                            !prevMessages.some(
+                                (prevMsg) => prevMsg.id === newMsg.id
+                            )
+                    );
+                    return [...uniqueNewMessages, ...prevMessages];
                 });
             });
     }, [localMessages, noMoreMessages]);

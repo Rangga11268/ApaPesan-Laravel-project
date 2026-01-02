@@ -23,7 +23,7 @@ const ConversationHeader = ({ selectedConversation, isOnline = false }) => {
                                 {selectedConversation.is_user && (
                                     <UserAvatar
                                         user={selectedConversation}
-                                        profileClassName="w-12 h-12 border-2 border-white/10"
+                                        className="w-12 h-12 border-2 border-white/10"
                                     />
                                 )}
                                 {selectedConversation.is_group && (
