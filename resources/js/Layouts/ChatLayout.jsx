@@ -3,7 +3,7 @@ import TextInput from "@/Components/TextInput";
 import { useEventBus } from "@/EventBus";
 import { PencilSquareIcon } from "@heroicons/react/24/outline";
 import { usePage, Link } from "@inertiajs/react";
-import { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import Dropdown from "@/Components/Dropdown";
 import {
     UserCircleIcon,
@@ -119,19 +119,20 @@ const ChatLayout = ({ children }) => {
         const channel = window.Echo.join("online");
         channel
             .here((users) => {
+                console.log("Online channel joined. Users:", users);
                 setOnlineUsers(
                     Object.fromEntries(users.map((u) => [u.id.toString(), u]))
                 );
             })
-            .joining((u) =>
-                setOnlineUsers((prev) => ({ ...prev, [u.id.toString()]: u }))
-            )
+            .joining((u) => {
+                console.log("User joining:", u);
+                setOnlineUsers((prev) => ({ ...prev, [u.id.toString()]: u }));
+            })
             .leaving((u) =>
                 setOnlineUsers((prev) => {
+                    console.log("User leaving:", u);
                     const updated = { ...prev };
                     delete updated[u.id.toString()];
-                    const onlineCount = Object.keys(updated).length;
-                    console.log("User left. Total online:", onlineCount);
                     return updated;
                 })
             );
@@ -275,7 +276,11 @@ const ChatLayout = ({ children }) => {
                 }
             `}
             >
-                {children}
+                {/* Pass onlineUsers prop to children (Home component) */}
+                {children &&
+                    React.cloneElement(children, {
+                        onlineUsers: onlineUsers,
+                    })}
             </div>
         </div>
     );

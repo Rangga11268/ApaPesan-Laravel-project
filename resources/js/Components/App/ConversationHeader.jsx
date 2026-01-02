@@ -3,7 +3,7 @@ import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import UserAvatar from "./UserAvatar";
 import GroupAvatar from "./GroupAvatar";
 
-const ConversationHeader = ({ selectedConversation }) => {
+const ConversationHeader = ({ selectedConversation, isOnline = false }) => {
     return (
         <>
             {selectedConversation && (
@@ -43,7 +43,7 @@ const ConversationHeader = ({ selectedConversation }) => {
                                         members
                                     </p>
                                 )}
-                                {selectedConversation.is_user && (
+                                {selectedConversation.is_user && isOnline && (
                                     <p className="text-xs text-emerald-400 flex items-center gap-1.5 font-medium tracking-wide bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
                                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                                         Online

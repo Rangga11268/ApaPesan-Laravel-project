@@ -9,7 +9,11 @@ import { useEventBus } from "@/EventBus";
 import axios from "axios";
 import AttachmentPreviewModal from "@/Components/App/AttachmentPreviewModal";
 
-function Home({ selectedConversation = null, messages = null }) {
+function Home({
+    selectedConversation = null,
+    messages = null,
+    onlineUsers = {},
+}) {
     const [localMessages, setLocalMessages] = useState([]);
     const [noMoreMessages, setNoMoreMessages] = useState(false);
     const [scrollFromBottom, setScrollFromBottom] = useState(0);
@@ -18,6 +22,11 @@ function Home({ selectedConversation = null, messages = null }) {
     const [showAttachmentPreview, setShowAttachmentPreview] = useState(false);
     const [previewAttachment, setPreviewAttachment] = useState({});
     const { on } = useEventBus();
+
+    const isOnline =
+        selectedConversation &&
+        selectedConversation.is_user &&
+        !!onlineUsers[selectedConversation.id];
 
     const messageCreated = (message) => {
         if (selectedConversation) {
@@ -29,8 +38,6 @@ function Home({ selectedConversation = null, messages = null }) {
             ) {
                 isCurrentConversation = true;
             } else if (selectedConversation.is_user) {
-                // If I am the sender, the receiver_id should match the selected conversation
-                // If I am the receiver, the sender_id should match the selected conversation
                 if (
                     message.receiver_id == selectedConversation.id ||
                     message.sender_id == selectedConversation.id
@@ -186,7 +193,10 @@ function Home({ selectedConversation = null, messages = null }) {
 
     return (
         <>
-            <ConversationHeader selectedConversation={selectedConversation} />
+            <ConversationHeader
+                selectedConversation={selectedConversation}
+                isOnline={isOnline}
+            />
 
             <div
                 ref={messagesCtrRef}
