@@ -17,20 +17,18 @@ const UserAvatar = ({
     const finalClass = className || defaultSize;
 
     return (
-        <div className="relative inline-block">
+        <div className={`relative inline-block ${finalClass}`}>
             {user.avatar_url ? (
-                <div className={onlineClass}>
+                <div className={`w-full h-full ${onlineClass}`}>
                     <img
                         src={user.avatar_url}
                         alt={user.name}
-                        className={`rounded-full object-cover ${finalClass}`}
+                        className="rounded-full object-cover w-full h-full block"
                     />
                 </div>
             ) : (
-                <div className={onlineClass}>
-                    <div
-                        className={`flex items-center justify-center bg-gray-400 text-gray-800 rounded-full ${finalClass}`}
-                    >
+                <div className={`w-full h-full ${onlineClass}`}>
+                    <div className="flex items-center justify-center bg-gray-400 text-gray-800 rounded-full w-full h-full">
                         <span className={profile ? "text-4xl" : "text-sm"}>
                             {user.name.substring(0, 1).toUpperCase()}
                         </span>
