@@ -64,29 +64,27 @@ export default function MessageOptionsDropdown({ message }) {
     }, [isOpen]);
 
     return (
-        <div className="absolute right-full text-gray-400 top-1/2 -translate-y-1/2 z-10 mr-2 opacity-0 group-hover:opacity-100 transition-opacity">
-            <div className="relative inline-block text-left" ref={dropdownRef}>
-                <button
-                    onClick={toggleDropdown}
-                    className="flex justify-center items-center w-8 h-8 rounded-full hover:bg-white/10 hover:text-white transition-all"
-                >
-                    <EllipsisVerticalIcon className="h-5 w-5" />
-                </button>
+        <div className="relative inline-block text-left" ref={dropdownRef}>
+            <button
+                onClick={toggleDropdown}
+                className="flex justify-center items-center w-6 h-6 rounded-full hover:bg-black/20 text-white/70 hover:text-white transition-all"
+            >
+                <EllipsisVerticalIcon className="h-4 w-4" />
+            </button>
 
-                {isOpen && (
-                    <div className="absolute left-0 mt-2 w-48 rounded-xl bg-gray-900/90 backdrop-blur-xl border border-white/10 shadow-xl z-50 overflow-hidden origin-top-right">
-                        <div className="px-1 py-1">
-                            <button
-                                onClick={onDeleteMessage}
-                                className="group flex w-full items-center rounded-lg px-2 py-2 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors"
-                            >
-                                <TrashIcon className="w-4 h-4 mr-2" />
-                                Hapus Pesan
-                            </button>
-                        </div>
+            {isOpen && (
+                <div className="absolute right-0 mt-1 w-32 rounded-xl bg-[#0f1218]/95 backdrop-blur-xl border border-white/10 shadow-lg shadow-black/50 z-50 overflow-hidden origin-top-right ring-1 ring-white/5">
+                    <div className="p-1">
+                        <button
+                            onClick={onDeleteMessage}
+                            className="group flex w-full items-center gap-2 rounded-lg px-2 py-2 text-xs font-medium text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors"
+                        >
+                            <TrashIcon className="w-4 h-4" />
+                            Hapus Pesan
+                        </button>
                     </div>
-                )}
-            </div>
+                </div>
+            )}
         </div>
     );
 }

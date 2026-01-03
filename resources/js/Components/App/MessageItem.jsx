@@ -55,7 +55,7 @@ const MessageItem = ({ message, attachmentClick }) => {
 
                 <div
                     className={`chat-message ${
-                        isCurrentUser ? "text-white/90" : "text-gray-200"
+                        isCurrentUser ? "text-white/90 pr-6" : "text-gray-200"
                     }`}
                 >
                     <div className="chat-message-content prose prose-invert max-w-none prose-p:my-1 prose-pre:bg-black/30 prose-pre:border-white/10 text-sm leading-relaxed">

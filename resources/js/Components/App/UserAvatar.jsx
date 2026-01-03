@@ -17,7 +17,7 @@ const UserAvatar = ({
     const finalClass = className || defaultSize;
 
     return (
-        <div className={`relative inline-block ${finalClass}`}>
+        <div className={`relative inline-block rounded-full ${finalClass}`}>
             {user.avatar_url ? (
                 <div className={`w-full h-full ${onlineClass}`}>
                     <img
