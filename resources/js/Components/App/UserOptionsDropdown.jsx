@@ -51,49 +51,52 @@ export default function UserOptionsDropdown({ conversation }) {
                     leaveFrom="transform opacity-100 scale-100"
                     leaveTo="transform opacity-0 scale-95"
                 >
-                    <Menu.Items className="absolute right-0 mt-2 w-48 rounded-md bg-gray-800 shadow-lg z-50 ring-1 ring-black ring-opacity-5 focus:outline-none">
-                        <div className="px-1 py-1">
+                    <Menu.Items className="absolute right-0 mt-2 w-48 rounded-xl bg-[#0f1218]/95 backdrop-blur-xl border border-white/10 shadow-lg shadow-black/50 z-50 overflow-hidden origin-top-right ring-1 ring-white/5 focus:outline-none">
+                        <div className="p-1">
                             <Menu.Item>
                                 {({ active }) => (
                                     <button
                                         onClick={onBlockUser}
                                         className={`${
-                                            active ? "bg-gray-700" : ""
-                                        } group flex w-full items-center rounded-md px-2 py-2 text-sm text-gray-100 hover:bg-gray-700 transition-colors`}
+                                            active
+                                                ? "bg-white/10 text-primary-300"
+                                                : "text-gray-300"
+                                        } group flex w-full items-center rounded-lg px-3 py-2 text-xs font-medium transition-all gap-2`}
                                     >
                                         {conversation.blocked_at ? (
                                             <>
-                                                <LockOpenIcon className="w-4 h-4 mr-2" />
-                                                Unblock User
+                                                <LockOpenIcon className="w-4 h-4 text-emerald-400" />
+                                                <span>Unblock User</span>
                                             </>
                                         ) : (
                                             <>
-                                                <LockClosedIcon className="w-4 h-4 mr-2" />
-                                                Block User
+                                                <LockClosedIcon className="w-4 h-4 text-red-400" />
+                                                <span>Block User</span>
                                             </>
                                         )}
                                     </button>
                                 )}
                             </Menu.Item>
-                        </div>
-                        <div className="px-1 py-1">
+
                             <Menu.Item>
                                 {({ active }) => (
                                     <button
                                         onClick={changeUserRole}
                                         className={`${
-                                            active ? "bg-gray-700" : ""
-                                        } group flex w-full items-center rounded-md px-2 py-2 text-sm text-gray-100 hover:bg-gray-700 transition-colors`}
+                                            active
+                                                ? "bg-white/10 text-primary-300"
+                                                : "text-gray-300"
+                                        } group flex w-full items-center rounded-lg px-3 py-2 text-xs font-medium transition-all gap-2`}
                                     >
                                         {conversation.is_admin ? (
                                             <>
-                                                <UserIcon className="w-4 h-4 mr-2" />
-                                                Revoke Admin
+                                                <UserIcon className="w-4 h-4 text-blue-400" />
+                                                <span>Revoke Admin</span>
                                             </>
                                         ) : (
                                             <>
-                                                <ShieldCheckIcon className="w-4 h-4 mr-2" />
-                                                Make Admin
+                                                <ShieldCheckIcon className="w-4 h-4 text-primary-400" />
+                                                <span>Make Admin</span>
                                             </>
                                         )}
                                     </button>

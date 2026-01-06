@@ -46,7 +46,7 @@ const MessageInput = ({ conversation = null }) => {
             return;
         }
         if (newMessage.trim() === "" && chosenFiles.length === 0) {
-            setInputErrorMessage("Ketik sesuatu atau pilih berkas");
+            setInputErrorMessage("Type something or select a file");
             setTimeout(() => setInputErrorMessage(""), 3000);
             return;
         }
@@ -105,7 +105,7 @@ const MessageInput = ({ conversation = null }) => {
     };
 
     return (
-        <div className="px-5 pb-6 pt-2 shrink-0">
+        <div className="sm:px-5 px-2 sm:pb-6 pb-4 pt-2 shrink-0">
             {/* Floating Glass Capsule */}
             <div
                 className={`
@@ -178,14 +178,14 @@ const MessageInput = ({ conversation = null }) => {
                 )}
 
                 {/* Input Controls */}
-                <div className="flex items-end gap-2">
+                <div className="flex items-end gap-1">
                     {/* Left Actions (File/Audio) */}
-                    <div className="flex items-center gap-1 pb-1 pl-1">
+                    <div className="flex items-center gap-0 pb-0.5">
                         <button
-                            className="p-2 text-primary-300 hover:text-white hover:bg-white/10 rounded-full transition-all relative group tooltip tooltip-top"
+                            className="p-1 sm:p-2 text-primary-300 hover:text-white hover:bg-white/10 rounded-full transition-all relative group tooltip sm:tooltip-top"
                             data-tip="Attach File"
                         >
-                            <PaperClipIcon className="w-6 h-6" />
+                            <PaperClipIcon className="sm:w-6 sm:h-6 w-[18px] h-[18px]" />
                             <input
                                 type="file"
                                 multiple
@@ -194,10 +194,10 @@ const MessageInput = ({ conversation = null }) => {
                             />
                         </button>
                         <button
-                            className="p-2 text-primary-300 hover:text-white hover:bg-white/10 rounded-full transition-all relative group tooltip tooltip-top"
+                            className="p-1 sm:p-2 text-primary-300 hover:text-white hover:bg-white/10 rounded-full transition-all relative group tooltip sm:tooltip-top"
                             data-tip="Send Image"
                         >
-                            <PhotoIcon className="w-6 h-6" />
+                            <PhotoIcon className="sm:w-6 sm:h-6 w-[18px] h-[18px]" />
                             <input
                                 type="file"
                                 multiple
@@ -210,20 +210,20 @@ const MessageInput = ({ conversation = null }) => {
                     </div>
 
                     {/* Text Input */}
-                    <div className="flex-1 relative bg-black/20 rounded-xl border border-white/5 focus-within:border-primary-500/50 focus-within:ring-1 focus-within:ring-primary-500/20 transition-all">
+                    <div className="flex-1 relative bg-black/30 rounded-2xl border border-white/10 focus-within:border-primary-500/50 focus-within:ring-1 focus-within:ring-primary-500/20 transition-all">
                         <NewMessageInput
                             value={newMessage}
                             onSend={onSendClick}
                             onChange={(ev) => setNewMessage(ev.target.value)}
-                            className="bg-transparent border-none text-gray-100 placeholder-gray-500 focus:ring-0 w-full py-3 px-4 min-h-[44px] max-h-[120px]"
+                            className="bg-transparent border-none text-gray-100 placeholder-gray-500 focus:ring-0 w-full sm:py-3 py-2 sm:px-4 px-2.5 min-h-[40px] max-h-[140px] text-sm sm:text-base"
                         />
                     </div>
 
                     {/* Right Actions (Emoji/Like/Send) */}
-                    <div className="flex items-center gap-1 pb-1 pr-1">
+                    <div className="flex items-center gap-0 pb-0.5">
                         <Popover className="relative">
-                            <Popover.Button className="p-2 text-primary-300 hover:text-white hover:bg-white/10 rounded-full transition-all">
-                                <FaceSmileIcon className="w-6 h-6" />
+                            <Popover.Button className="p-1 sm:p-2 text-primary-300 hover:text-white hover:bg-white/10 rounded-full transition-all">
+                                <FaceSmileIcon className="sm:w-6 sm:h-6 w-[18px] h-[18px]" />
                             </Popover.Button>
                             <Popover.Panel className="absolute bottom-full right-0 z-50 mb-4 origin-bottom-right">
                                 <div className="shadow-2xl rounded-2xl overflow-hidden border border-white/5">
@@ -241,16 +241,16 @@ const MessageInput = ({ conversation = null }) => {
                             <button
                                 onClick={onSendClick}
                                 disabled={messageSending}
-                                className="btn btn-circle border-none bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-500 hover:to-accent-500 text-white shadow-[0_0_15px_rgba(124,58,237,0.4)] hover:shadow-[0_0_25px_rgba(124,58,237,0.6)] transition-all transform hover:scale-105"
+                                className="btn btn-circle sm:w-12 sm:h-12 w-10 h-10 min-h-0 border-none bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-500 hover:to-accent-500 text-white shadow-[0_0_15px_rgba(124,58,237,0.4)] hover:shadow-[0_0_25px_rgba(124,58,237,0.6)] transition-all transform hover:scale-105"
                             >
-                                <PaperAirplaneIcon className="w-5 h-5 -ml-0.5" />
+                                <PaperAirplaneIcon className="sm:w-6 sm:h-6 w-5 h-5 -rotate-45" />
                             </button>
                         ) : (
                             <button
                                 onClick={onLikeClick}
-                                className="p-2 text-primary-300 hover:text-white hover:bg-white/10 rounded-full transition-all hover:scale-110 active:scale-95"
+                                className="p-1 sm:p-2 text-primary-300 hover:text-white hover:bg-white/10 rounded-full transition-all hover:scale-110 active:scale-95"
                             >
-                                <HandThumbUpIcon className="w-6 h-6" />
+                                <HandThumbUpIcon className="sm:w-6 sm:h-6 w-[18px] h-[18px]" />
                             </button>
                         )}
                     </div>

@@ -11,19 +11,14 @@ export default function MessageOptionsDropdown({ message }) {
     const onDeleteMessage = useCallback(
         (e) => {
             e.stopPropagation();
-            console.log("Delete message", message.id);
-
-            // Debug the route generation
             const url = route("message.destroy", message.id);
-            console.log("Delete URL:", url);
 
             axios
                 .delete(url)
                 .then((res) => {
-                    console.log("Message deleted successfully", res.data);
                     emit("message.deleted", {
-                        message: res.data.deleted_message, // Use the deleted message from response
-                        prevMessage: res.data.message,
+                        message: res.data.message,
+                        prevMessage: res.data.prevMessage,
                     });
                     setIsOpen(false); // Close the dropdown after deletion
                 })
@@ -32,7 +27,7 @@ export default function MessageOptionsDropdown({ message }) {
                     console.error("Request URL:", err.config?.url);
                     console.error("Request method:", err.config?.method);
                     // Show error to user
-                    alert("Gagal menghapus pesan. Silakan coba lagi.");
+                    alert("Failed to delete message. Please try again.");
                 });
         },
         [message, emit]
@@ -80,7 +75,7 @@ export default function MessageOptionsDropdown({ message }) {
                             className="group flex w-full items-center gap-2 rounded-lg px-2 py-2 text-xs font-medium text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors"
                         >
                             <TrashIcon className="w-4 h-4" />
-                            Hapus Pesan
+                            Delete Message
                         </button>
                     </div>
                 </div>

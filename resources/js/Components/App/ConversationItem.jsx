@@ -11,10 +11,14 @@ const ConversationItem = ({
 }) => {
     const page = usePage();
     const currentUser = page.props.auth.user;
-    let classes = " border-transparent";
-
     // Active State (Midnight Aurora Highlight)
-    if (selectedConversation && selectedConversation.id == conversation.id) {
+    const isSelected =
+        selectedConversation &&
+        selectedConversation.id == conversation.id &&
+        selectedConversation.is_group === conversation.is_group;
+
+    let classes = "";
+    if (isSelected) {
         classes =
             " bg-white/10 border-l-4 border-l-primary-500 shadow-[0_0_20px_rgba(124,58,237,0.1)]";
     } else {
@@ -44,7 +48,7 @@ const ConversationItem = ({
                     <UserAvatar
                         user={conversation}
                         online={online}
-                        profileClassName="w-12 h-12 rounded-full border border-white/10 shadow-sm"
+                        className="w-12 h-12 rounded-full border border-white/10 shadow-sm"
                     />
                 )}
                 {conversation.is_group && <GroupAvatar />}
@@ -58,8 +62,7 @@ const ConversationItem = ({
                 <div className="flex justify-between items-center mb-0.5">
                     <h3
                         className={`font-semibold text-sm truncate ${
-                            selectedConversation &&
-                            selectedConversation.id == conversation.id
+                            isSelected
                                 ? "text-white"
                                 : "text-gray-200 group-hover:text-white"
                         }`}
@@ -78,8 +81,7 @@ const ConversationItem = ({
                 <div className="flex justify-between items-end">
                     <p
                         className={`text-xs truncate max-w-[160px] ${
-                            selectedConversation &&
-                            selectedConversation.id == conversation.id
+                            isSelected
                                 ? "text-gray-300"
                                 : "text-gray-500 group-hover:text-gray-400"
                         }`}

@@ -5,6 +5,7 @@ import { PencilSquareIcon } from "@heroicons/react/24/outline";
 import { usePage, Link } from "@inertiajs/react";
 import React, { useEffect, useState, useMemo } from "react";
 import Dropdown from "@/Components/Dropdown";
+import UserAvatar from "@/Components/App/UserAvatar";
 import {
     UserCircleIcon,
     Cog6ToothIcon,
@@ -65,9 +66,17 @@ const ChatLayout = ({ children }) => {
                 );
                 if (index > -1) {
                     const newConvs = [...prev];
+                    let newMessageText = message.message;
+                    if (
+                        !newMessageText &&
+                        message.attachments &&
+                        message.attachments.length > 0
+                    ) {
+                        newMessageText = "Sent an attachment";
+                    }
                     newConvs[index] = {
                         ...newConvs[index],
-                        last_message: message.message,
+                        last_message: newMessageText,
                         last_message_date: message.created_at,
                     };
                     return newConvs;
@@ -164,14 +173,14 @@ const ChatLayout = ({ children }) => {
             `}
             >
                 {/* Header Area */}
-                <div className="p-6 pb-4">
-                    <div className="flex items-center justify-between mb-6">
-                        <h1 className="font-display font-bold text-3xl text-white tracking-tight drop-shadow-lg">
-                            Obrolan
+                <div className="sm:p-6 p-4 pb-4">
+                    <div className="flex items-center justify-between sm:mb-6 mb-4">
+                        <h1 className="font-display font-bold sm:text-3xl text-2xl text-white tracking-tight drop-shadow-lg">
+                            Chats
                         </h1>
                         <div
                             className="tooltip tooltip-bottom"
-                            data-tip="Grup Baru"
+                            data-tip="New Group"
                         >
                             <button className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all group border border-white/5">
                                 <PencilSquareIcon className="w-5 h-5 text-gray-400 group-hover:text-primary-400" />
@@ -182,7 +191,7 @@ const ChatLayout = ({ children }) => {
                     <div className="relative group">
                         <TextInput
                             onKeyUp={onSearch}
-                            placeholder="Cari..."
+                            placeholder="Search..."
                             className="glass-input w-full pl-10 py-3 rounded-xl border-none bg-black/20 focus:bg-black/40"
                         />
                         <div className="absolute left-3 top-3.5 text-gray-500 group-focus-within:text-primary-400 transition-colors">
@@ -224,7 +233,7 @@ const ChatLayout = ({ children }) => {
                             <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-4">
                                 <PencilSquareIcon className="w-8 h-8" />
                             </div>
-                            <p className="text-sm">Belum ada percakapan</p>
+                            <p className="text-sm">No conversations yet</p>
                         </div>
                     )}
                 </div>
@@ -234,23 +243,10 @@ const ChatLayout = ({ children }) => {
                     <Dropdown>
                         <Dropdown.Trigger>
                             <button className="flex items-center w-full p-2 rounded-xl hover:bg-white/5 transition-colors gap-3 group">
-                                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary-600 to-accent-600 p-[2px] shadow-lg shadow-primary-500/20">
-                                    <div className="w-full h-full rounded-full bg-[#05070a] flex items-center justify-center overflow-hidden">
-                                        {user.avatar_url ? (
-                                            <img
-                                                src={user.avatar_url}
-                                                alt={user.name}
-                                                className="w-full h-full object-cover"
-                                            />
-                                        ) : (
-                                            <span className="font-display font-bold text-sm text-white">
-                                                {user.name
-                                                    .substring(0, 2)
-                                                    .toUpperCase()}
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
+                                <UserAvatar
+                                    user={user}
+                                    className="w-10 h-10 border-2 border-primary-500/50"
+                                />
                                 <div className="text-left flex-1 min-w-0">
                                     <p className="text-sm font-bold text-white truncate group-hover:text-primary-300 transition-colors">
                                         {user.name}
@@ -275,7 +271,7 @@ const ChatLayout = ({ children }) => {
                                 href={route("profile.edit")}
                                 className="hover:bg-white/10 hover:text-primary-300 px-4 py-3 flex items-center gap-2 transition-colors"
                             >
-                                <UserCircleIcon className="w-5 h-5" /> Profil
+                                <UserCircleIcon className="w-5 h-5" /> Profile
                             </Dropdown.Link>
                             <div className="h-px bg-white/10 my-1"></div>
                             <Dropdown.Link
@@ -285,7 +281,7 @@ const ChatLayout = ({ children }) => {
                                 className="hover:bg-red-500/10 hover:text-red-400 px-4 py-3 flex items-center gap-2 w-full text-left transition-colors"
                             >
                                 <ArrowLeftOnRectangleIcon className="w-5 h-5" />{" "}
-                                Keluar
+                                Logout
                             </Dropdown.Link>
                         </Dropdown.Content>
                     </Dropdown>

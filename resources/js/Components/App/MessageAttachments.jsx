@@ -1,7 +1,4 @@
-import {
-    PaperClipIcon,
-    ArrowDownTrayIcon,
-} from "@heroicons/react/24/outline";
+import { PaperClipIcon, ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import { isAudio, isImage, isPDF, isPreviewable, isVideo } from "@/helpers";
 import CustomAudioPlayer from "../CustomAudioPlayer";
 import { PlayCircleIcon } from "@heroicons/react/24/outline";
@@ -12,7 +9,9 @@ const MessageAttachments = ({ attachments, attachmentClick }) => {
             {attachments.length > 0 && (
                 <div
                     className={`mt-2 flex flex-wrap justify-end gap-2 ${
-                        attachments.length === 1 ? "max-w-[300px]" : ""
+                        attachments.length === 1
+                            ? "sm:max-w-[300px] max-w-[200px]"
+                            : ""
                     }`}
                 >
                     {attachments.map((attachment, ind) => (

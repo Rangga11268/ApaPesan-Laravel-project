@@ -1,7 +1,7 @@
 import { Textarea } from "@headlessui/react";
 import React, { useEffect, useRef } from "react";
 
-const NewMessageInput = ({ value, onChange, onSend }) => {
+const NewMessageInput = ({ value, onChange, onSend, className = "" }) => {
     const input = useRef(null);
     const onInputKeyDown = (ev) => {
         if (ev.key === "Enter" && !ev.shiftKey) {
@@ -19,8 +19,11 @@ const NewMessageInput = ({ value, onChange, onSend }) => {
 
     const adjustHeight = () => {
         setTimeout(() => {
-            input.current.style.height = "auto";
-            input.current.style.height = input.current.scrollHeight + 1 + "px";
+            if (input.current) {
+                input.current.style.height = "auto";
+                input.current.style.height =
+                    input.current.scrollHeight + 1 + "px";
+            }
         }, 100);
     };
     useEffect(() => {
@@ -35,7 +38,7 @@ const NewMessageInput = ({ value, onChange, onSend }) => {
             placeholder="Type a message..."
             onKeyDown={onInputKeyDown}
             onChange={(ev) => onChangeEvent(ev)}
-            className="input input-bordered w-full rounded-r-none resize-none overflow-y-auto max-h-40"
+            className={"w-full resize-none overflow-y-auto " + className}
         ></Textarea>
     );
 };

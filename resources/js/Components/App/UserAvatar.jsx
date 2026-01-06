@@ -8,9 +8,17 @@ const UserAvatar = ({
 
     const onlineClass =
         online === true
-            ? "after:absolute after:block after:w-2 after:h-2 after:bg-green-500 after:rounded-full after:right-1 after:bottom-1 after:border-2 after:border-slate-800"
+            ? `after:absolute after:block ${
+                  profile
+                      ? "after:w-6 after:h-6 after:border-4"
+                      : "after:w-2 after:h-2 after:border-2"
+              } after:bg-green-500 after:rounded-full after:right-1 after:bottom-1 after:border-[#05070a]`
             : online === false
-            ? "after:absolute after:block after:w-2 after:h-2 after:bg-gray-500 after:rounded-full after:right-1 after:bottom-1 after:border-2 after:border-slate-800"
+            ? `after:absolute after:block ${
+                  profile
+                      ? "after:w-6 after:h-6 after:border-4"
+                      : "after:w-2 after:h-2 after:border-2"
+              } after:bg-gray-500 after:rounded-full after:right-1 after:bottom-1 after:border-[#05070a]`
             : "";
 
     const defaultSize = profile ? "w-40 h-40" : "w-8 h-8";

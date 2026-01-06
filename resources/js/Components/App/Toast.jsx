@@ -24,7 +24,7 @@ export default function Toast({}) {
             {toasts.map((toast) => (
                 <div
                     key={toast.uuid}
-                    className="alert alert-success py-3 px-4 text-gray-100 rounded-md"
+                    className="glass-panel bg-[#0f1218]/90 border border-white/10 py-3 px-4 text-white rounded-xl shadow-2xl backdrop-blur-xl animate-enter"
                 >
                     <span>{toast.message}</span>
                 </div>

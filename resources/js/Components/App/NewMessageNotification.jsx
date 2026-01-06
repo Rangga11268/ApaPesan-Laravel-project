@@ -29,7 +29,7 @@ export default function NewMessageNotification({}) {
             {toasts.map((toast) => (
                 <div
                     key={toast.uuid}
-                    className="alert alert-success py-3 px-4 text-gray-100 rounded-md "
+                    className="glass-panel bg-primary-600/20 border-primary-500/20 py-3 px-4 text-white rounded-xl shadow-2xl backdrop-blur-xl animate-enter"
                 >
                     <Link
                         href={

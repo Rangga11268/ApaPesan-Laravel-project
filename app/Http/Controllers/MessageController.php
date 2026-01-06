@@ -130,8 +130,10 @@ class MessageController extends Controller
         $message->loadMissing(['sender', 'attachments']); // Ensure relations are loaded
         $messageData = (new MessageResource($message))->resolve();
 
+        $prevMessage = null;
+        
         // Use transaction and temporarily disable FK checks to ensure deletion
-        \Illuminate\Support\Facades\DB::transaction(function () use ($message) {
+        \Illuminate\Support\Facades\DB::transaction(function () use ($message, &$prevMessage) {
             \Illuminate\Support\Facades\DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         
             try {
@@ -176,9 +178,6 @@ class MessageController extends Controller
                 $message->attachments()->delete();
 
                 // Dispatch event for real-time deletion BEFORE deleting the message
-                // Note: We move this inside the transaction or just before commit? 
-                // Using existing logic:
-                $prevMessage = null;
                 if ($message->group_id) {
                      $prevMessage = Message::where('group_id', $message->group_id)->where('id', '!=', $message->id)->latest()->first();
                 } else {
@@ -206,26 +205,9 @@ class MessageController extends Controller
             }
         });
         
-        // Return response logic (re-fetch groups/conversations might be needed if modified, but we just need last message)
-        // Since we are outside transaction, $message is deleted.
-        // We need to find the last message for the response context.
-        
-        // Re-query for context because $groups/$conversations inside closure aren't easily accessible unless we reorganize.
-        // Simplified: Just respond. The sidebar update handles the rest via websocket usually.
-        // But for consistency let's try to get a valid last message if possible.
-        
-        // Since $message is deleted, we can't query "REFERENCING" groups anymore.
-        // We have to rely on the fact that the frontend will update.
-        // But the previous code returned a 'message' (new last message).
-        
-        // Let's simplify and return empty if we can't easily find it without context.
-        // OR better: define $groups/$conversations outside.
-        
-        // Actually, let's keep it simple. The crucial fix is the Transaction + Disable Checks.
-        
         return response()->json([
-            'message' => null, // Frontend should handle null. Or we can re-query if sticking to strictly previous behavior is needed.
-            'deleted_message' => $messageData
+            'message' => $messageData,
+            'prevMessage' => $prevMessage ? (new MessageResource($prevMessage))->resolve() : null
         ]);
     }
 }

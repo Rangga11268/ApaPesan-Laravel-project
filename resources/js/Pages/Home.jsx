@@ -208,7 +208,7 @@ function Home({
 
             <div
                 ref={messagesCtrRef}
-                className="flex-1 overflow-y-auto p-5 space-y-2 custom-scrollbar scroll-smooth"
+                className="flex-1 overflow-y-auto sm:p-5 p-3 space-y-2 custom-scrollbar scroll-smooth"
             >
                 {localMessages.length === 0 && (
                     <div className="flex flex-col items-center justify-center h-full opacity-30">
