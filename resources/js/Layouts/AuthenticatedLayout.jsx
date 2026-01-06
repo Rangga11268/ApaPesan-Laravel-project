@@ -32,6 +32,7 @@ export default function AuthenticatedLayout({ children }) {
         );
 
         const handleMessageDeleted = (e) => {
+            console.log("Socket message deleted received:", e);
             emit("message.deleted", {
                 message: e.message,
                 prevMessage: e.prevMessage,

@@ -92,11 +92,22 @@ const ChatLayout = ({ children }) => {
                     );
                     if (index > -1) {
                         const newConvs = [...prev];
+                        let newMessageText = null;
+
+                        if (prevMessage) {
+                            if (prevMessage.message) {
+                                newMessageText = prevMessage.message;
+                            } else if (
+                                prevMessage.attachments &&
+                                prevMessage.attachments.length > 0
+                            ) {
+                                newMessageText = "Sent an attachment";
+                            }
+                        }
+
                         newConvs[index] = {
                             ...newConvs[index],
-                            last_message: prevMessage
-                                ? prevMessage.message
-                                : null,
+                            last_message: newMessageText,
                             last_message_date: prevMessage
                                 ? prevMessage.created_at
                                 : null,

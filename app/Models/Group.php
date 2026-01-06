@@ -58,7 +58,12 @@ class Group extends Model
 
     public static function getGroupsForUsers(User $user)
     {
-        $query = self::select(['groups.*', 'messages.message as last_message', 'messages.created_at as last_message_date'])
+        $query = self::select([
+            'groups.*',
+            'messages.message',
+            'messages.created_at as last_message_date',
+             \Illuminate\Support\Facades\DB::raw('CASE WHEN messages.message IS NOT NULL THEN messages.message WHEN messages.id IS NOT NULL THEN "Sent an attachment" ELSE NULL END as last_message')
+        ])
             ->join('group_users', 'group_users.group_id', '=', 'groups.id')
             ->leftJoin('messages', 'messages.id', '=', 'groups.last_message_id')
             ->where('group_users.user_id', $user->id)
