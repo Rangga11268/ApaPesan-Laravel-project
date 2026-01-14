@@ -8,6 +8,7 @@ import MessageInput from "@/Components/App/MessageInput";
 import { useEventBus } from "@/EventBus";
 import axios from "axios";
 import AttachmentPreviewModal from "@/Components/App/AttachmentPreviewModal";
+import TypingIndicator from "@/Components/App/TypingIndicator";
 
 function Home({
     selectedConversation = null,
@@ -21,7 +22,13 @@ function Home({
     const loadMoreIntersect = useRef(null);
     const [showAttachmentPreview, setShowAttachmentPreview] = useState(false);
     const [previewAttachment, setPreviewAttachment] = useState({});
-    const { on } = useEventBus();
+    const { on, emit } = useEventBus();
+
+    // New states for enhanced features
+    const [typingUser, setTypingUser] = useState(null);
+    const [replyTo, setReplyTo] = useState(null);
+    const [editingMessage, setEditingMessage] = useState(null);
+    const typingTimeoutRef = useRef(null);
 
     const isOnline =
         selectedConversation &&
@@ -63,6 +70,11 @@ function Home({
                         });
                     }
                 }, 100);
+
+                // Auto-mark as read if message is from other user
+                if (message.sender_id !== selectedConversation.id) {
+                    markMessagesAsRead([message.id]);
+                }
             }
         }
     };
@@ -81,6 +93,97 @@ function Home({
             });
         }
     };
+
+    // Handle message edited event
+    const messageEdited = ({ message }) => {
+        setLocalMessages((prevMessages) => {
+            return prevMessages.map((m) =>
+                m.id === message.id ? { ...m, ...message } : m
+            );
+        });
+    };
+
+    // Handle message read event
+    const messageReadHandler = ({ message_ids, read_at }) => {
+        setLocalMessages((prevMessages) => {
+            return prevMessages.map((m) =>
+                message_ids.includes(m.id) ? { ...m, read_at } : m
+            );
+        });
+    };
+
+    // Handle reaction event
+    const messageReactionHandler = ({ message_id, reactions }) => {
+        setLocalMessages((prevMessages) => {
+            return prevMessages.map((m) =>
+                m.id === message_id ? { ...m, reactions } : m
+            );
+        });
+    };
+
+    // Handle typing indicator
+    const handleTyping = ({ user }) => {
+        if (user.id !== selectedConversation?.id) return;
+
+        setTypingUser(user.name);
+
+        // Clear previous timeout
+        if (typingTimeoutRef.current) {
+            clearTimeout(typingTimeoutRef.current);
+        }
+
+        // Hide typing indicator after 3 seconds
+        typingTimeoutRef.current = setTimeout(() => {
+            setTypingUser(null);
+        }, 3000);
+    };
+
+    // Mark messages as read
+    const markMessagesAsRead = useCallback(async (messageIds) => {
+        if (!messageIds.length) return;
+        try {
+            await axios.post(route("message.read"), {
+                message_ids: messageIds,
+            });
+        } catch (err) {
+            console.error("Failed to mark as read:", err);
+        }
+    }, []);
+
+    // Handle reply action
+    const handleReply = useCallback((replyData) => {
+        setReplyTo(replyData);
+        setEditingMessage(null);
+    }, []);
+
+    // Handle cancel reply
+    const handleCancelReply = useCallback(() => {
+        setReplyTo(null);
+    }, []);
+
+    // Handle edit message from event
+    const handleEditMessage = useCallback((message) => {
+        setEditingMessage(message);
+        setReplyTo(null);
+    }, []);
+
+    // Handle cancel edit
+    const handleCancelEdit = useCallback(() => {
+        setEditingMessage(null);
+    }, []);
+
+    // Handle reaction click (toggle)
+    const handleReact = useCallback(async (messageId, emoji) => {
+        try {
+            await axios.post(route("reaction.store", messageId), { emoji });
+        } catch (err) {
+            if (err.response?.status === 409) {
+                await axios.delete(
+                    route("reaction.destroy", { message: messageId, emoji })
+                );
+            }
+        }
+    }, []);
 
     const loadMoreMessages = useCallback(() => {
         if (noMoreMessages) return;
@@ -104,7 +207,6 @@ function Home({
                 setScrollFromBottom(tmpScrollFromBottom);
                 setLocalMessages((prevMessages) => {
                     const newMessages = data.data.reverse();
-                    // Filter out any messages that are already in the list to prevent duplicates
                     const uniqueNewMessages = newMessages.filter(
                         (newMsg) =>
                             !prevMessages.some(
@@ -134,13 +236,42 @@ function Home({
 
         const offCreated = on("message.created", messageCreated);
         const offDeleted = on("message.deleted", messageDeleted);
+        const offEdited = on("message.edited", messageEdited);
+        const offRead = on("message.read", messageReadHandler);
+        const offReacted = on("message.reacted", messageReactionHandler);
+        const offTyping = on("user.typing", handleTyping);
+        const offEdit = on("message.edit", handleEditMessage);
 
         setLocalMessages(messages ? messages.data.reverse() : []);
         setNoMoreMessages(false);
+        setReplyTo(null);
+        setEditingMessage(null);
+        setTypingUser(null);
+
+        // Mark visible messages as read on load
+        if (messages?.data?.length) {
+            const unreadIds = messages.data
+                .filter(
+                    (m) =>
+                        !m.read_at && m.sender_id !== selectedConversation?.id
+                )
+                .map((m) => m.id);
+            if (unreadIds.length) {
+                markMessagesAsRead(unreadIds);
+            }
+        }
 
         return () => {
             offCreated();
             offDeleted();
+            offEdited();
+            offRead();
+            offReacted();
+            offTyping();
+            offEdit();
+            if (typingTimeoutRef.current) {
+                clearTimeout(typingTimeoutRef.current);
+            }
         };
     }, [selectedConversation]);
 
@@ -232,11 +363,22 @@ function Home({
                         key={message.id}
                         message={message}
                         attachmentClick={onAttachmentClick}
+                        onReply={handleReply}
+                        onReact={handleReact}
                     />
                 ))}
+
+                {/* Typing Indicator */}
+                {typingUser && <TypingIndicator userName={typingUser} />}
             </div>
 
-            <MessageInput conversation={selectedConversation} />
+            <MessageInput
+                conversation={selectedConversation}
+                replyTo={replyTo}
+                onCancelReply={handleCancelReply}
+                editingMessage={editingMessage}
+                onCancelEdit={handleCancelEdit}
+            />
 
             {previewAttachment.attachments && (
                 <AttachmentPreviewModal

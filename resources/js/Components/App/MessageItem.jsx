@@ -4,10 +4,19 @@ import UserAvatar from "./UserAvatar";
 import { formatMessageDateLong } from "@/helpers";
 import MessageAttachments from "./MessageAttachments";
 import MessageOptionsDropdown from "./MessageOptionsDropdown";
+import ReadReceipt from "./ReadReceipt";
+import ReactionDisplay from "./ReactionDisplay";
+import { QuotedMessage } from "./ReplyPreview";
 
-const MessageItem = ({ message, attachmentClick }) => {
+const MessageItem = ({ message, attachmentClick, onReply, onReact }) => {
     const currentUser = usePage().props.auth.user;
     const isCurrentUser = message.sender_id === currentUser.id;
+
+    const handleReactionClick = (messageId, emoji) => {
+        if (onReact) {
+            onReact(messageId, emoji);
+        }
+    };
 
     return (
         <div
@@ -35,6 +44,11 @@ const MessageItem = ({ message, attachmentClick }) => {
                 <time className="opacity-50 text-[10px]">
                     {formatMessageDateLong(message.created_at)}
                 </time>
+                {message.edited_at && (
+                    <span className="text-[10px] text-gray-500 italic">
+                        (edited)
+                    </span>
+                )}
             </div>
 
             <div
@@ -47,10 +61,18 @@ const MessageItem = ({ message, attachmentClick }) => {
                 }
             `}
             >
-                {isCurrentUser && (
-                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <MessageOptionsDropdown message={message} />
-                    </div>
+                {/* Options dropdown - visible on hover */}
+                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <MessageOptionsDropdown
+                        message={message}
+                        onReply={onReply}
+                        isOwn={isCurrentUser}
+                    />
+                </div>
+
+                {/* Quoted/Reply message */}
+                {message.reply_to && (
+                    <QuotedMessage replyTo={message.reply_to} />
                 )}
 
                 <div
@@ -66,12 +88,26 @@ const MessageItem = ({ message, attachmentClick }) => {
                         attachmentClick={attachmentClick}
                     />
                 </div>
+
+                {/* Reactions display */}
+                {message.reactions &&
+                    Object.keys(message.reactions).length > 0 && (
+                        <ReactionDisplay
+                            reactions={message.reactions}
+                            onReactionClick={handleReactionClick}
+                            messageId={message.id}
+                        />
+                    )}
             </div>
 
-            {/* Read Receipt / Status indicator could go here */}
+            {/* Read Receipt / Status indicator */}
             {isCurrentUser && (
-                <div className="chat-footer opacity-50 text-[10px] mt-1 text-primary-300">
-                    Sent
+                <div className="chat-footer mt-1 flex items-center gap-1">
+                    <ReadReceipt
+                        isSent={true}
+                        isRead={!!message.read_at}
+                        isOwn={true}
+                    />
                 </div>
             )}
         </div>

@@ -1,4 +1,4 @@
-import { useState, Fragment, useCallback } from "react";
+import { useState, Fragment, useCallback, useEffect } from "react";
 import {
     PaperClipIcon,
     PhotoIcon,
@@ -6,25 +6,61 @@ import {
     HandThumbUpIcon,
     PaperAirplaneIcon,
     XCircleIcon,
+    PencilSquareIcon,
 } from "@heroicons/react/24/outline";
 import NewMessageInput from "./NewMessageInput";
 import CustomAudioPlayer from "../CustomAudioPlayer";
 import AttachmentPreview from "./AttachmentPreview";
+import ReplyPreview from "./ReplyPreview";
 import { isAudio, isImage } from "@/helpers";
 import axios from "axios";
 import { Popover, Transition } from "@headlessui/react";
 import EmojiPicker from "emoji-picker-react";
 import AudioRecorder from "./AudioRecorder";
-
 import { useEventBus } from "@/EventBus";
 
-const MessageInput = ({ conversation = null }) => {
+const MessageInput = ({
+    conversation = null,
+    replyTo = null,
+    onCancelReply = null,
+    editingMessage = null,
+    onCancelEdit = null,
+}) => {
     const [newMessage, setNewMessage] = useState("");
     const [inputErrorMessage, setInputErrorMessage] = useState("");
     const [messageSending, setMessageSending] = useState(false);
     const [chosenFiles, setChosenFiles] = useState([]);
     const [uploadProgress, setUploadProgress] = useState(0);
     const { emit } = useEventBus();
+
+    // Effect to populate input when editing
+    useEffect(() => {
+        if (editingMessage) {
+            setNewMessage(editingMessage.message || "");
+        } else {
+            setNewMessage("");
+        }
+    }, [editingMessage]);
+
+    // Handle typing indicator
+    const handleTyping = useCallback(() => {
+        if (conversation) {
+            axios
+                .post(route("typing.store"), {
+                    receiver_id: conversation.is_user ? conversation.id : null,
+                    group_id: conversation.is_group ? conversation.id : null,
+                })
+                .catch(console.error);
+        }
+    }, [conversation]);
+
+    // Debounce typing event
+    useEffect(() => {
+        if (newMessage && !editingMessage) {
+            const timeoutId = setTimeout(handleTyping, 2000); // Send typing every 2s while typing
+            return () => clearTimeout(timeoutId);
+        }
+    }, [newMessage, handleTyping, editingMessage]);
 
     const onFileChange = useCallback((ev) => {
         const files = ev.target.files;
@@ -45,6 +81,12 @@ const MessageInput = ({ conversation = null }) => {
         if (messageSending) {
             return;
         }
+
+        if (editingMessage) {
+            handleUpdateMessage();
+            return;
+        }
+
         if (newMessage.trim() === "" && chosenFiles.length === 0) {
             setInputErrorMessage("Type something or select a file");
             setTimeout(() => setInputErrorMessage(""), 3000);
@@ -55,10 +97,15 @@ const MessageInput = ({ conversation = null }) => {
             formData.append("attachments[]", file.file);
         });
         formData.append("message", newMessage);
+
         if (conversation.is_user) {
             formData.append("receiver_id", conversation.id);
         } else if (conversation.is_group) {
             formData.append("group_id", conversation.id);
+        }
+
+        if (replyTo) {
+            formData.append("reply_to_id", replyTo.id);
         }
 
         setMessageSending(true);
@@ -76,7 +123,7 @@ const MessageInput = ({ conversation = null }) => {
                 setNewMessage("");
                 setChosenFiles([]);
                 setUploadProgress(0);
-                // Emit event to update UI immediately
+                if (onCancelReply) onCancelReply();
                 emit("message.created", response.data);
             })
             .catch((error) => {
@@ -84,7 +131,35 @@ const MessageInput = ({ conversation = null }) => {
                 setUploadProgress(0);
                 console.error(error);
             });
-    }, [newMessage, chosenFiles, conversation, messageSending, emit]);
+    }, [
+        newMessage,
+        chosenFiles,
+        conversation,
+        messageSending,
+        emit,
+        replyTo,
+        editingMessage,
+    ]);
+
+    const handleUpdateMessage = () => {
+        if (!newMessage.trim()) return;
+        setMessageSending(true);
+
+        axios
+            .patch(route("message.update", editingMessage.id), {
+                message: newMessage,
+            })
+            .then((response) => {
+                setMessageSending(false);
+                setNewMessage("");
+                if (onCancelEdit) onCancelEdit();
+                emit("message.edited", response.data); // Emit edit event
+            })
+            .catch((err) => {
+                console.error(err);
+                setMessageSending(false);
+            });
+    };
 
     const onLikeClick = useCallback(() => {
         if (messageSending) return;
@@ -110,9 +185,37 @@ const MessageInput = ({ conversation = null }) => {
             <div
                 className={`
                 glass-light border border-white/10 rounded-2xl shadow-2xl backdrop-blur-2xl transition-all duration-300
-                ${chosenFiles.length > 0 ? "p-4" : "p-2"}
+                ${chosenFiles.length > 0 || replyTo ? "p-4" : "p-2"}
             `}
             >
+                {/* Reply Preview */}
+                {replyTo && (
+                    <ReplyPreview
+                        replyTo={replyTo}
+                        onCancel={() => {
+                            if (onCancelReply) onCancelReply();
+                        }}
+                    />
+                )}
+
+                {/* Edit Mode Indicator */}
+                {editingMessage && (
+                    <div className="flex items-center justify-between px-4 py-2 bg-primary-500/20 rounded-t-lg mb-2">
+                        <div className="flex items-center gap-2 text-primary-300">
+                            <PencilSquareIcon className="w-4 h-4" />
+                            <span className="text-sm font-medium">
+                                Editing message
+                            </span>
+                        </div>
+                        <button
+                            onClick={onCancelEdit}
+                            className="text-gray-400 hover:text-white"
+                        >
+                            <XCircleIcon className="w-5 h-5" />
+                        </button>
+                    </div>
+                )}
+
                 {/* Attachments Preview Area */}
                 {(chosenFiles.length > 0 ||
                     uploadProgress > 0 ||
@@ -184,18 +287,21 @@ const MessageInput = ({ conversation = null }) => {
                         <button
                             className="p-1 sm:p-2 text-primary-300 hover:text-white hover:bg-white/10 rounded-full transition-all relative group tooltip sm:tooltip-top"
                             data-tip="Attach File"
+                            disabled={!!editingMessage}
                         >
                             <PaperClipIcon className="sm:w-6 sm:h-6 w-[18px] h-[18px]" />
                             <input
                                 type="file"
                                 multiple
                                 onChange={onFileChange}
-                                className="absolute inset-0 z-20 opacity-0 cursor-pointer"
+                                className="absolute inset-0 z-20 opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                                disabled={!!editingMessage}
                             />
                         </button>
                         <button
                             className="p-1 sm:p-2 text-primary-300 hover:text-white hover:bg-white/10 rounded-full transition-all relative group tooltip sm:tooltip-top"
                             data-tip="Send Image"
+                            disabled={!!editingMessage}
                         >
                             <PhotoIcon className="sm:w-6 sm:h-6 w-[18px] h-[18px]" />
                             <input
@@ -203,10 +309,13 @@ const MessageInput = ({ conversation = null }) => {
                                 multiple
                                 accept="image/*"
                                 onChange={onFileChange}
-                                className="absolute inset-0 z-20 opacity-0 cursor-pointer"
+                                className="absolute inset-0 z-20 opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                                disabled={!!editingMessage}
                             />
                         </button>
-                        <AudioRecorder fileReady={recordedAudioReady} />
+                        {!editingMessage && (
+                            <AudioRecorder fileReady={recordedAudioReady} />
+                        )}
                     </div>
 
                     {/* Text Input */}
@@ -214,7 +323,10 @@ const MessageInput = ({ conversation = null }) => {
                         <NewMessageInput
                             value={newMessage}
                             onSend={onSendClick}
-                            onChange={(ev) => setNewMessage(ev.target.value)}
+                            onChange={(ev) => {
+                                setNewMessage(ev.target.value);
+                                handleTyping();
+                            }}
                             className="bg-transparent border-none text-gray-100 placeholder-gray-500 focus:ring-0 w-full sm:py-3 py-2 sm:px-4 px-2.5 min-h-[40px] max-h-[140px] text-sm sm:text-base"
                         />
                     </div>
@@ -237,7 +349,9 @@ const MessageInput = ({ conversation = null }) => {
                             </Popover.Panel>
                         </Popover>
 
-                        {newMessage.trim() || chosenFiles.length > 0 ? (
+                        {newMessage.trim() ||
+                        chosenFiles.length > 0 ||
+                        editingMessage ? (
                             <button
                                 onClick={onSendClick}
                                 disabled={messageSending}

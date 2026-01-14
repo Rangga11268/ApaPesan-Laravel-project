@@ -210,4 +210,137 @@ class MessageController extends Controller
             'prevMessage' => $prevMessage ? (new MessageResource($prevMessage))->resolve() : null
         ]);
     }
+
+    /**
+     * Update (edit) a message.
+     */
+    public function update(Request $request, Message $message)
+    {
+        // Only sender can edit their own messages
+        if ($message->sender_id !== Auth::id()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $request->validate([
+            'message' => 'required|string',
+        ]);
+
+        $message->update([
+            'message' => $request->message,
+            'edited_at' => now(),
+        ]);
+
+        $message->loadMissing(['sender', 'attachments', 'replyTo']);
+
+        // Broadcast the edit
+        \App\Events\MessageEdited::dispatch($message);
+
+        return new MessageResource($message);
+    }
+
+    /**
+     * Mark messages as read.
+     */
+    public function markAsRead(Request $request)
+    {
+        $request->validate([
+            'message_ids' => 'required|array',
+            'message_ids.*' => 'exists:messages,id',
+        ]);
+
+        $user = Auth::user();
+        $messageIds = $request->message_ids;
+
+        // Get messages that are not from the current user and not already read
+        $messages = Message::whereIn('id', $messageIds)
+            ->where('sender_id', '!=', $user->id)
+            ->whereNull('read_at')
+            ->get();
+
+        if ($messages->isEmpty()) {
+            return response()->json(['success' => true, 'updated' => 0]);
+        }
+
+        // Update all messages
+        Message::whereIn('id', $messages->pluck('id'))
+            ->update(['read_at' => now()]);
+
+        // Get sender info for broadcasting
+        $firstMessage = $messages->first();
+        $senderId = $firstMessage->sender_id;
+        $groupId = $firstMessage->group_id;
+
+        // Broadcast read receipt
+        \App\Events\MessageRead::dispatch(
+            $messages->pluck('id')->toArray(),
+            $user,
+            $senderId,
+            $groupId
+        );
+
+        return response()->json([
+            'success' => true,
+            'updated' => $messages->count(),
+        ]);
+    }
+
+    /**
+     * Search messages.
+     */
+    public function search(Request $request)
+    {
+        $request->validate([
+            'query' => 'required|string|min:2',
+            'user_id' => 'nullable|exists:users,id',
+            'group_id' => 'nullable|exists:groups,id',
+        ]);
+
+        $user = Auth::user();
+        $query = $request->query('query');
+
+        $messagesQuery = Message::where('message', 'like', "%{$query}%")
+            ->with(['sender', 'receiver', 'group']);
+
+        // Filter by specific conversation if provided
+        if ($request->user_id) {
+            $messagesQuery->where(function($q) use ($user, $request) {
+                $q->where(function($inner) use ($user, $request) {
+                    $inner->where('sender_id', $user->id)
+                        ->where('receiver_id', $request->user_id);
+                })->orWhere(function($inner) use ($user, $request) {
+                    $inner->where('sender_id', $request->user_id)
+                        ->where('receiver_id', $user->id);
+                });
+            });
+        } elseif ($request->group_id) {
+            // Verify user is member of group
+            $group = Group::find($request->group_id);
+            if (!$group || !$group->users()->where('user_id', $user->id)->exists()) {
+                return response()->json(['message' => 'Unauthorized'], 403);
+            }
+            $messagesQuery->where('group_id', $request->group_id);
+        } else {
+            // Search all accessible messages
+            $userGroupIds = $user->groups()->pluck('groups.id');
+            
+            $messagesQuery->where(function($q) use ($user, $userGroupIds) {
+                $q->where('sender_id', $user->id)
+                    ->orWhere('receiver_id', $user->id)
+                    ->orWhereIn('group_id', $userGroupIds);
+            });
+        }
+
+        $messages = $messagesQuery->latest()->paginate(20);
+
+        return response()->json([
+            'success' => true,
+            'data' => MessageResource::collection($messages),
+            'pagination' => [
+                'current_page' => $messages->currentPage(),
+                'last_page' => $messages->lastPage(),
+                'per_page' => $messages->perPage(),
+                'total' => $messages->total(),
+            ],
+        ]);
+    }
 }
