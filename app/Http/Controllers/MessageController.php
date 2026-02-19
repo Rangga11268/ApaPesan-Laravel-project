@@ -20,6 +20,13 @@ class MessageController extends Controller
 
     public function byUser(User $user)
     {
+        $authUser = Auth::user();
+
+        // Authorization: user can only view their own conversations
+        if ($authUser->id !== $user->id && !$authUser->is_admin) {
+            abort(403, 'Unauthorized to view this user conversation');
+        }
+
         $authUserId = Auth::id();
         $messages = Message::where(function($query) use ($authUserId, $user) {
             $query->where('sender_id', $authUserId)
@@ -38,6 +45,9 @@ class MessageController extends Controller
 
     public function byGroup(Group $group)
     {
+        // Authorization: user must be a member of the group
+        $this->authorize('view', $group);
+
         $messages = Message::where('group_id', $group->id)
             ->latest()
             ->paginate(10);
@@ -50,6 +60,9 @@ class MessageController extends Controller
 
     public function loadOlder(Message $message)
     {
+        // Authorization: user must be able to view this message
+        $this->authorize('view', $message);
+
         if ($message->group_id) {
             $messages = Message::where('created_at', '<', $message->created_at)
                 ->where('group_id', $message->group_id)
@@ -77,6 +90,12 @@ class MessageController extends Controller
         $data['sender_id'] = Auth::id();
         $receiverId  = $data['receiver_id'] ?? null;
         $groupId = $data['group_id'] ?? null;
+
+        // Authorization: if sending to group, user must be a member
+        if ($groupId) {
+            $group = Group::findOrFail($groupId);
+            $this->authorize('view', $group);
+        }
 
         $files = $data['attachments'] ?? [];
         $message = Message::create($data);
@@ -113,18 +132,15 @@ class MessageController extends Controller
 
     public function destroy(Message $message)
     {
+        // Authorization: only the message sender can delete
+        $this->authorize('delete', $message);
+
         \Log::info('Delete message request received', [
             'message_id' => $message->id,
             'user_id' => Auth::id(),
             'sender_id' => $message->sender_id,
             'receiver_id' => $message->receiver_id
         ]);
-
-        // Only allow users to delete their own messages (sent by them)
-        $authId = Auth::id();
-        if ($message->sender_id !== $authId) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
 
         // Store the message data before deleting for response (Resolve immediately to avoid lazy loading issues after deletion)
         $message->loadMissing(['sender', 'attachments']); // Ensure relations are loaded
@@ -216,10 +232,8 @@ class MessageController extends Controller
      */
     public function update(Request $request, Message $message)
     {
-        // Only sender can edit their own messages
-        if ($message->sender_id !== Auth::id()) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
+        // Authorization: only the sender can edit their own messages
+        $this->authorize('update', $message);
 
         $request->validate([
             'message' => 'required|string',
@@ -303,6 +317,12 @@ class MessageController extends Controller
 
         // Filter by specific conversation if provided
         if ($request->user_id) {
+            $targetUser = User::findOrFail($request->user_id);
+            // Only allow searching own conversations or admin
+            if ($user->id !== $targetUser->id && !$user->is_admin) {
+                abort(403, 'Unauthorized to search this user conversation');
+            }
+
             $messagesQuery->where(function($q) use ($user, $request) {
                 $q->where(function($inner) use ($user, $request) {
                     $inner->where('sender_id', $user->id)
@@ -313,11 +333,9 @@ class MessageController extends Controller
                 });
             });
         } elseif ($request->group_id) {
-            // Verify user is member of group
-            $group = Group::find($request->group_id);
-            if (!$group || !$group->users()->where('user_id', $user->id)->exists()) {
-                return response()->json(['message' => 'Unauthorized'], 403);
-            }
+            // Verify user is member of group using policy
+            $group = Group::findOrFail($request->group_id);
+            $this->authorize('searchMessages', $group);
             $messagesQuery->where('group_id', $request->group_id);
         } else {
             // Search all accessible messages
@@ -342,5 +360,5 @@ class MessageController extends Controller
                 'total' => $messages->total(),
             ],
         ]);
-    }
+    }    }
 }

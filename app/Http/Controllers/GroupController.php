@@ -31,7 +31,7 @@ class GroupController extends Controller
 
         // Add owner to group
         $group->users()->attach($user->id);
-        
+
         // Add other members
         $group->users()->attach($request->user_ids);
 
@@ -48,10 +48,8 @@ class GroupController extends Controller
      */
     public function update(Request $request, Group $group)
     {
-        // Only owner can update
-        if ($group->owner_id !== Auth::id()) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
+        // Authorization via policy: only owner can update
+        $this->authorize('update', $group);
 
         $request->validate([
             'name' => 'sometimes|required|string|max:255',
@@ -71,10 +69,8 @@ class GroupController extends Controller
      */
     public function destroy(Group $group)
     {
-        // Only owner can delete
-        if ($group->owner_id !== Auth::id()) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
+        // Authorization via policy: only owner can delete
+        $this->authorize('delete', $group);
 
         $group->delete();
 
@@ -86,11 +82,8 @@ class GroupController extends Controller
      */
     public function addMember(Request $request, Group $group)
     {
-        // Only owner can add members (or admin)
-        $user = Auth::user();
-        if ($group->owner_id !== $user->id && !$user->is_admin) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
+        // Authorization via policy: only owner or admin can add members
+        $this->authorize('addMember', $group);
 
         $request->validate([
             'user_id' => 'required|exists:users,id',
@@ -115,11 +108,9 @@ class GroupController extends Controller
     public function removeMember(Group $group, User $user)
     {
         $authUser = Auth::user();
-        
-        // Owner can remove anyone, members can only remove themselves
-        if ($group->owner_id !== $authUser->id && $authUser->id !== $user->id && !$authUser->is_admin) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
+
+        // Authorization via policy
+        $this->authorize('removeMember', [$group, $user]);
 
         // Owner cannot be removed (must delete group instead)
         if ($user->id === $group->owner_id) {
@@ -139,8 +130,11 @@ class GroupController extends Controller
      */
     public function availableUsers(Group $group)
     {
+        // Authorization: only members of the group can view available users
+        $this->authorize('viewAvailableUsers', $group);
+
         $existingUserIds = $group->users()->pluck('users.id');
-        
+
         $users = User::whereNotIn('id', $existingUserIds)
             ->whereNull('blocked_at')
             ->select('id', 'name', 'email', 'avatar')

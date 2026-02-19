@@ -34,7 +34,7 @@ const ChatLayout = ({ children }) => {
     const sortedConversations = useMemo(() => {
         if (!Array.isArray(localConversations)) return [];
         const filtered = localConversations.filter((conv) =>
-            conv.name.toLowerCase().includes(searchTerm)
+            conv.name.toLowerCase().includes(searchTerm),
         );
         return [...filtered].sort((a, b) => {
             if (a.blocked_at && b.blocked_at) {
@@ -62,7 +62,7 @@ const ChatLayout = ({ children }) => {
                         (!message.group_id &&
                             c.is_user &&
                             (c.id == message.sender_id ||
-                                c.id == message.receiver_id))
+                                c.id == message.receiver_id)),
                 );
                 if (index > -1) {
                     const newConvs = [...prev];
@@ -97,7 +97,7 @@ const ChatLayout = ({ children }) => {
                             (!message.group_id &&
                                 c.is_user &&
                                 (c.id == message.sender_id ||
-                                    c.id == message.receiver_id))
+                                    c.id == message.receiver_id)),
                     );
                     if (index > -1) {
                         const newConvs = [...prev];
@@ -125,7 +125,7 @@ const ChatLayout = ({ children }) => {
                     }
                     return prev;
                 });
-            }
+            },
         );
 
         return () => {
@@ -139,22 +139,23 @@ const ChatLayout = ({ children }) => {
         const channel = window.Echo.join("online");
         channel
             .here((users) => {
-                console.log("Online channel joined. Users:", users);
+                if (import.meta.env.DEV)
+                    console.log("Online channel joined. Users:", users);
                 setOnlineUsers(
-                    Object.fromEntries(users.map((u) => [u.id.toString(), u]))
+                    Object.fromEntries(users.map((u) => [u.id.toString(), u])),
                 );
             })
             .joining((u) => {
-                console.log("User joining:", u);
+                if (import.meta.env.DEV) console.log("User joining:", u);
                 setOnlineUsers((prev) => ({ ...prev, [u.id.toString()]: u }));
             })
             .leaving((u) =>
                 setOnlineUsers((prev) => {
-                    console.log("User leaving:", u);
+                    if (import.meta.env.DEV) console.log("User leaving:", u);
                     const updated = { ...prev };
                     delete updated[u.id.toString()];
                     return updated;
-                })
+                }),
             );
         return () => window.Echo.leave("online");
     }, []);

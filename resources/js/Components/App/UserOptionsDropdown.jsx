@@ -15,9 +15,9 @@ export default function UserOptionsDropdown({ conversation }) {
 
         try {
             const response = await axios.post(
-                route("user.changeRole", conversation.id)
+                route("user.changeRole", conversation.id),
             );
-            console.log(response.data);
+            if (import.meta.env.DEV) console.log(response.data);
         } catch (error) {
             console.error("Failed to change user role:", error);
         }
@@ -28,9 +28,9 @@ export default function UserOptionsDropdown({ conversation }) {
 
         try {
             const response = await axios.post(
-                route("user.blockUnblock", conversation.id)
+                route("user.blockUnblock", conversation.id),
             );
-            console.log(response.data);
+            if (import.meta.env.DEV) console.log(response.data);
         } catch (error) {
             console.error("Failed to block/unblock user:", error);
         }
