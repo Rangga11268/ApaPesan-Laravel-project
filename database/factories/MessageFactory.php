@@ -18,27 +18,53 @@ class MessageFactory extends Factory
      */
     public function definition(): array
     {
-        $senderId = $this->faker->randomElement([0, 1]);
-        if ($senderId === 0) {
-            $senderId = $this->faker->randomElement(User::where('id', '!=', 1)->pluck('id')->toArray());
-            $receiverId = 1;
-        } else {
-            $receiverId = $this->faker->randomElement(User::pluck('id')->toArray());
-        }
-        $groupId = null;
-        if ($this->faker->boolean(50)) {
-            $groupId = $this->faker->randomElement(Group::pluck('id')->toArray());
-            $groupId = Group::find($groupId);
-            $senderId = $this->faker->randomElement($groupId->users->pluck('id')->toArray());
-            $receiverId = null;
-        }
-
         return [
-            'sender_id' => $senderId,
-            'receiver_id' => $receiverId,
-            'group_id' => $groupId,
+            'sender_id' => User::factory(),
+            'receiver_id' => User::factory(),
+            'group_id' => null,
             'message' => $this->faker->realText(200),
             'created_at' => $this->faker->dateTimeBetween('-1 year', 'now'),
         ];
+    }
+
+    /**
+     * Create a private message between two users.
+     */
+    public function private(): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'group_id' => null,
+        ]);
+    }
+
+    /**
+     * Create a group message.
+     */
+    public function forGroup(Group $group): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'group_id' => $group->id,
+            'receiver_id' => null,
+        ]);
+    }
+
+    /**
+     * Set the sender.
+     */
+    public function from(User $user): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'sender_id' => $user->id,
+        ]);
+    }
+
+    /**
+     * Set the receiver.
+     */
+    public function to(User $user): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'receiver_id' => $user->id,
+        ]);
     }
 }

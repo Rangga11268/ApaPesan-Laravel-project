@@ -104,6 +104,24 @@ class Message extends Model
     }
 
     /**
+     * Get all mentions in this message.
+     */
+    public function mentions(): HasMany
+    {
+        return $this->hasMany(MessageMention::class);
+    }
+
+    /**
+     * Get users mentioned in this message.
+     */
+    public function mentionedUsers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'message_mentions')
+            ->withPivot(['is_read', 'read_at', 'mentioned_by'])
+            ->withTimestamps();
+    }
+
+    /**
      * Check if the message has been edited.
      */
     public function isEdited(): bool

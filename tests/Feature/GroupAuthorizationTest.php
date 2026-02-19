@@ -24,7 +24,7 @@ class GroupAuthorizationTest extends TestCase
 
         // Owner can update
         $this->actingAs($owner)
-            ->putJson(route('group.update', $group), [
+            ->patchJson(route('group.update', $group), [
                 'name' => 'Updated Group Name',
             ])
             ->assertStatus(200)
@@ -32,7 +32,7 @@ class GroupAuthorizationTest extends TestCase
 
         // Member cannot update
         $this->actingAs($member)
-            ->putJson(route('group.update', $group), [
+            ->patchJson(route('group.update', $group), [
                 'name' => 'Hacked Name',
             ])
             ->assertStatus(403);
@@ -150,7 +150,7 @@ class GroupAuthorizationTest extends TestCase
     }
 
     /**
-     * Test that non-member cannot view group
+     * Test that non-member cannot view group messages
      */
     public function test_non_member_cannot_view_group(): void
     {
@@ -160,8 +160,10 @@ class GroupAuthorizationTest extends TestCase
         $group = Group::factory()->create(['owner_id' => $owner->id]);
         $group->users()->attach($owner->id);
 
-        // Non-member cannot attempt group operations that check membership
-        // This would be tested through message.byGroup
+        // Non-member cannot view group messages (Inertia returns 403)
+        $this->actingAs($nonMember)
+            ->get(route('chat.group', $group))
+            ->assertStatus(403);
     }
 
     /**

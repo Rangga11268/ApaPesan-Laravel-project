@@ -9,6 +9,7 @@ use App\Models\Message;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use App\Http\Resources\MessageResource;
 use App\Http\Requests\StoreMessageRequest;
 use App\Models\Conversation;
@@ -22,20 +23,25 @@ class MessageController extends Controller
     {
         $authUser = Auth::user();
 
-        // Authorization: user can only view their own conversations
-        if ($authUser->id !== $user->id && !$authUser->is_admin) {
-            abort(403, 'Unauthorized to view this user conversation');
+        // Can't chat with yourself
+        if ($authUser->id === $user->id) {
+            abort(400, 'Cannot view conversation with yourself');
+        }
+
+        // Check if user is blocked (unless admin)
+        if ($user->blocked_at && !$authUser->is_admin) {
+            abort(403, 'This user is not available');
         }
 
         $authUserId = Auth::id();
-        $messages = Message::where(function($query) use ($authUserId, $user) {
+        $messages = Message::where(function ($query) use ($authUserId, $user) {
             $query->where('sender_id', $authUserId)
                 ->where('receiver_id', $user->id);
-        })->orWhere(function($query) use ($authUserId, $user) {
+        })->orWhere(function ($query) use ($authUserId, $user) {
             $query->where('sender_id', $user->id)
                 ->where('receiver_id', $authUserId);
         })->latest()
-        ->paginate(10);
+            ->paginate(10);
 
         return inertia('Home', [
             'selectedConversation' => $user->toConversationArray(),
@@ -118,6 +124,14 @@ class MessageController extends Controller
             $message->attachments = $attachments;
         }
 
+        // Parse and create mentions from message text
+        if (!empty($data['message'])) {
+            $mentionedUserIds = MentionController::parseMentions($data['message']);
+            if (!empty($mentionedUserIds)) {
+                MentionController::createMentionsForMessage($message, $mentionedUserIds);
+            }
+        }
+
         if ($receiverId) {
             Conversation::updateConversationWithMessage($receiverId, Auth::id(), $message);
         }
@@ -135,7 +149,7 @@ class MessageController extends Controller
         // Authorization: only the message sender can delete
         $this->authorize('delete', $message);
 
-        \Log::info('Delete message request received', [
+        Log::info('Delete message request received', [
             'message_id' => $message->id,
             'user_id' => Auth::id(),
             'sender_id' => $message->sender_id,
@@ -147,23 +161,23 @@ class MessageController extends Controller
         $messageData = (new MessageResource($message))->resolve();
 
         $prevMessage = null;
-        
+
         // Use transaction and temporarily disable FK checks to ensure deletion
         \Illuminate\Support\Facades\DB::transaction(function () use ($message, &$prevMessage) {
             \Illuminate\Support\Facades\DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-        
+
             try {
                 // Find ALL groups and conversations that reference this message
                 $groups = Group::where('last_message_id', $message->id)->get();
                 $conversations = Conversation::where('last_message_id', $message->id)->get();
-                
+
                 // Update all groups that reference this message
                 foreach ($groups as $group) {
                     $lastMessage = Message::where('group_id', $group->id)
                         ->where('id', '!=', $message->id)
                         ->latest()
                         ->first();
-                    
+
                     $group->last_message_id = $lastMessage ? $lastMessage->id : null;
                     $group->save();
                 }
@@ -174,36 +188,36 @@ class MessageController extends Controller
                         $query->where('sender_id', $conversation->user_id1)
                             ->where('receiver_id', $conversation->user_id2);
                     })
-                    ->orWhere(function ($query) use ($conversation) {
-                        $query->where('sender_id', $conversation->user_id2)
-                            ->where('receiver_id', $conversation->user_id1);
-                    })
-                    ->where('id', '!=', $message->id)
-                    ->latest()
-                    ->first();
-                    
+                        ->orWhere(function ($query) use ($conversation) {
+                            $query->where('sender_id', $conversation->user_id2)
+                                ->where('receiver_id', $conversation->user_id1);
+                        })
+                        ->where('id', '!=', $message->id)
+                        ->latest()
+                        ->first();
+
                     $conversation->last_message_id = $lastMessage ? $lastMessage->id : null;
                     $conversation->save();
                 }
 
                 // Delete the message attachments and files
-                $message->attachments->each(function ($attachment) {
+                foreach ($message->attachments as $attachment) {
                     $dir = dirname($attachment->path);
                     Storage::disk('public')->deleteDirectory($dir);
-                });
+                }
                 $message->attachments()->delete();
 
                 // Dispatch event for real-time deletion BEFORE deleting the message
                 if ($message->group_id) {
-                     $prevMessage = Message::where('group_id', $message->group_id)->where('id', '!=', $message->id)->latest()->first();
+                    $prevMessage = Message::where('group_id', $message->group_id)->where('id', '!=', $message->id)->latest()->first();
                 } else {
-                     $prevMessage = Message::where(function ($q) use ($message) {
-                         $q->where('sender_id', $message->sender_id)->where('receiver_id', $message->receiver_id);
-                     })->orWhere(function ($q) use ($message) {
-                         $q->where('sender_id', $message->receiver_id)->where('receiver_id', $message->sender_id);
-                     })->where('id', '!=', $message->id)->latest()->first();
+                    $prevMessage = Message::where(function ($q) use ($message) {
+                        $q->where('sender_id', $message->sender_id)->where('receiver_id', $message->receiver_id);
+                    })->orWhere(function ($q) use ($message) {
+                        $q->where('sender_id', $message->receiver_id)->where('receiver_id', $message->sender_id);
+                    })->where('id', '!=', $message->id)->latest()->first();
                 }
-                
+
                 if ($prevMessage) {
                     $prevMessage->loadMissing(['sender', 'attachments']);
                 }
@@ -211,7 +225,7 @@ class MessageController extends Controller
                 try {
                     \App\Events\SocketMessageDeleted::dispatch($message, $prevMessage);
                 } catch (\Throwable $e) {
-                     \Log::error('Failed to broadcast message deletion: ' . $e->getMessage());
+                    Log::error('Failed to broadcast message deletion: ' . $e->getMessage());
                 }
 
                 $message->delete();
@@ -220,7 +234,7 @@ class MessageController extends Controller
                 \Illuminate\Support\Facades\DB::statement('SET FOREIGN_KEY_CHECKS=1;');
             }
         });
-        
+
         return response()->json([
             'message' => $messageData,
             'prevMessage' => $prevMessage ? (new MessageResource($prevMessage))->resolve() : null
@@ -309,6 +323,7 @@ class MessageController extends Controller
             'group_id' => 'nullable|exists:groups,id',
         ]);
 
+        /** @var \App\Models\User $user */
         $user = Auth::user();
         $query = $request->query('query');
 
@@ -318,16 +333,14 @@ class MessageController extends Controller
         // Filter by specific conversation if provided
         if ($request->user_id) {
             $targetUser = User::findOrFail($request->user_id);
-            // Only allow searching own conversations or admin
-            if ($user->id !== $targetUser->id && !$user->is_admin) {
-                abort(403, 'Unauthorized to search this user conversation');
-            }
 
-            $messagesQuery->where(function($q) use ($user, $request) {
-                $q->where(function($inner) use ($user, $request) {
+            // User can search their own conversation with another user
+            // The actual query below already filters to only show messages where user is sender/receiver
+            $messagesQuery->where(function ($q) use ($user, $request) {
+                $q->where(function ($inner) use ($user, $request) {
                     $inner->where('sender_id', $user->id)
                         ->where('receiver_id', $request->user_id);
-                })->orWhere(function($inner) use ($user, $request) {
+                })->orWhere(function ($inner) use ($user, $request) {
                     $inner->where('sender_id', $request->user_id)
                         ->where('receiver_id', $user->id);
                 });
@@ -340,8 +353,8 @@ class MessageController extends Controller
         } else {
             // Search all accessible messages
             $userGroupIds = $user->groups()->pluck('groups.id');
-            
-            $messagesQuery->where(function($q) use ($user, $userGroupIds) {
+
+            $messagesQuery->where(function ($q) use ($user, $userGroupIds) {
                 $q->where('sender_id', $user->id)
                     ->orWhere('receiver_id', $user->id)
                     ->orWhereIn('group_id', $userGroupIds);
@@ -360,5 +373,5 @@ class MessageController extends Controller
                 'total' => $messages->total(),
             ],
         ]);
-    }    }
+    }
 }

@@ -43,9 +43,11 @@ class MessageSearchTest extends TestCase
     }
 
     /**
-     * Test that user cannot search another user's private messages
+     * Test that searching returns only messages the user has access to.
+     * When user3 searches with user_id=user1, they only see their own
+     * conversation with user1, not user1's conversation with others.
      */
-    public function test_user_cannot_search_other_users_private_messages(): void
+    public function test_search_only_returns_accessible_messages(): void
     {
         $user1 = User::factory()->create();
         $user2 = User::factory()->create();
@@ -56,13 +58,17 @@ class MessageSearchTest extends TestCase
             ->create([
                 'sender_id' => $user1->id,
                 'receiver_id' => $user2->id,
-                'message' => 'Secret message',
+                'message' => 'Secret message between 1 and 2',
             ]);
 
-        // User3 cannot search user1's conversation
-        $this->actingAs($user3)
+        // User3 searches for "secret" in their conversation with user1
+        // Should return 200 but with no results (they have no messages with user1)
+        $response = $this->actingAs($user3)
             ->getJson(route('message.search') . '?query=secret&user_id=' . $user1->id)
-            ->assertStatus(403);
+            ->assertStatus(200);
+
+        // Should return empty results - user3 cannot see messages between user1 and user2
+        $this->assertEquals(0, $response->json('pagination.total'));
     }
 
     /**

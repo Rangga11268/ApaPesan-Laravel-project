@@ -62,7 +62,7 @@ class Group extends Model
             'groups.*',
             'messages.message',
             'messages.created_at as last_message_date',
-             \Illuminate\Support\Facades\DB::raw('CASE WHEN messages.message IS NOT NULL THEN messages.message WHEN messages.id IS NOT NULL THEN "Sent an attachment" ELSE NULL END as last_message')
+            \Illuminate\Support\Facades\DB::raw('CASE WHEN messages.message IS NOT NULL THEN messages.message WHEN messages.id IS NOT NULL THEN "Sent an attachment" ELSE NULL END as last_message')
         ])
             ->join('group_users', 'group_users.group_id', '=', 'groups.id')
             ->leftJoin('messages', 'messages.id', '=', 'groups.last_message_id')
@@ -75,6 +75,8 @@ class Group extends Model
 
     public function toConversationArray()
     {
+        $users = $this->users ?? collect();
+
         return [
             'id' => $this->id,
             'name' => $this->name,
@@ -82,8 +84,8 @@ class Group extends Model
             'is_group' => true,
             'is_user' => false,
             'owner_id' => $this->owner_id,
-            'users' => $this->users,
-            'user_ids' => $this->users->pluck('id'),
+            'users' => $users,
+            'user_ids' => $users->pluck('id'),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'last_message' => $this->last_message,

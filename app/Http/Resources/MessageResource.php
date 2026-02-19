@@ -31,7 +31,7 @@ class MessageResource extends JsonResource
             // New fields for enhanced features
             'read_at' => $this->read_at,
             'reply_to_id' => $this->reply_to_id,
-            'reply_to' => $this->when($this->reply_to_id, function() {
+            'reply_to' => $this->when($this->reply_to_id, function () {
                 return $this->replyTo ? [
                     'id' => $this->replyTo->id,
                     'message' => $this->replyTo->message,
@@ -41,7 +41,7 @@ class MessageResource extends JsonResource
             }),
             'edited_at' => $this->edited_at,
             'pinned_at' => $this->pinned_at,
-            'reactions' => $this->when($this->relationLoaded('reactions'), function() {
+            'reactions' => $this->when($this->relationLoaded('reactions'), function () {
                 return $this->reactions
                     ->groupBy('emoji')
                     ->map(fn($group) => [
@@ -52,9 +52,16 @@ class MessageResource extends JsonResource
                         ])->values(),
                     ]);
             }, []),
-            'is_starred' => $this->when(Auth::check(), function() {
+            'is_starred' => $this->when(Auth::check(), function () {
                 return $this->starredBy()->where('user_id', Auth::id())->exists();
             }, false),
+            'mentions' => $this->when($this->relationLoaded('mentions'), function () {
+                return $this->mentions->map(fn($m) => [
+                    'id' => $m->id,
+                    'user_id' => $m->user_id,
+                    'user_name' => $m->user->name ?? null,
+                ]);
+            }, []),
         ];
     }
 }

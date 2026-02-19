@@ -3,9 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Message;
-use App\Models\Conversation;
 use App\Models\Group;
-use App\Http\Resources\MessageResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -24,29 +22,26 @@ class ExportController extends Controller
             // Export 1-on-1 conversation
             $otherUser = \App\Models\User::findOrFail($id);
             $chatName = $otherUser->name;
-            
-            $messages = Message::where(function($query) use ($user, $id) {
+
+            $messages = Message::where(function ($query) use ($user, $id) {
                 $query->where('sender_id', $user->id)
                     ->where('receiver_id', $id);
-            })->orWhere(function($query) use ($user, $id) {
+            })->orWhere(function ($query) use ($user, $id) {
                 $query->where('sender_id', $id)
                     ->where('receiver_id', $user->id);
             })
-            ->with(['sender', 'attachments'])
-            ->orderBy('created_at')
-            ->get();
-            
+                ->with(['sender', 'attachments'])
+                ->orderBy('created_at')
+                ->get();
         } elseif ($type === 'group') {
             // Export group conversation
             $group = Group::findOrFail($id);
-            
-            // Check if user is a member
-            if (!$group->users()->where('user_id', $user->id)->exists()) {
-                return response()->json(['message' => 'Unauthorized'], 403);
-            }
-            
+
+            // Authorization: user must be member of group
+            $this->authorize('view', $group);
+
             $chatName = $group->name;
-            
+
             $messages = Message::where('group_id', $id)
                 ->with(['sender', 'attachments'])
                 ->orderBy('created_at')
@@ -73,7 +68,7 @@ class ExportController extends Controller
             'chat_name' => $chatName,
             'exported_at' => now()->toISOString(),
             'message_count' => $messages->count(),
-            'messages' => $messages->map(function($message) {
+            'messages' => $messages->map(function ($message) {
                 return [
                     'id' => $message->id,
                     'sender' => $message->sender->name,
@@ -107,10 +102,10 @@ class ExportController extends Controller
             $sender = $message->sender->name;
             $text = $message->message ?? '[Attachment]';
             $edited = $message->edited_at ? ' (edited)' : '';
-            
+
             $content .= "[{$timestamp}] {$sender}{$edited}:\n";
             $content .= "{$text}\n";
-            
+
             if ($message->attachments->count() > 0) {
                 foreach ($message->attachments as $attachment) {
                     $content .= "  📎 {$attachment->name} ({$attachment->mime})\n";

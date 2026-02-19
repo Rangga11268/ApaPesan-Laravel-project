@@ -15,6 +15,9 @@ class ReactionController extends Controller
      */
     public function store(Request $request, Message $message)
     {
+        // Authorization: user must be able to view the message to react
+        $this->authorize('view', $message);
+
         $request->validate([
             'emoji' => 'required|string|max:10',
         ]);
@@ -52,6 +55,9 @@ class ReactionController extends Controller
      */
     public function destroy(Message $message, string $emoji)
     {
+        // Authorization: user must be able to view the message
+        $this->authorize('view', $message);
+
         $user = Auth::user();
 
         $reaction = MessageReaction::where([

@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Message;
 use App\Models\StarredMessage;
 use App\Http\Resources\MessageResource;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class StarredMessageController extends Controller
@@ -16,7 +15,7 @@ class StarredMessageController extends Controller
     public function index()
     {
         $user = Auth::user();
-        
+
         $starred = StarredMessage::where('user_id', $user->id)
             ->with(['message.sender', 'message.attachments', 'message.replyTo'])
             ->latest()
@@ -39,6 +38,9 @@ class StarredMessageController extends Controller
      */
     public function store(Message $message)
     {
+        // Authorization: user must be able to view the message to star it
+        $this->authorize('view', $message);
+
         $user = Auth::user();
 
         // Check if already starred
@@ -64,6 +66,9 @@ class StarredMessageController extends Controller
      */
     public function destroy(Message $message)
     {
+        // Authorization: user must be able to view the message
+        $this->authorize('view', $message);
+
         $user = Auth::user();
 
         $starred = StarredMessage::where([
