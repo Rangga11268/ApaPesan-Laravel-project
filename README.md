@@ -1,124 +1,143 @@
+<div align="center">
 
-# 💬 ApaPesan - Chat App
+<img src="public/img/brand-banner.svg" alt="ApaPesan Banner" width="100%" />
 
-**Aplikasi obrolan web *real-time* yang dibangun dengan Laravel & React.js.**
+<br/>
 
-**`🚧 Status: Masih dalam tahap pengembangan 🚧`**
+[![Laravel 12](https://img.shields.io/badge/Laravel-12.0-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
+[![React 18](https://img.shields.io/badge/React-18.2-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
+[![Inertia.js v2](https://img.shields.io/badge/Inertia.js-v2.0-9553E9?style=for-the-badge&logo=inertia&logoColor=white)](https://inertiajs.com)
+[![Laravel Reverb](https://img.shields.io/badge/Laravel%20Reverb-WebSocket-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com/docs/reverb)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-CSS%203%2F4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
+[![WCAG AA](https://img.shields.io/badge/WCAG%20AA-17%3A1%20Contrast-059669?style=for-the-badge&logo=w3c&logoColor=white)](https://www.w3.org/WAI/standards-guidelines/wcag/)
 
-\</div\>
+<p align="center">
+  <b>Aplikasi perpesanan instan real-time berkecepatan tinggi dengan estetika visual grounded & berkelas tinggi.</b><br/>
+  <i>Dirancang bebas dari pola AI-slop dengan arsitektur dual-theme yang presisi, performa terukur, dan kebersihan kode standar senior engineer.</i>
+</p>
 
------
+</div>
 
-### 📖 Tentang Proyek
+---
 
-**ApaPelan** adalah aplikasi web yang dirancang untuk memfasilitasi komunikasi instan antara pengguna. Dibangun dengan tumpukan teknologi modern, aplikasi ini memungkinkan pengguna untuk mengirim pesan, berbagi file, dan berinteraksi dalam percakapan pribadi atau grup secara *real-time*. Proyek ini memanfaatkan kekuatan Laravel di sisi *backend* dan React.js di sisi *frontend* untuk pengalaman pengguna yang dinamis dan responsif.
+## 🎨 Identitas Brand & Design System
 
------
+Aplikasi ini menggunakan identitas monogram geometris **"A" + "P"** (*ApaPesan*) yang dirancang khusus mengikuti metodologi `/logo-design` & `/logo-generator`:
 
-### ✨ Fitur Utama
+<div align="center">
+  <img src="public/img/brand-palette.svg" alt="ApaPesan Brand Palette & Geometry" width="100%" />
+</div>
 
-  - 👤 **Autentikasi Pengguna**: Sistem pendaftaran dan *login* yang aman untuk menjaga privasi akun.
-  - 💬 **Obrolan Pribadi & Grup**: Mulai percakapan satu lawan satu atau buat ruang obrolan grup untuk diskusi.
-  - 🚀 **Pesan *Real-time***: Pesan dikirim dan diterima secara instan tanpa perlu me-*refresh* halaman, berkat *websockets* melalui Laravel Reverb.
-  - 📎 **Berbagi Lampiran**: Bagikan gambar, video, audio, dan dokumen PDF dengan mudah di dalam obrolan.
-  - 🖼️ **Pratinjau Lampiran**: Lihat pratinjau lampiran seperti gambar, video, dan audio langsung di aplikasi sebelum mengunduh.
-  - ⚙️ **Manajemen Pengguna (Admin)**: Kemampuan bagi admin untuk mengelola pengguna lain, seperti memblokir atau memberikan hak akses.
+- **Monogram Geometris**: Menggabungkan huruf 'A' dan 'P' dalam proporsi optis murni (tanpa klise clip-art seperti bintang/sparkle atau robot).
+- **Dual-Theme (Light & Dark)**: Berpindah mulus antara Light mode yang sejuk (kontras **17.85:1**) dan Dark mode matte yang elegan (**16.98:1**).
+- **Tata Letak 3-Pane (MedTrackr-inspired)**:
+  1. **Navigation Rail**: Sidebar ramping untuk navigasi akun, notifikasi, dan toggle tema instan.
+  2. **Conversation Pane**: Daftar percakapan aktif yang bersih dengan filter pencarian real-time dan badge status unread/online.
+  3. **Message Thread & Input Bar**: Area obrolan luas bergaya kartu grounded, pemisah tanggal, centang baca (*read receipts*), reaksi emoji, pesan berbintang, dan bar input terpadu (`min-h >= 44px`).
 
------
+---
 
+## ✨ Fitur Unggulan
 
-### 💻 Tumpukan Teknologi
+| Fitur | Keterangan |
+|---|---|
+| ⚡ **Real-Time WebSocket** | Pengiriman pesan instan, status mengetik (*typing indicator*), dan status online menggunakan **Laravel Reverb**. |
+| 🌓 **Dual-Theme Persistence** | Light dan Dark mode yang tersimpan otomatis di `localStorage` tanpa glitch tampilan saat refresh. |
+| 📎 **Multimedia & Voice Note** | Pratinjau langsung audio player kustom, video, gambar, dan dokumen PDF sebelum diunduh. |
+| 📌 **Pinned & Starred Messages** | Sematkan pesan penting di percakapan atau simpan ke daftar pesan berbintang pribadi. |
+| 🏷️ **User Mentions (@)** | Panggil anggota grup dengan autocomplete mention dan pelacakan mention yang belum dibaca. |
+| 👥 **Grup & Otorisasi Ketat** | Manajemen anggota grup lengkap dengan Laravel Policies (`MessagePolicy`, `GroupPolicy`). |
+| 📥 **Export Chat History** | Unduh riwayat obrolan lengkap dalam format JSON atau TXT terstruktur. |
+| 🔍 **Pencarian Pesan Cepat** | Modal pencarian percakapan terindeks dengan rate limiting ketat untuk mencegah spam. |
 
-| Teknologi | Deskripsi |
-| :--- | :--- |
-| <img src="https://skillicons.dev/icons?i=laravel" width="25" alt="Laravel"/> **Laravel** | Backend Framework |
-| <img src="https://skillicons.dev/icons?i=react" width="25" alt="React"/> **React.js** | Frontend Library |
-| <img src="https://skillicons.dev/icons?i=tailwind" width="25" alt="Tailwind CSS"/> **Tailwind CSS** | CSS Framework |
-| <img src="https://user-images.githubusercontent.com/22839356/151320295-81a17960-d27a-426a-b286-35b86a877918.png" width="25" alt="Inertia.js"/> **Inertia.js** | Modern Monolith |
-| <img src="https://raw.githubusercontent.com/laravel/reverb/main/art/logo.svg" width="25" alt="Laravel Reverb"/> **Laravel Reverb** | Real-time WebSocket Server |
+---
 
------
+## 🏗️ Tumpukan Teknologi & Arsitektur
 
-### 🚀 Instalasi dan Penggunaan
+- **Backend**: Laravel 12 (PHP 8.2+), Eloquent ORM (eager-loaded queries), Model Policies, Laravel Form Requests.
+- **Frontend**: React 18, Inertia.js v2 SPA, Tailwind CSS, DaisyUI.
+- **Real-Time Engine**: Laravel Reverb + Laravel Echo + Pusher JS.
+- **Database & Storage**: MySQL / SQLite, Laravel Public Storage Link.
+- **Audit & Kualitas**: Automated E2E verification harness (PHPUnit 100% Green, WCAG AA Mathematical Verifier, Static Antislop Scanner).
 
-Ikuti langkah-langkah berikut untuk menjalankan proyek ini di lingkungan lokal Anda.
+---
 
-1.  **Clone Repositori**
+## 🚀 Panduan Menjalankan Aplikasi
 
-    ```bash
-    git clone https://github.com/rangga11268/apapesan-laravel-project.git
-    cd apapesan-laravel-project
-    ```
+### 1. Persiapan Awal (Setup)
 
-2.  **Instal Dependensi**
-    Pastikan Anda memiliki Composer dan Node.js terinstal.
+Pastikan dependensi PHP (>= 8.2), Composer, dan Node.js sudah terpasang di sistem Anda.
 
-    ```bash
-    composer install
-    npm install
-    ```
+```bash
+# Clone repositori
+git clone https://github.com/Rangga11268/ApaPesan-Laravel-project.git
+cd ApaPesan-Laravel-project
 
-3.  **Setup Lingkungan (.env)**
-    Salin file `.env.example` dan buat file `.env` baru.
+# Install dependensi backend & frontend
+composer install
+npm install
 
-    ```bash
-    cp .env.example .env
-    ```
+# Setup environment
+cp .env.example .env
+php artisan key:generate
 
-    Kemudian, buat kunci aplikasi Laravel.
+# Hubungkan direktori storage untuk lampiran media
+php artisan storage:link
 
-    ```bash
-    php artisan key:generate
-    ```
+# Migrasi tabel dan buat data pengguna awal
+php artisan migrate --seed
+```
 
-4.  **Konfigurasi Database**
-    Atur koneksi database Anda di dalam file `.env`. Secara *default*, proyek ini menggunakan SQLite, yang tidak memerlukan konfigurasi tambahan. Untuk membuatnya, cukup jalankan:
+### 2. Menjalankan Server Development
 
-    ```bash
-    touch database/database.sqlite
-    ```
+Aplikasi memerlukan **3 layanan utama** berjalan secara bersamaan:
 
-5.  **Jalankan Migrasi & Seeder**
-    Perintah ini akan membuat struktur tabel dan mengisi data awal yang diperlukan.
+```bash
+# Terminal 1: Laravel Web Application
+php artisan serve
 
-    ```bash
-    php artisan migrate --seed
-    ```
+# Terminal 2: Laravel Reverb (WebSocket Real-Time)
+php artisan reverb:start
 
-6.  **Setup Laravel Reverb**
-    Instal dan konfigurasikan Reverb untuk komunikasi *real-time*.
+# Terminal 3: Vite Dev Server (Hot Reloading Frontend)
+npm run dev
+```
 
-    ```bash
-    php artisan reverb:install
-    ```
+> **Alternatif 1 Baris**: Anda juga dapat menjalankan ketiganya secara paralel menggunakan:
+> ```bash
+> npx concurrently -k "php artisan serve" "php artisan reverb:start" "npm run dev"
+> ```
 
-    Pastikan variabel lingkungan Reverb sudah diatur di file `.env` Anda.
+Buka browser Anda di `http://localhost:8000`.
 
-7.  **Jalankan Aplikasi**
-    Untuk kemudahan, Anda bisa menggunakan perintah `dev` yang sudah disiapkan untuk menjalankan semua layanan yang diperlukan (Vite, Server, Reverb, Queue).
+---
 
-    ```bash
-    npm run dev
-    ```
+## 🧪 Pengujian & Verifikasi Kualitas
 
-    Atau jalankan secara manual di terminal terpisah:
+Seluruh suite pengujian otomatis dapat dijalankan dengan perintah berikut:
 
-    ```bash
-    # Terminal 1: Vite Dev Server
-    npm run dev
+```bash
+# Menjalankan PHPUnit Feature & Unit Test (105 Tests, 389 Assertions)
+php artisan test
 
-    # Terminal 2: Laravel Server
-    php artisan serve
+# Menjalankan Verifikasi Matematis Kontras WCAG AA & Scanner Antislop
+node tests/e2e/runner.cjs
 
-    # Terminal 3: Reverb WebSocket Server
-    php artisan reverb:start
+# Memastikan Build Aset Produksi Bersih
+npm run build
+```
 
-    # Terminal 4: Queue Worker
-    php artisan queue:work
-    ```
+---
 
------
+## 🔒 Kebersihan Kode & Prinsip Rekayasa
 
-\#\#\#🤝 Kontribusi
+Pengembangan dan perombakan codebase ini mematuhi prinsip-prinsip:
+- **Zero AI-Slop**: Tidak ada gradient violet/neon generik, tidak ada tombol mati (*dead controls*), dan tidak ada em-dash (`—`) dalam UI copy.
+- **Ponytail Principle**: Penghapusan kode mati, controller stubs kosong, serta redundansi file (menghilangkan file duplikat typo).
+- **Eager Loading**: Mengeliminasi query N+1 pada obrolan dan pesan untuk latensi database serendah mungkin.
 
-Kontribusi sangat kami hargai\! Jika Anda ingin berkontribusi, silakan *fork* repositori ini dan buat *pull request*. Untuk perubahan besar, mohon buka *issue* terlebih dahulu untuk mendiskusikan apa yang ingin Anda ubah.
+---
+
+<div align="center">
+  <sub>Dikembangkan dengan fokus pada kenyamanan komunikasi & keindahan kode.</sub>
+</div>

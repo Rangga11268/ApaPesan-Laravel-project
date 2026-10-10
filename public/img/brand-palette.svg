@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 220" width="100%" height="220" fill="none">
+    <rect width="800" height="220" rx="16" fill="#0b1120" stroke="#1e293b" stroke-width="1.5"/>
+    
+    <!-- Title -->
+    <text x="32" y="44" font-family="system-ui, sans-serif" font-size="16" font-weight="700" fill="#F8FAFC" letter-spacing="-0.02em">
+        BRAND IDENTITY &amp; DESIGN SYSTEM SPECIFICATION
+    </text>
+    <text x="32" y="68" font-family="system-ui, sans-serif" font-size="13" font-weight="400" fill="#64748B">
+        Mathematical contrast compliance tested across Light and Dark surfaces with zero generic AI slop.
+    </text>
+    
+    <!-- Color Swatches Grid -->
+    <g transform="translate(32, 94)">
+        <!-- Swatch 1: Primary Brand -->
+        <rect width="130" height="72" rx="10" fill="#2563EB" stroke="#1d4ed8" stroke-width="1"/>
+        <text x="12" y="28" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">Brand Primary</text>
+        <text x="12" y="48" font-family="monospace" font-size="11" fill="#DBEAFE">#2563EB</text>
+        <text x="12" y="64" font-family="system-ui, sans-serif" font-size="9.5" fill="#BFDBFE">Interactive Accent</text>
+        
+        <!-- Swatch 2: Light Surface -->
+        <g transform="translate(145, 0)">
+            <rect width="130" height="72" rx="10" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1"/>
+            <text x="12" y="28" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#0F172A">Light Surface</text>
+            <text x="12" y="48" font-family="monospace" font-size="11" fill="#475569">#FFFFFF</text>
+            <text x="12" y="64" font-family="system-ui, sans-serif" font-size="9.5" fill="#64748B">Ratio: 17.85:1 (AAA)</text>
+        </g>
+        
+        <!-- Swatch 3: Dark Surface -->
+        <g transform="translate(290, 0)">
+            <rect width="130" height="72" rx="10" fill="#0F172A" stroke="#334155" stroke-width="1"/>
+            <text x="12" y="28" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#F8FAFC">Dark Surface</text>
+            <text x="12" y="48" font-family="monospace" font-size="11" fill="#94A3B8">#0F172A</text>
+            <text x="12" y="64" font-family="system-ui, sans-serif" font-size="9.5" fill="#64748B">Ratio: 16.98:1 (AAA)</text>
+        </g>
+
+        <!-- Swatch 4: Success Emerald -->
+        <g transform="translate(435, 0)">
+            <rect width="130" height="72" rx="10" fill="#059669" stroke="#047857" stroke-width="1"/>
+            <text x="12" y="28" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">Online State</text>
+            <text x="12" y="48" font-family="monospace" font-size="11" fill="#D1FAE5">#059669</text>
+            <text x="12" y="64" font-family="system-ui, sans-serif" font-size="9.5" fill="#A7F3D0">Presence Channel</text>
+        </g>
+
+        <!-- Swatch 5: Mark Geometry -->
+        <g transform="translate(580, 0)">
+            <rect width="154" height="72" rx="10" fill="#182234" stroke="#334155" stroke-width="1"/>
+            <text x="12" y="28" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#38BDF8">Vektor 'A'+'P'</text>
+            <text x="12" y="48" font-family="monospace" font-size="11" fill="#94A3B8">32x32 ViewBox</text>
+            <text x="12" y="64" font-family="system-ui, sans-serif" font-size="9.5" fill="#64748B">Interlocking Mono</text>
+        </g>
+    </g>
+</svg>

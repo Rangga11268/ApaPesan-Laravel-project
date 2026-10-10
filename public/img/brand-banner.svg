@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 240" width="100%" height="240" fill="none">
+    <defs>
+        <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#090d16" />
+            <stop offset="100%" stop-color="#0f172a" />
+        </linearGradient>
+        <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#3b82f6" />
+            <stop offset="100%" stop-color="#1d4ed8" />
+        </linearGradient>
+        <filter id="subtleGlow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="12" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+        </filter>
+    </defs>
+    
+    <!-- Background Canvas -->
+    <rect width="800" height="240" rx="16" fill="url(#bgGrad)" stroke="#1e293b" stroke-width="1.5"/>
+    
+    <!-- Decorative Subtle Grid Lines -->
+    <path d="M0 60 H800 M0 120 H800 M0 180 H800" stroke="#1e293b" stroke-width="0.75" stroke-dasharray="4 8" opacity="0.4"/>
+    <path d="M200 0 V240 M400 0 V240 M600 0 V240" stroke="#1e293b" stroke-width="0.75" stroke-dasharray="4 8" opacity="0.4"/>
+    
+    <!-- Brand Mark Monogram (A + P Interlocking) -->
+    <g transform="translate(68, 48)">
+        <!-- Outer Glow -->
+        <circle cx="72" cy="72" r="64" fill="#2563eb" opacity="0.12" filter="url(#subtleGlow)" />
+        <rect width="144" height="144" rx="28" fill="#0f172a" stroke="#2563eb" stroke-width="2" />
+        
+        <!-- Geometric Vektor AP -->
+        <g transform="translate(24, 24) scale(3)">
+            <path d="M16 4L5 27H11L13.8 21H20.5C24.0899 21 27 18.0899 27 14.5C27 10.9101 24.0899 8 20.5 8H16L16 4Z" fill="url(#accentGrad)" />
+            <path d="M16 11H20.5C22.433 11 24 12.567 24 14.5C24 16.433 22.433 18 20.5 18H15.2L16 11Z" fill="#F8FAFC" />
+            <polygon points="16,11 12,21 15,21 17.5,15" fill="#1D4ED8" />
+        </g>
+    </g>
+    
+    <!-- Typography & Identity Lockup -->
+    <g transform="translate(244, 100)">
+        <text font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="44" font-weight="800" fill="#FFFFFF" letter-spacing="-0.03em">
+            ApaPesan
+        </text>
+        <text y="38" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="16" font-weight="500" fill="#94A3B8" letter-spacing="-0.01em">
+            High-Clarity Real-Time Messaging &bull; Dual Theme (Light &amp; Dark)
+        </text>
+        <g transform="translate(0, 60)">
+            <!-- Pill Badges -->
+            <rect width="102" height="26" rx="6" fill="#1e293b" stroke="#334155" stroke-width="1" />
+            <text x="12" y="17" font-family="system-ui, sans-serif" font-size="11" font-weight="600" fill="#38bdf8">WCAG AA 17:1</text>
+            
+            <rect x="112" width="94" height="26" rx="6" fill="#1e293b" stroke="#334155" stroke-width="1" />
+            <text x="124" y="17" font-family="system-ui, sans-serif" font-size="11" font-weight="600" fill="#34d399">ZERO SLOP</text>
+
+            <rect x="216" width="104" height="26" rx="6" fill="#1e293b" stroke="#334155" stroke-width="1" />
+            <text x="228" y="17" font-family="system-ui, sans-serif" font-size="11" font-weight="600" fill="#a78bfa">LARAVEL 12 + REVERB</text>
+        </g>
+    </g>
+</svg>
