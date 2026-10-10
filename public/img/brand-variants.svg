@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 240" width="800" height="240" fill="none">
+    <rect width="800" height="240" rx="16" fill="#0b1120" stroke="#1e293b" stroke-width="1.5"/>
+    
+    <!-- Header -->
+    <text x="32" y="38" font-family="system-ui, sans-serif" font-size="14" font-weight="700" fill="#F8FAFC" letter-spacing="-0.02em">
+        LOGO VARIANTS &#38; ICON SYSTEM
+    </text>
+    <text x="32" y="58" font-family="system-ui, sans-serif" font-size="12" font-weight="400" fill="#64748B">
+        Canonical deliverables generated via /logo-design and /logo-generator specifications.
+    </text>
+
+    <!-- Variant 1: Dark Mode Tile -->
+    <g transform="translate(32, 78)">
+        <rect width="168" height="136" rx="12" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+        <g transform="translate(48, 16) scale(2.25)">
+            <path d="M16 4L5 27H11L13.8 21H20.5C24.0899 21 27 18.0899 27 14.5C27 10.9101 24.0899 8 20.5 8H16L16 4Z" fill="#2563EB" />
+            <path d="M16 11H20.5C22.433 11 24 12.567 24 14.5C24 16.433 22.433 18 20.5 18H15.2L16 11Z" fill="#FFFFFF" />
+            <polygon points="16,11 12,21 15,21 17.5,15" fill="#1D4ED8" />
+        </g>
+        <text x="84" y="104" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" font-weight="600" fill="#94A3B8">Dark App Icon</text>
+        <text x="84" y="120" text-anchor="middle" font-family="monospace" font-size="9.5" fill="#475569">Surface #0F172A</text>
+    </g>
+
+    <!-- Variant 2: Light Mode Tile -->
+    <g transform="translate(220, 78)">
+        <rect width="168" height="136" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+        <g transform="translate(48, 16) scale(2.25)">
+            <path d="M16 4L5 27H11L13.8 21H20.5C24.0899 21 27 18.0899 27 14.5C27 10.9101 24.0899 8 20.5 8H16L16 4Z" fill="#2563EB" />
+            <path d="M16 11H20.5C22.433 11 24 12.567 24 14.5C24 16.433 22.433 18 20.5 18H15.2L16 11Z" fill="#F1F5F9" />
+            <polygon points="16,11 12,21 15,21 17.5,15" fill="#1D4ED8" />
+        </g>
+        <text x="84" y="104" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" font-weight="600" fill="#1E293B">Light App Icon</text>
+        <text x="84" y="120" text-anchor="middle" font-family="monospace" font-size="9.5" fill="#64748B">Surface #FFFFFF</text>
+    </g>
+
+    <!-- Variant 3: Monochrome Solid Brand Blue -->
+    <g transform="translate(408, 78)">
+        <rect width="168" height="136" rx="12" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+        <g transform="translate(48, 16) scale(2.25)">
+            <path d="M16 4L5 27H11L13.8 21H20.5C24.0899 21 27 18.0899 27 14.5C27 10.9101 24.0899 8 20.5 8H16L16 4Z" fill="#38BDF8" />
+            <path d="M16 11H20.5C22.433 11 24 12.567 24 14.5C24 16.433 22.433 18 20.5 18H15.2L16 11Z" fill="#0F172A" />
+            <polygon points="16,11 12,21 15,21 17.5,15" fill="#0284C7" />
+        </g>
+        <text x="84" y="104" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" font-weight="600" fill="#94A3B8">High-Contrast Sky</text>
+        <text x="84" y="120" text-anchor="middle" font-family="monospace" font-size="9.5" fill="#475569">Badge #38BDF8</text>
+    </g>
+
+    <!-- Variant 4: Pure Monochrome Black / Favicon -->
+    <g transform="translate(596, 78)">
+        <rect width="168" height="136" rx="12" fill="#030712" stroke="#1f2937" stroke-width="1"/>
+        <g transform="translate(48, 16) scale(2.25)">
+            <path d="M16 4L5 27H11L13.8 21H20.5C24.0899 21 27 18.0899 27 14.5C27 10.9101 24.0899 8 20.5 8H16L16 4Z" fill="#F8FAFC" />
+            <path d="M16 11H20.5C22.433 11 24 12.567 24 14.5C24 16.433 22.433 18 20.5 18H15.2L16 11Z" fill="#030712" />
+            <polygon points="16,11 12,21 15,21 17.5,15" fill="#94A3B8" />
+        </g>
+        <text x="84" y="104" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" font-weight="600" fill="#94A3B8">Monochrome Reversed</text>
+        <text x="84" y="120" text-anchor="middle" font-family="monospace" font-size="9.5" fill="#475569">1-Colour #F8FAFC</text>
+    </g>
+</svg>

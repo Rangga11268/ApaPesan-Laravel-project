@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./public/img/brand-banner.svg" alt="ApaPesan Banner" width="100%" />
+<img src="public/img/brand-banner.png" alt="ApaPesan Banner" width="100%" />
 
 <br/>
 
@@ -12,7 +12,7 @@
 [![WCAG AA](https://img.shields.io/badge/WCAG%20AA-17%3A1%20Contrast-059669?style=for-the-badge&logo=w3c&logoColor=white)](https://www.w3.org/WAI/standards-guidelines/wcag/)
 
 <p align="center">
-  <b>Aplikasi perpesanan instan real-time berkecepatan tinggi dengan estetika visual grounded & berkelas tinggi.</b><br/>
+  <b>Aplikasi perpesanan instan real-time berkecepatan tinggi dengan estetika visual grounded &amp; berkelas tinggi.</b><br/>
   <i>Dirancang bebas dari pola AI-slop dengan arsitektur dual-theme yang presisi, performa terukur, dan kebersihan kode standar senior engineer.</i>
 </p>
 
@@ -22,14 +22,25 @@
 
 ## 🎨 Identitas Brand & Design System
 
-Aplikasi ini menggunakan identitas monogram geometris **"A" + "P"** (*ApaPesan*) yang dirancang khusus mengikuti metodologi `/logo-design` & `/logo-generator`:
+Aplikasi ini menggunakan identitas monogram geometris **"A" + "P"** (*ApaPesan*) yang dirancang khusus mengikuti standar metodologi `/logo-design` & `/logo-generator`:
 
 <div align="center">
-  <img src="./public/img/brand-palette.svg" alt="ApaPesan Brand Palette & Geometry" width="100%" />
+  <img src="public/img/brand-variants.png" alt="ApaPesan Logo Variants & Icon System" width="100%" />
 </div>
 
-- **Monogram Geometris**: Menggabungkan huruf 'A' dan 'P' dalam proporsi optis murni (tanpa klise clip-art seperti bintang/sparkle atau robot).
-- **Dual-Theme (Light & Dark)**: Berpindah mulus antara Light mode yang sejuk (kontras **17.85:1**) dan Dark mode matte yang elegan (**16.98:1**).
+<br/>
+
+<div align="center">
+  <img src="public/img/brand-palette.png" alt="ApaPesan Brand Palette & Geometry" width="100%" />
+</div>
+
+- **Monogram Geometris ("A" + "P")**: Menggabungkan huruf 'A' dan 'P' dalam proporsi optis murni (*interlocking geometric paths* tanpa klise clip-art seperti sparkle, gradient generik, atau robot).
+- **Varian Ikon Multi-Platform**:
+  - **Dark App Icon**: Latar belakang `#0F172A` pekat dengan aksen biru `#2563EB` untuk tampilan kontras tinggi pada dark environment.
+  - **Light App Icon**: Permukaan putih `#FFFFFF` bersih dengan border `#E2E8F0` untuk platform bertema terang.
+  - **High-Contrast Sky**: Aksen kontras tinggi `#38BDF8` untuk visibilitas maksimal pada badge dan notifikasi.
+  - **Monochrome Reversed**: Versi satu-warna `#F8FAFC` murni untuk dokumen formal, favicon, dan media cetak.
+- **Dual-Theme Persistence (Light & Dark)**: Berpindah mulus antara Light mode yang sejuk (rasio kontras **17.85:1 AAA**) dan Dark mode matte yang elegan (**16.98:1 AAA**).
 - **Tata Letak 3-Pane (MedTrackr-inspired)**:
   1. **Navigation Rail**: Sidebar ramping untuk navigasi akun, notifikasi, dan toggle tema instan.
   2. **Conversation Pane**: Daftar percakapan aktif yang bersih dengan filter pencarian real-time dan badge status unread/online.
