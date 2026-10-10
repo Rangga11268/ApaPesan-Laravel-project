@@ -18,6 +18,7 @@ import { Popover, Transition } from "@headlessui/react";
 import EmojiPicker from "emoji-picker-react";
 import AudioRecorder from "./AudioRecorder";
 import { useEventBus } from "@/EventBus";
+import { useTheme } from "@/Contexts/ThemeContext";
 
 const MessageInput = ({
     conversation = null,
@@ -26,6 +27,7 @@ const MessageInput = ({
     editingMessage = null,
     onCancelEdit = null,
 }) => {
+    const { theme } = useTheme();
     const [newMessage, setNewMessage] = useState("");
     const [inputErrorMessage, setInputErrorMessage] = useState("");
     const [messageSending, setMessageSending] = useState(false);
@@ -180,12 +182,12 @@ const MessageInput = ({
     };
 
     return (
-        <div className="sm:px-5 px-2 sm:pb-6 pb-4 pt-2 shrink-0">
-            {/* Floating Glass Capsule */}
+        <div className="sm:px-5 px-2 sm:pb-4 pb-3 pt-2 shrink-0 overflow-x-hidden">
+            {/* Grounded Message Input Container */}
             <div
                 className={`
-                glass-light border border-white/10 rounded-2xl shadow-2xl backdrop-blur-2xl transition-all duration-300
-                ${chosenFiles.length > 0 || replyTo ? "p-4" : "p-2"}
+                bg-surface border border-border rounded-xl shadow-xs transition-colors overflow-hidden
+                ${chosenFiles.length > 0 || replyTo ? "p-3" : "p-2"}
             `}
             >
                 {/* Reply Preview */}
@@ -200,16 +202,18 @@ const MessageInput = ({
 
                 {/* Edit Mode Indicator */}
                 {editingMessage && (
-                    <div className="flex items-center justify-between px-4 py-2 bg-primary-500/20 rounded-t-lg mb-2">
-                        <div className="flex items-center gap-2 text-primary-300">
+                    <div className="flex items-center justify-between px-3 py-1.5 bg-primary/10 border border-primary/20 rounded-lg mb-2 text-primary">
+                        <div className="flex items-center gap-2">
                             <PencilSquareIcon className="w-4 h-4" />
-                            <span className="text-sm font-medium">
-                                Editing message
+                            <span className="text-xs font-semibold">
+                                Mengedit pesan
                             </span>
                         </div>
                         <button
+                            type="button"
                             onClick={onCancelEdit}
-                            className="text-gray-400 hover:text-white"
+                            className="min-h-[36px] min-w-[36px] flex items-center justify-center text-muted hover:text-main rounded-md transition-colors"
+                            aria-label="Batalkan pengeditan"
                         >
                             <XCircleIcon className="w-5 h-5" />
                         </button>
@@ -220,25 +224,25 @@ const MessageInput = ({
                 {(chosenFiles.length > 0 ||
                     uploadProgress > 0 ||
                     inputErrorMessage) && (
-                    <div className="mb-3 px-2 border-b border-white/5 pb-3">
+                    <div className="mb-2 px-1 border-b border-border pb-2">
                         {!!uploadProgress && (
-                            <div className="w-full bg-gray-700/50 rounded-full h-1 mb-2 overflow-hidden">
+                            <div className="w-full bg-surface-elevated rounded-full h-1 mb-2 overflow-hidden">
                                 <div
-                                    className="bg-primary-500 h-1 rounded-full transition-all duration-300"
+                                    className="bg-primary h-1 rounded-full transition-all duration-300"
                                     style={{ width: `${uploadProgress}%` }}
                                 ></div>
                             </div>
                         )}
                         {inputErrorMessage && (
-                            <p className="text-xs text-red-400 mb-2 font-medium bg-red-500/10 px-2 py-1 rounded inline-block border border-red-500/20">
+                            <p className="text-xs text-red-500 mb-2 font-medium bg-red-500/10 px-2.5 py-1 rounded-md inline-block border border-red-500/20">
                                 {inputErrorMessage}
                             </p>
                         )}
-                        <div className="flex flex-wrap gap-3 max-h-[120px] overflow-y-auto custom-scrollbar">
+                        <div className="flex flex-wrap gap-2 max-h-[120px] overflow-y-auto custom-scrollbar">
                             {chosenFiles.map((file) => (
                                 <div
                                     key={file.file.name}
-                                    className={`relative group flex justify-between items-center p-2 rounded-xl bg-black/20 border border-white/5 ${
+                                    className={`relative group flex justify-between items-center p-2 rounded-lg bg-surface-elevated border border-border ${
                                         !isImage(file.file) ? "w-[240px]" : ""
                                     }`}
                                 >
@@ -246,7 +250,7 @@ const MessageInput = ({
                                         <img
                                             src={file.url}
                                             alt=""
-                                            className="w-16 h-16 object-cover rounded-lg"
+                                            className="w-16 h-16 object-cover rounded-md"
                                         />
                                     )}
                                     {isAudio(file.file) && (
@@ -261,6 +265,7 @@ const MessageInput = ({
                                         )}
 
                                     <button
+                                        type="button"
                                         onClick={() =>
                                             setChosenFiles(
                                                 chosenFiles.filter(
@@ -270,7 +275,8 @@ const MessageInput = ({
                                                 )
                                             )
                                         }
-                                        className="absolute -right-2 -top-2 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 shadow-md transition-all opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100"
+                                        className="absolute -right-2 -top-2 w-6 h-6 rounded-full bg-red-600 text-white flex items-center justify-center hover:bg-red-700 shadow-sm transition-all"
+                                        aria-label="Hapus lampiran"
                                     >
                                         <XCircleIcon className="w-4 h-4" />
                                     </button>
@@ -281,45 +287,45 @@ const MessageInput = ({
                 )}
 
                 {/* Input Controls */}
-                <div className="flex items-end gap-1">
+                <div className="flex items-end gap-1 sm:gap-1.5">
                     {/* Left Actions (File/Audio) */}
-                    <div className="flex items-center gap-0 pb-0.5">
-                        <button
-                            className="p-1 sm:p-2 text-primary-300 hover:text-white hover:bg-white/10 rounded-full transition-all relative group tooltip sm:tooltip-top"
-                            data-tip="Attach File"
-                            disabled={!!editingMessage}
+                    <div className="flex items-center shrink-0">
+                        <label
+                            className="min-h-[44px] min-w-[44px] p-2 text-muted hover:text-main hover:bg-surface-elevated rounded-lg transition-colors flex items-center justify-center relative cursor-pointer"
+                            title="Lampirkan Dokumen"
+                            aria-label="Lampirkan Dokumen"
                         >
-                            <PaperClipIcon className="sm:w-6 sm:h-6 w-[18px] h-[18px]" />
+                            <PaperClipIcon className="w-5 h-5" />
                             <input
                                 type="file"
                                 multiple
                                 onChange={onFileChange}
                                 className="absolute inset-0 z-20 opacity-0 cursor-pointer disabled:cursor-not-allowed"
-                                disabled={!!editingMessage}
+                                disabled={Boolean(editingMessage)}
                             />
-                        </button>
-                        <button
-                            className="p-1 sm:p-2 text-primary-300 hover:text-white hover:bg-white/10 rounded-full transition-all relative group tooltip sm:tooltip-top"
-                            data-tip="Send Image"
-                            disabled={!!editingMessage}
+                        </label>
+                        <label
+                            className="min-h-[44px] min-w-[44px] p-2 text-muted hover:text-main hover:bg-surface-elevated rounded-lg transition-colors flex items-center justify-center relative cursor-pointer"
+                            title="Kirim Foto"
+                            aria-label="Kirim Foto"
                         >
-                            <PhotoIcon className="sm:w-6 sm:h-6 w-[18px] h-[18px]" />
+                            <PhotoIcon className="w-5 h-5" />
                             <input
                                 type="file"
                                 multiple
                                 accept="image/*"
                                 onChange={onFileChange}
                                 className="absolute inset-0 z-20 opacity-0 cursor-pointer disabled:cursor-not-allowed"
-                                disabled={!!editingMessage}
+                                disabled={Boolean(editingMessage)}
                             />
-                        </button>
+                        </label>
                         {!editingMessage && (
                             <AudioRecorder fileReady={recordedAudioReady} />
                         )}
                     </div>
 
-                    {/* Text Input */}
-                    <div className="flex-1 relative bg-black/30 rounded-2xl border border-white/10 focus-within:border-primary-500/50 focus-within:ring-1 focus-within:ring-primary-500/20 transition-all">
+                    {/* Text Input Container */}
+                    <div className="flex-1 min-w-0 relative bg-surface-elevated rounded-lg border border-border focus-within:border-border-active focus-within:ring-1 focus-within:ring-border-active transition-colors min-h-[44px] flex items-center px-1">
                         <NewMessageInput
                             value={newMessage}
                             onSend={onSendClick}
@@ -327,25 +333,27 @@ const MessageInput = ({
                                 setNewMessage(ev.target.value);
                                 handleTyping();
                             }}
-                            className="bg-transparent border-none text-gray-100 placeholder-gray-500 focus:ring-0 w-full sm:py-3 py-2 sm:px-4 px-2.5 min-h-[40px] max-h-[140px] text-sm sm:text-base"
+                            className="bg-transparent border-none text-main placeholder-muted focus:ring-0 w-full py-2.5 px-3 min-h-[40px] max-h-[140px] text-sm sm:text-base outline-none"
                         />
                     </div>
 
                     {/* Right Actions (Emoji/Like/Send) */}
-                    <div className="flex items-center gap-0 pb-0.5">
+                    <div className="flex items-center shrink-0">
                         <Popover className="relative">
-                            <Popover.Button className="p-1 sm:p-2 text-primary-300 hover:text-white hover:bg-white/10 rounded-full transition-all">
-                                <FaceSmileIcon className="sm:w-6 sm:h-6 w-[18px] h-[18px]" />
+                            <Popover.Button
+                                type="button"
+                                className="min-h-[44px] min-w-[44px] p-2 text-muted hover:text-main hover:bg-surface-elevated rounded-lg transition-colors flex items-center justify-center"
+                                aria-label="Buka pemilih emoji"
+                            >
+                                <FaceSmileIcon className="w-5 h-5" />
                             </Popover.Button>
-                            <Popover.Panel className="absolute bottom-full right-0 z-50 mb-4 origin-bottom-right">
-                                <div className="shadow-2xl rounded-2xl overflow-hidden border border-white/5">
-                                    <EmojiPicker
-                                        theme="dark"
-                                        onEmojiClick={(ev) =>
-                                            setNewMessage(newMessage + ev.emoji)
-                                        }
-                                    />
-                                </div>
+                            <Popover.Panel className="absolute bottom-full right-0 z-50 mb-3 max-w-[calc(100vw-32px)] sm:max-w-none shadow-xl rounded-xl overflow-hidden border border-border bg-surface origin-bottom-right">
+                                <EmojiPicker
+                                    theme={theme === "dark" ? "dark" : "light"}
+                                    onEmojiClick={(ev) =>
+                                        setNewMessage(newMessage + ev.emoji)
+                                    }
+                                />
                             </Popover.Panel>
                         </Popover>
 
@@ -353,18 +361,22 @@ const MessageInput = ({
                         chosenFiles.length > 0 ||
                         editingMessage ? (
                             <button
+                                type="button"
                                 onClick={onSendClick}
                                 disabled={messageSending}
-                                className="btn btn-circle sm:w-12 sm:h-12 w-10 h-10 min-h-0 border-none bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-500 hover:to-accent-500 text-white shadow-[0_0_15px_rgba(124,58,237,0.4)] hover:shadow-[0_0_25px_rgba(124,58,237,0.6)] transition-all transform hover:scale-105"
+                                className="min-h-[44px] min-w-[44px] px-3.5 bg-primary hover:bg-primary-600 disabled:opacity-50 text-white rounded-lg flex items-center justify-center font-medium shadow-xs transition-colors"
+                                aria-label="Kirim Pesan"
                             >
-                                <PaperAirplaneIcon className="sm:w-6 sm:h-6 w-5 h-5 -rotate-45" />
+                                <PaperAirplaneIcon className="w-5 h-5 -rotate-45" />
                             </button>
                         ) : (
                             <button
+                                type="button"
                                 onClick={onLikeClick}
-                                className="p-1 sm:p-2 text-primary-300 hover:text-white hover:bg-white/10 rounded-full transition-all hover:scale-110 active:scale-95"
+                                className="min-h-[44px] min-w-[44px] p-2 text-muted hover:text-primary hover:bg-surface-elevated rounded-lg transition-colors flex items-center justify-center"
+                                aria-label="Kirim jempol"
                             >
-                                <HandThumbUpIcon className="sm:w-6 sm:h-6 w-[18px] h-[18px]" />
+                                <HandThumbUpIcon className="w-5 h-5 text-primary" />
                             </button>
                         )}
                     </div>

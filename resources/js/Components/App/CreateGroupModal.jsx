@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Modal from "@/Components/Modal";
 import TextInput from "@/Components/TextInput";
 import PrimaryButton from "@/Components/PrimaryButton";
@@ -8,41 +8,46 @@ import axios from "axios";
 import { usePage } from "@inertiajs/react";
 import {
     XMarkIcon,
-    UserPlusIcon,
+    UserGroupIcon,
     MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 
-const CreateGroupModal = ({ show, onClose, onGroupCreated }) => {
-    const { auth } = usePage().props;
+const CreateGroupModal = ({
+    show,
+    isOpen,
+    onClose,
+    onGroupCreated,
+    users = null,
+}) => {
+    const isVisible = Boolean(isOpen ?? show);
+    const { auth, conversation } = usePage().props;
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
     const [selectedUsers, setSelectedUsers] = useState([]);
-    const [availableUsers, setAvailableUsers] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
-    useEffect(() => {
-        if (show) {
-            // Fetch available users
-            fetchUsers();
+    // Derive available users from props or page context
+    const availableUsers = useMemo(() => {
+        if (Array.isArray(users) && users.length > 0) {
+            return users.filter((u) => u.id !== auth?.user?.id);
         }
-    }, [show]);
+        if (Array.isArray(conversation) && conversation.length > 0) {
+            return conversation.filter((c) => c.is_user && c.id !== auth?.user?.id);
+        }
+        return [];
+    }, [users, conversation, auth]);
 
-    const fetchUsers = async () => {
-        try {
-            // Get all users except current user
-            const response = await axios.get(route("dashboard"));
-            // Extract users from conversation data
-            const users =
-                response.data.props?.conversation?.filter(
-                    (c) => c.is_user && c.id !== auth.user.id
-                ) || [];
-            setAvailableUsers(users);
-        } catch (err) {
-            console.error("Failed to fetch users:", err);
+    useEffect(() => {
+        if (!isVisible) {
+            setName("");
+            setDescription("");
+            setSelectedUsers([]);
+            setSearchTerm("");
+            setError("");
         }
-    };
+    }, [isVisible]);
 
     const toggleUser = (user) => {
         setSelectedUsers((prev) => {
@@ -57,11 +62,11 @@ const CreateGroupModal = ({ show, onClose, onGroupCreated }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!name.trim()) {
-            setError("Group name is required");
+            setError("Nama grup wajib diisi");
             return;
         }
         if (selectedUsers.length === 0) {
-            setError("Please select at least one member");
+            setError("Pilih minimal satu anggota grup");
             return;
         }
 
@@ -76,11 +81,11 @@ const CreateGroupModal = ({ show, onClose, onGroupCreated }) => {
             });
 
             if (response.data.success) {
-                onGroupCreated && onGroupCreated(response.data.group);
+                if (onGroupCreated) onGroupCreated(response.data.group);
                 handleClose();
             }
         } catch (err) {
-            setError(err.response?.data?.message || "Failed to create group");
+            setError(err.response?.data?.message || "Gagal membuat grup. Silakan coba lagi.");
         } finally {
             setLoading(false);
         }
@@ -96,138 +101,141 @@ const CreateGroupModal = ({ show, onClose, onGroupCreated }) => {
     };
 
     const filteredUsers = availableUsers.filter((user) =>
-        user.name.toLowerCase().includes(searchTerm.toLowerCase())
+        user.name?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
-        <Modal show={show} onClose={handleClose} maxWidth="md">
-            <form onSubmit={handleSubmit} className="p-6 bg-surface text-white">
-                <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-display font-bold">
-                        Create New Group
-                    </h2>
+        <Modal show={isVisible} onClose={handleClose} maxWidth="md">
+            <form onSubmit={handleSubmit} className="p-6 bg-surface text-main border border-border rounded-xl">
+                <div className="flex items-center justify-between mb-6 pb-3 border-b border-border">
+                    <div className="flex items-center gap-2">
+                        <UserGroupIcon className="w-5 h-5 text-primary" />
+                        <h2 className="text-lg font-display font-bold text-main">
+                            Buat Grup Baru
+                        </h2>
+                    </div>
                     <button
                         type="button"
                         onClick={handleClose}
-                        className="p-1 hover:bg-white/10 rounded-full"
+                        className="min-h-[44px] min-w-[44px] p-2 hover:bg-surface-elevated text-muted hover:text-main rounded-lg transition-colors flex items-center justify-center"
+                        aria-label="Tutup dialog buat grup"
                     >
                         <XMarkIcon className="w-5 h-5" />
                     </button>
                 </div>
 
                 {error && (
-                    <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-300 text-sm">
+                    <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-600 dark:text-red-400 text-sm">
                         {error}
                     </div>
                 )}
 
                 <div className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-1">
-                            Group Name *
+                        <label className="block text-sm font-semibold text-main mb-1.5">
+                            Nama Grup <span className="text-red-500">*</span>
                         </label>
                         <TextInput
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            placeholder="Enter group name"
-                            className="w-full bg-black/20 border-white/10"
+                            placeholder="Contoh: Tim Medis Operasional"
+                            className="w-full bg-surface-elevated border-border text-main placeholder-muted rounded-lg text-sm focus:border-border-active focus:ring-1 focus:ring-border-active"
                             maxLength={255}
+                            autoFocus
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-1">
-                            Description (optional)
+                        <label className="block text-sm font-semibold text-main mb-1.5">
+                            Deskripsi (Opsional)
                         </label>
                         <textarea
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
-                            placeholder="What's this group about?"
-                            className="w-full bg-black/20 border-white/10 rounded-lg p-3 text-white placeholder-gray-500 resize-none"
+                            placeholder="Keterangan singkat tujuan grup..."
+                            className="w-full bg-surface-elevated border border-border text-main placeholder-muted rounded-lg p-3 text-sm focus:border-border-active focus:ring-1 focus:ring-border-active resize-none outline-none"
                             rows={2}
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">
-                            Add Members ({selectedUsers.length} selected)
-                        </label>
+                        <div className="flex items-center justify-between mb-2">
+                            <label className="block text-sm font-semibold text-main">
+                                Pilih Anggota ({selectedUsers.length} dipilih)
+                            </label>
+                        </div>
 
-                        {/* Selected users */}
                         {selectedUsers.length > 0 && (
-                            <div className="flex flex-wrap gap-2 mb-3">
+                            <div className="flex flex-wrap gap-1.5 mb-3">
                                 {selectedUsers.map((user) => (
                                     <div
                                         key={user.id}
-                                        className="flex items-center gap-1 px-2 py-1 bg-primary-500/20 rounded-full text-sm"
+                                        className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-primary/10 border border-primary/20 rounded-full text-xs font-medium text-main"
                                     >
-                                        <span>{user.name}</span>
+                                        <span className="truncate max-w-[120px]">{user.name}</span>
                                         <button
                                             type="button"
                                             onClick={() => toggleUser(user)}
-                                            className="hover:text-red-400"
+                                            className="min-h-[24px] min-w-[24px] flex items-center justify-center text-muted hover:text-red-500 rounded-full"
+                                            aria-label={`Hapus ${user.name}`}
                                         >
-                                            <XMarkIcon className="w-4 h-4" />
+                                            <XMarkIcon className="w-3.5 h-3.5" />
                                         </button>
                                     </div>
                                 ))}
                             </div>
                         )}
 
-                        {/* Search */}
-                        <div className="relative mb-2">
-                            <MagnifyingGlassIcon className="absolute left-3 top-2.5 w-5 h-5 text-gray-500" />
+                        <div className="relative mb-2 flex items-center">
+                            <MagnifyingGlassIcon className="absolute left-3 w-4 h-4 text-muted pointer-events-none" />
                             <TextInput
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                placeholder="Search users..."
-                                className="w-full pl-10 bg-black/20 border-white/10"
+                                placeholder="Cari kontak anggota..."
+                                className="w-full pl-9 py-2 bg-surface-elevated border-border text-main placeholder-muted rounded-lg text-sm focus:border-border-active focus:ring-1 focus:ring-border-active"
                             />
                         </div>
 
-                        {/* User list */}
-                        <div className="max-h-48 overflow-y-auto space-y-1 rounded-lg bg-black/20 p-2">
+                        <div className="max-h-48 overflow-y-auto custom-scrollbar space-y-1 rounded-lg bg-surface-elevated border border-border p-2">
                             {filteredUsers.length === 0 ? (
-                                <p className="text-center text-gray-500 py-4">
-                                    No users found
+                                <p className="text-center text-muted text-xs py-5">
+                                    Tidak ada kontak ditemukan
                                 </p>
                             ) : (
-                                filteredUsers.map((user) => (
-                                    <button
-                                        key={user.id}
-                                        type="button"
-                                        onClick={() => toggleUser(user)}
-                                        className={`
-                                            w-full flex items-center gap-3 p-2 rounded-lg transition-colors
-                                            ${
-                                                selectedUsers.find(
-                                                    (u) => u.id === user.id
-                                                )
-                                                    ? "bg-primary-500/20 border border-primary-500/50"
-                                                    : "hover:bg-white/5"
-                                            }
-                                        `}
-                                    >
-                                        <UserAvatar
-                                            user={user}
-                                            className="w-8 h-8"
-                                        />
-                                        <span className="text-sm">
-                                            {user.name}
-                                        </span>
-                                    </button>
-                                ))
+                                filteredUsers.map((user) => {
+                                    const isSelected = Boolean(selectedUsers.find((u) => u.id === user.id));
+                                    return (
+                                        <button
+                                            key={user.id}
+                                            type="button"
+                                            onClick={() => toggleUser(user)}
+                                            className={`w-full min-h-[44px] flex items-center gap-3 p-2 rounded-lg transition-colors text-left ${
+                                                isSelected
+                                                    ? "bg-primary/10 border border-primary/40 text-main font-medium"
+                                                    : "hover:bg-surface border border-transparent text-muted hover:text-main"
+                                            }`}
+                                        >
+                                            <UserAvatar user={user} className="w-8 h-8" />
+                                            <span className="text-sm truncate flex-1">{user.name}</span>
+                                            {isSelected && (
+                                                <span className="text-xs font-semibold text-primary px-2">
+                                                    ✓
+                                                </span>
+                                            )}
+                                        </button>
+                                    );
+                                })
                             )}
                         </div>
                     </div>
                 </div>
 
-                <div className="flex justify-end gap-3 mt-6">
-                    <SecondaryButton type="button" onClick={handleClose}>
-                        Cancel
+                <div className="flex justify-end gap-3 mt-6 pt-3 border-t border-border">
+                    <SecondaryButton type="button" onClick={handleClose} className="min-h-[44px]">
+                        Batal
                     </SecondaryButton>
-                    <PrimaryButton type="submit" disabled={loading}>
-                        {loading ? "Creating..." : "Create Group"}
+                    <PrimaryButton type="submit" disabled={loading} className="min-h-[44px]">
+                        {loading ? "Menyimpan..." : "Buat Grup"}
                     </PrimaryButton>
                 </div>
             </form>

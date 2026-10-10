@@ -108,7 +108,7 @@ export default function UpdateProfileInformation({
                 <div>
                     <InputLabel
                         htmlFor="name"
-                        value="Name"
+                        value="Nama"
                         className="text-gray-300"
                     />
 
@@ -148,21 +148,22 @@ export default function UpdateProfileInformation({
                 {mustVerifyEmail && user.email_verified_at === null && (
                     <div>
                         <p className="mt-2 text-sm text-gray-200">
-                            Your email address is unverified.
+                            Email Anda belum diverifikasi.
                             <Link
                                 href={route("verification.send")}
                                 method="post"
                                 as="button"
-                                className="rounded-md text-sm text-gray-400 underline hover:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+                                className="rounded-md text-sm text-gray-400 underline hover:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 ml-1"
                             >
-                                Click here to re-send the verification email.
+                                Klik di sini untuk mengirim ulang email
+                                verifikasi.
                             </Link>
                         </p>
 
                         {status === "verification-link-sent" && (
                             <div className="mt-2 text-sm font-medium text-emerald-400">
-                                A new verification link has been sent to your
-                                email address.
+                                Link verifikasi baru telah dikirim ke email
+                                Anda.
                             </div>
                         )}
                     </div>
@@ -173,7 +174,7 @@ export default function UpdateProfileInformation({
                         disabled={processing}
                         className="bg-primary-600 hover:bg-primary-500 border-none glow-button"
                     >
-                        Save Changes
+                        Simpan Perubahan
                     </PrimaryButton>
 
                     <Transition
@@ -185,7 +186,7 @@ export default function UpdateProfileInformation({
                     >
                         <p className="text-sm text-emerald-400 flex items-center gap-1">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>{" "}
-                            Saved.
+                            Tersimpan.
                         </p>
                     </Transition>
                 </div>

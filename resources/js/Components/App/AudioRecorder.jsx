@@ -55,14 +55,20 @@ const AudioRecorder = ({ fileReady }) => {
 
     return (
         <button
+            type="button"
             onClick={onMicrophoneClick}
-            className="p-1 sm:p-2 text-primary-300 hover:text-white hover:bg-white/10 rounded-full transition-all relative group tooltip sm:tooltip-top"
-            data-tip={recording ? "Stop Recording" : "Record Audio"}
+            className={`min-h-[44px] min-w-[44px] p-2 rounded-lg transition-colors flex items-center justify-center relative ${
+                recording
+                    ? "bg-red-500/10 text-red-500 hover:bg-red-500/20"
+                    : "text-muted hover:text-main hover:bg-surface-elevated"
+            }`}
+            title={recording ? "Hentikan Rekaman" : "Rekam Suara"}
+            aria-label={recording ? "Hentikan Rekaman" : "Rekam Suara"}
         >
             {recording ? (
-                <StopCircleIcon className="sm:w-6 sm:h-6 w-[18px] h-[18px] text-red-500 animate-pulse" />
+                <StopCircleIcon className="w-5 h-5 text-red-500 animate-pulse" />
             ) : (
-                <MicrophoneIcon className="sm:w-6 sm:h-6 w-[18px] h-[18px]" />
+                <MicrophoneIcon className="w-5 h-5" />
             )}
         </button>
     );

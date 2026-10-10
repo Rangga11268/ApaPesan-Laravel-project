@@ -11,19 +11,15 @@ const ConversationItem = ({
 }) => {
     const page = usePage();
     const currentUser = page.props.auth.user;
-    // Active State (Midnight Aurora Highlight)
+
     const isSelected =
         selectedConversation &&
         selectedConversation.id == conversation.id &&
         selectedConversation.is_group === conversation.is_group;
 
-    let classes = "";
-    if (isSelected) {
-        classes =
-            " bg-white/10 border-l-4 border-l-primary-500 shadow-[0_0_20px_rgba(124,58,237,0.1)]";
-    } else {
-        classes = " hover:bg-white/5 border-l-4 border-transparent";
-    }
+    const activeClasses = isSelected
+        ? "border-l-4 border-primary bg-surface-elevated text-main shadow-xs"
+        : "border-l-4 border-transparent hover:bg-surface-elevated/60 text-muted hover:text-main";
 
     return (
         <Link
@@ -34,10 +30,10 @@ const ConversationItem = ({
             }
             preserveState
             className={
-                "conversation-item flex items-center gap-3 p-3 text-gray-300 transition-all duration-300 rounded-lg group mb-1 cursor-pointer " +
-                classes +
+                "conversation-item flex items-center gap-3 p-3 transition-colors duration-150 rounded-lg group mb-1 cursor-pointer " +
+                activeClasses +
                 (conversation.is_user &&
-                currentUser.is_admin &&
+                currentUser?.is_admin &&
                 conversation.blocked_at
                     ? " opacity-50 grayscale"
                     : "")
@@ -48,13 +44,13 @@ const ConversationItem = ({
                     <UserAvatar
                         user={conversation}
                         online={online}
-                        className="w-12 h-12 rounded-full border border-white/10 shadow-sm"
+                        className="w-11 h-11 rounded-full border border-border"
                     />
                 )}
                 {conversation.is_group && <GroupAvatar />}
 
                 {online && (
-                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 rounded-full border-2 border-[#05070a] shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div>
+                    <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-surface"></div>
                 )}
             </div>
 
@@ -62,15 +58,13 @@ const ConversationItem = ({
                 <div className="flex justify-between items-center mb-0.5">
                     <h3
                         className={`font-semibold text-sm truncate ${
-                            isSelected
-                                ? "text-white"
-                                : "text-gray-200 group-hover:text-white"
+                            isSelected ? "text-main" : "text-main/90 group-hover:text-main"
                         }`}
                     >
                         {conversation.name}
                     </h3>
                     {conversation.last_message_date && (
-                        <span className="text-[10px] text-gray-500 font-medium whitespace-nowrap">
+                        <span className="text-[11px] text-muted whitespace-nowrap ml-2">
                             {formatMessageDateShort(
                                 conversation.last_message_date
                             )}
@@ -78,28 +72,35 @@ const ConversationItem = ({
                     )}
                 </div>
 
-                <div className="flex justify-between items-end">
+                <div className="flex justify-between items-center gap-2">
                     <p
-                        className={`text-xs truncate max-w-[160px] ${
+                        className={`text-xs truncate ${
                             isSelected
-                                ? "text-gray-300"
-                                : "text-gray-500 group-hover:text-gray-400"
+                                ? "text-muted"
+                                : "text-muted group-hover:text-main/80"
                         }`}
                     >
                         {conversation.last_message ? (
                             conversation.last_message
                         ) : (
-                            <span className="italic opacity-50">
-                                Started a chat
+                            <span className="italic opacity-60">
+                                Mulai percakapan
                             </span>
                         )}
                     </p>
 
+                    {/* Unread badge if available */}
+                    {Boolean(conversation.unread_count && conversation.unread_count > 0) && (
+                        <span className="px-2 py-0.5 text-[11px] font-bold bg-primary text-white rounded-full shrink-0">
+                            {conversation.unread_count}
+                        </span>
+                    )}
+
                     {/* Admin Options for Users */}
-                    {!!currentUser.is_admin && conversation.is_user && (
+                    {Boolean(currentUser?.is_admin && conversation.is_user) && (
                         <div
                             onClick={(e) => e.preventDefault()}
-                            className="opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
                         >
                             <UserOptionsDropdown conversation={conversation} />
                         </div>

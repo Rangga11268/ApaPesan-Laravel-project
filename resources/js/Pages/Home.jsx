@@ -98,7 +98,7 @@ function Home({
     const messageEdited = ({ message }) => {
         setLocalMessages((prevMessages) => {
             return prevMessages.map((m) =>
-                m.id === message.id ? { ...m, ...message } : m
+                m.id === message.id ? { ...m, ...message } : m,
             );
         });
     };
@@ -107,7 +107,7 @@ function Home({
     const messageReadHandler = ({ message_ids, read_at }) => {
         setLocalMessages((prevMessages) => {
             return prevMessages.map((m) =>
-                message_ids.includes(m.id) ? { ...m, read_at } : m
+                message_ids.includes(m.id) ? { ...m, read_at } : m,
             );
         });
     };
@@ -116,7 +116,7 @@ function Home({
     const messageReactionHandler = ({ message_id, reactions }) => {
         setLocalMessages((prevMessages) => {
             return prevMessages.map((m) =>
-                m.id === message_id ? { ...m, reactions } : m
+                m.id === message_id ? { ...m, reactions } : m,
             );
         });
     };
@@ -179,7 +179,7 @@ function Home({
         } catch (err) {
             if (err.response?.status === 409) {
                 await axios.delete(
-                    route("reaction.destroy", { message: messageId, emoji })
+                    route("reaction.destroy", { message: messageId, emoji }),
                 );
             }
         }
@@ -210,8 +210,8 @@ function Home({
                     const uniqueNewMessages = newMessages.filter(
                         (newMsg) =>
                             !prevMessages.some(
-                                (prevMsg) => prevMsg.id === newMsg.id
-                            )
+                                (prevMsg) => prevMsg.id === newMsg.id,
+                            ),
                     );
                     return [...uniqueNewMessages, ...prevMessages];
                 });
@@ -253,7 +253,7 @@ function Home({
             const unreadIds = messages.data
                 .filter(
                     (m) =>
-                        !m.read_at && m.sender_id !== selectedConversation?.id
+                        !m.read_at && m.sender_id !== selectedConversation?.id,
                 )
                 .map((m) => m.id);
             if (unreadIds.length) {
@@ -291,7 +291,7 @@ function Home({
                     loadMoreMessages();
                 }
             },
-            { root: messagesCtrRef.current, threshold: 1.0 }
+            { root: messagesCtrRef.current, threshold: 1.0 },
         );
 
         if (loadMoreIntersect.current) {
@@ -305,26 +305,123 @@ function Home({
         };
     }, [localMessages]);
 
+    // Format helper for structured date dividers
+    const formatMessageDate = (dateString) => {
+        if (!dateString) return "";
+        const date = new Date(dateString);
+        const today = new Date();
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        if (date.toDateString() === today.toDateString()) {
+            return "Hari ini";
+        }
+        if (date.toDateString() === yesterday.toDateString()) {
+            return "Kemarin";
+        }
+        return date.toLocaleDateString("id-ID", {
+            day: "numeric",
+            month: "short",
+            year: date.getFullYear() !== today.getFullYear() ? "numeric" : undefined,
+        });
+    };
+
+    const isDifferentDay = (d1, d2) => {
+        if (!d1 || !d2) return true;
+        const date1 = new Date(d1);
+        const date2 = new Date(d2);
+        return date1.toDateString() !== date2.toDateString();
+    };
+
     // Render Empty State
     if (!selectedConversation) {
         return (
-            <div className="flex flex-col gap-6 items-center justify-center h-full text-center p-8 opacity-60 animate-enter">
-                <div className="w-32 h-32 rounded-3xl bg-gradient-to-tr from-primary-600/20 to-accent-600/20 flex items-center justify-center backdrop-blur-3xl shadow-[0_0_50px_rgba(124,58,237,0.2)]">
-                    <ChatBubbleLeftRightIcon className="w-16 h-16 text-white/50" />
+            <div className="flex flex-col gap-6 items-center justify-center h-full text-center p-8 bg-background">
+                <div className="w-20 h-20 rounded-2xl bg-surface-elevated border border-border flex items-center justify-center shadow-xs">
+                    <ChatBubbleLeftRightIcon className="w-10 h-10 text-primary" />
                 </div>
+
                 <div className="max-w-md space-y-2">
-                    <h3 className="text-3xl font-display font-bold text-white drop-shadow-lg">
-                        Welcome to ApaPesan
+                    <h3 className="text-2xl font-bold font-display text-main tracking-tight">
+                        Selamat Datang di ApaPesan
                     </h3>
-                    <p className="text-gray-400 font-light leading-relaxed">
-                        Select a conversation from the sidebar to start
-                        chatting. <br />
-                        Experience the new{" "}
-                        <span className="text-primary-400 font-medium">
-                            Midnight Aurora
-                        </span>{" "}
-                        interface.
+                    <p className="text-muted text-sm leading-relaxed">
+                        Pilih percakapan dari panel obrolan di sebelah kiri untuk mulai berkirim pesan.
                     </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4 w-full max-w-xl">
+                    <div className="bg-surface rounded-xl p-4 border border-border text-left shadow-xs">
+                        <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center mb-2.5">
+                            <svg
+                                className="w-4 h-4 text-primary"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M13 10V3L4 14h7v7l9-11h-7z"
+                                />
+                            </svg>
+                        </div>
+                        <h4 className="font-semibold text-main text-sm mb-1">
+                            Real-time
+                        </h4>
+                        <p className="text-xs text-muted">
+                            Pesan terkirim instan
+                        </p>
+                    </div>
+
+                    <div className="bg-surface rounded-xl p-4 border border-border text-left shadow-xs">
+                        <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center mb-2.5">
+                            <svg
+                                className="w-4 h-4 text-primary"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
+                                />
+                            </svg>
+                        </div>
+                        <h4 className="font-semibold text-main text-sm mb-1">
+                            Group Chat
+                        </h4>
+                        <p className="text-xs text-muted">
+                            Kolaborasi tim mudah
+                        </p>
+                    </div>
+
+                    <div className="bg-surface rounded-xl p-4 border border-border text-left shadow-xs">
+                        <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center mb-2.5">
+                            <svg
+                                className="w-4 h-4 text-primary"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                                />
+                            </svg>
+                        </div>
+                        <h4 className="font-semibold text-main text-sm mb-1">
+                            Terstruktur
+                        </h4>
+                        <p className="text-xs text-muted">
+                            Platform komunikasi terpadu
+                        </p>
+                    </div>
                 </div>
             </div>
         );
@@ -342,31 +439,54 @@ function Home({
                 className="flex-1 overflow-y-auto sm:p-5 p-3 space-y-2 custom-scrollbar scroll-smooth"
             >
                 {localMessages.length === 0 && (
-                    <div className="flex flex-col items-center justify-center h-full opacity-30">
-                        <p className="text-gray-400 text-sm">
-                            No messages yet. Say hello!
-                        </p>
+                    <div className="flex flex-col items-center justify-center h-full p-4">
+                        <div className="bg-surface-elevated rounded-2xl p-8 border border-border text-center max-w-sm shadow-xs">
+                            <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <ChatBubbleLeftRightIcon className="w-7 h-7 text-primary" />
+                            </div>
+                            <p className="text-main font-semibold mb-1">
+                                Belum ada pesan
+                            </p>
+                            <p className="text-muted text-sm">
+                                Kirim pesan pertama untuk memulai obrolan.
+                            </p>
+                        </div>
                     </div>
                 )}
 
                 {localMessages.length > 0 && (
                     <div
-                        className="h-4 flex items-center justify-center shrink-0"
+                        className="h-6 flex items-center justify-center shrink-0 py-2"
                         ref={loadMoreIntersect}
                     >
-                        <div className="loading loading-spinner loading-xs text-primary-500/50"></div>
+                        <div className="loading loading-spinner loading-xs text-primary"></div>
                     </div>
                 )}
 
-                {localMessages.map((message) => (
-                    <MessageItem
-                        key={message.id}
-                        message={message}
-                        attachmentClick={onAttachmentClick}
-                        onReply={handleReply}
-                        onReact={handleReact}
-                    />
-                ))}
+                {localMessages.map((message, index) => {
+                    const prevMessage = index > 0 ? localMessages[index - 1] : null;
+                    const showDateDivider =
+                        !prevMessage ||
+                        isDifferentDay(prevMessage.created_at, message.created_at);
+
+                    return (
+                        <div key={message.id} className="space-y-2">
+                            {showDateDivider && (
+                                <div className="flex items-center justify-center my-3">
+                                    <span className="px-3 py-1 text-xs font-medium rounded-full bg-surface-elevated border border-border text-muted shadow-xs">
+                                        {formatMessageDate(message.created_at)}
+                                    </span>
+                                </div>
+                            )}
+                            <MessageItem
+                                message={message}
+                                attachmentClick={onAttachmentClick}
+                                onReply={handleReply}
+                                onReact={handleReact}
+                            />
+                        </div>
+                    );
+                })}
 
                 {/* Typing Indicator */}
                 {typingUser && <TypingIndicator userName={typingUser} />}

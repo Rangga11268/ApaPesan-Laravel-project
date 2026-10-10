@@ -48,12 +48,12 @@ export default function UpdatePasswordForm({ className = "" }) {
         <section className={className}>
             <header>
                 <h2 className="text-xl font-display font-medium text-white">
-                    Update Password
+                    Ubah Kata Sandi
                 </h2>
 
                 <p className="mt-1 text-sm text-gray-400">
-                    Ensure your account is using a long, random password to stay
-                    secure.
+                    Pastikan akun Anda menggunakan kata sandi yang panjang dan
+                    acak agar tetap aman.
                 </p>
             </header>
 
@@ -61,7 +61,7 @@ export default function UpdatePasswordForm({ className = "" }) {
                 <div>
                     <InputLabel
                         htmlFor="current_password"
-                        value="Current Password"
+                        value="Kata Sandi Saat Ini"
                         className="text-gray-300"
                     />
 
@@ -86,7 +86,7 @@ export default function UpdatePasswordForm({ className = "" }) {
                 <div>
                     <InputLabel
                         htmlFor="password"
-                        value="New Password"
+                        value="Kata Sandi Baru"
                         className="text-gray-300"
                     />
 
@@ -106,7 +106,7 @@ export default function UpdatePasswordForm({ className = "" }) {
                 <div>
                     <InputLabel
                         htmlFor="password_confirmation"
-                        value="Confirm Password"
+                        value="Konfirmasi Kata Sandi"
                         className="text-gray-300"
                     />
 
@@ -132,7 +132,7 @@ export default function UpdatePasswordForm({ className = "" }) {
                         disabled={processing}
                         className="bg-primary-600 hover:bg-primary-500 border-none glow-button"
                     >
-                        Update Password
+                        Ubah Kata Sandi
                     </PrimaryButton>
 
                     <Transition
@@ -144,7 +144,7 @@ export default function UpdatePasswordForm({ className = "" }) {
                     >
                         <p className="text-sm text-emerald-400 flex items-center gap-1">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>{" "}
-                            Saved.
+                            Tersimpan.
                         </p>
                     </Transition>
                 </div>

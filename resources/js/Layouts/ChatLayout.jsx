@@ -1,16 +1,16 @@
 import ConversationItem from "@/Components/App/ConversationItem";
 import TextInput from "@/Components/TextInput";
+import CreateGroupModal from "@/Components/App/CreateGroupModal";
 import { useEventBus } from "@/EventBus";
-import { PencilSquareIcon } from "@heroicons/react/24/outline";
+import {
+    PencilSquareIcon,
+    MagnifyingGlassIcon,
+    XMarkIcon,
+    ChatBubbleLeftRightIcon,
+    UserGroupIcon,
+} from "@heroicons/react/24/outline";
 import { usePage, Link } from "@inertiajs/react";
 import React, { useEffect, useState, useMemo } from "react";
-import Dropdown from "@/Components/Dropdown";
-import UserAvatar from "@/Components/App/UserAvatar";
-import {
-    UserCircleIcon,
-    Cog6ToothIcon,
-    ArrowLeftOnRectangleIcon,
-} from "@heroicons/react/24/outline";
 
 const ChatLayout = ({ children }) => {
     const page = usePage();
@@ -20,6 +20,8 @@ const ChatLayout = ({ children }) => {
     const [localConversations, setLocalConversations] = useState([]);
     const [onlineUsers, setOnlineUsers] = useState({});
     const [searchTerm, setSearchTerm] = useState("");
+    const [activeFilter, setActiveFilter] = useState("all"); // 'all', 'direct', 'group'
+    const [showCreateGroupModal, setShowCreateGroupModal] = useState(false);
     const isUserOnline = (userId) => onlineUsers[userId];
     const { on } = useEventBus();
 
@@ -28,14 +30,21 @@ const ChatLayout = ({ children }) => {
     };
 
     useEffect(() => {
-        setLocalConversations(conversations);
+        setLocalConversations(conversations || []);
     }, [conversations]);
 
     const sortedConversations = useMemo(() => {
         if (!Array.isArray(localConversations)) return [];
-        const filtered = localConversations.filter((conv) =>
-            conv.name.toLowerCase().includes(searchTerm),
+        let filtered = localConversations.filter((conv) =>
+            conv.name.toLowerCase().includes(searchTerm)
         );
+
+        if (activeFilter === "direct") {
+            filtered = filtered.filter((c) => c.is_user);
+        } else if (activeFilter === "group") {
+            filtered = filtered.filter((c) => c.is_group);
+        }
+
         return [...filtered].sort((a, b) => {
             if (a.blocked_at && b.blocked_at) {
                 return a.blocked_at > b.blocked_at ? 1 : -1;
@@ -49,7 +58,7 @@ const ChatLayout = ({ children }) => {
             if (b.last_message_date) return 1;
             return 0;
         });
-    }, [localConversations, searchTerm]);
+    }, [localConversations, searchTerm, activeFilter]);
 
     useEffect(() => {
         const offMessageCreated = on("message.created", (message) => {
@@ -62,7 +71,7 @@ const ChatLayout = ({ children }) => {
                         (!message.group_id &&
                             c.is_user &&
                             (c.id == message.sender_id ||
-                                c.id == message.receiver_id)),
+                                c.id == message.receiver_id))
                 );
                 if (index > -1) {
                     const newConvs = [...prev];
@@ -97,7 +106,7 @@ const ChatLayout = ({ children }) => {
                             (!message.group_id &&
                                 c.is_user &&
                                 (c.id == message.sender_id ||
-                                    c.id == message.receiver_id)),
+                                    c.id == message.receiver_id))
                     );
                     if (index > -1) {
                         const newConvs = [...prev];
@@ -125,7 +134,7 @@ const ChatLayout = ({ children }) => {
                     }
                     return prev;
                 });
-            },
+            }
         );
 
         return () => {
@@ -139,33 +148,29 @@ const ChatLayout = ({ children }) => {
         const channel = window.Echo.join("online");
         channel
             .here((users) => {
-                if (import.meta.env.DEV)
-                    console.log("Online channel joined. Users:", users);
                 setOnlineUsers(
-                    Object.fromEntries(users.map((u) => [u.id.toString(), u])),
+                    Object.fromEntries(users.map((u) => [u.id.toString(), u]))
                 );
             })
             .joining((u) => {
-                if (import.meta.env.DEV) console.log("User joining:", u);
                 setOnlineUsers((prev) => ({ ...prev, [u.id.toString()]: u }));
             })
             .leaving((u) =>
                 setOnlineUsers((prev) => {
-                    if (import.meta.env.DEV) console.log("User leaving:", u);
                     const updated = { ...prev };
                     delete updated[u.id.toString()];
                     return updated;
-                }),
+                })
             );
         return () => window.Echo.leave("online");
     }, []);
 
     return (
         <div className="flex w-full h-full overflow-hidden">
-            {/* Sidebar / Left Panel */}
+            {/* Dedicated Conversation List Pane (320-360px) */}
             <div
                 className={`
-                glass-panel w-full sm:w-[320px] flex flex-col transition-all duration-500 ease-in-out z-20 border-r border-white/5
+                w-full sm:w-[320px] md:w-[340px] lg:w-[360px] shrink-0 flex flex-col bg-surface border-r border-border h-full transition-all duration-200 z-20 overflow-hidden
                 ${
                     selectedConversation || route().current("profile.edit")
                         ? "hidden sm:flex"
@@ -174,46 +179,90 @@ const ChatLayout = ({ children }) => {
             `}
             >
                 {/* Header Area */}
-                <div className="sm:p-6 p-4 pb-4">
-                    <div className="flex items-center justify-between sm:mb-6 mb-4">
-                        <h1 className="font-display font-bold sm:text-3xl text-2xl text-white tracking-tight drop-shadow-lg">
-                            Chats
-                        </h1>
-                        <div
-                            className="tooltip tooltip-bottom"
-                            data-tip="New Group"
-                        >
-                            <button className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all group border border-white/5">
-                                <PencilSquareIcon className="w-5 h-5 text-gray-400 group-hover:text-primary-400" />
-                            </button>
+                <div className="p-3.5 sm:p-4 border-b border-border space-y-3 shrink-0">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <h1 className="font-display font-bold text-xl sm:text-2xl text-main tracking-tight">
+                                Percakapan
+                            </h1>
+                            {localConversations.length > 0 && (
+                                <span className="px-2 py-0.5 text-xs font-semibold bg-surface-elevated border border-border text-muted rounded-full">
+                                    {localConversations.length}
+                                </span>
+                            )}
                         </div>
+                        <button
+                            type="button"
+                            onClick={() => setShowCreateGroupModal(true)}
+                            className="min-h-[44px] min-w-[44px] p-2 text-primary hover:text-primary-600 hover:bg-surface-elevated rounded-lg transition-colors flex items-center justify-center border border-border"
+                            title="Buat Grup Baru"
+                            aria-label="Buat Grup Baru"
+                        >
+                            <PencilSquareIcon className="w-5 h-5" />
+                        </button>
                     </div>
 
-                    <div className="relative group">
+                    {/* Search Input with Clear Button */}
+                    <div className="relative flex items-center">
+                        <MagnifyingGlassIcon className="absolute left-3 w-4 h-4 text-muted pointer-events-none" />
                         <TextInput
-                            onKeyUp={onSearch}
-                            placeholder="Search..."
-                            className="glass-input w-full pl-10 py-3 rounded-xl border-none bg-black/20 focus:bg-black/40"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value.toLowerCase())}
+                            placeholder="Cari percakapan..."
+                            className="w-full pl-9 pr-8 py-2 bg-surface-elevated border-border text-main placeholder-muted rounded-lg text-sm focus:border-border-active focus:ring-1 focus:ring-border-active"
                         />
-                        <div className="absolute left-3 top-3.5 text-gray-500 group-focus-within:text-primary-400 transition-colors">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 20 20"
-                                fill="currentColor"
-                                className="w-5 h-5"
+                        {searchTerm && (
+                            <button
+                                type="button"
+                                onClick={() => setSearchTerm("")}
+                                className="absolute right-2 p-1 text-muted hover:text-main rounded-md"
+                                aria-label="Hapus kata kunci pencarian"
                             >
-                                <path
-                                    fillRule="evenodd"
-                                    d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z"
-                                    clipRule="evenodd"
-                                />
-                            </svg>
-                        </div>
+                                <XMarkIcon className="w-4 h-4" />
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Filter Chips */}
+                    <div className="flex items-center gap-1.5 pt-0.5">
+                        <button
+                            type="button"
+                            onClick={() => setActiveFilter("all")}
+                            className={`min-h-[36px] px-3 py-1 rounded-md text-xs font-semibold transition-colors ${
+                                activeFilter === "all"
+                                    ? "bg-primary text-white"
+                                    : "bg-surface-elevated text-muted hover:text-main border border-border"
+                            }`}
+                        >
+                            Semua
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setActiveFilter("direct")}
+                            className={`min-h-[36px] px-3 py-1 rounded-md text-xs font-semibold transition-colors ${
+                                activeFilter === "direct"
+                                    ? "bg-primary text-white"
+                                    : "bg-surface-elevated text-muted hover:text-main border border-border"
+                            }`}
+                        >
+                            Pribadi
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setActiveFilter("group")}
+                            className={`min-h-[36px] px-3 py-1 rounded-md text-xs font-semibold transition-colors ${
+                                activeFilter === "group"
+                                    ? "bg-primary text-white"
+                                    : "bg-surface-elevated text-muted hover:text-main border border-border"
+                            }`}
+                        >
+                            Grup
+                        </button>
                     </div>
                 </div>
 
                 {/* Conversation List */}
-                <div className="flex-1 overflow-y-auto custom-scrollbar px-3 space-y-1 pb-4">
+                <div className="flex-1 overflow-y-auto custom-scrollbar px-2 py-2 space-y-0.5">
                     {sortedConversations &&
                         sortedConversations.map((conversation) => (
                             <ConversationItem
@@ -223,76 +272,44 @@ const ChatLayout = ({ children }) => {
                                 conversation={conversation}
                                 online={
                                     conversation.is_user
-                                        ? !!isUserOnline(conversation.id)
+                                        ? Boolean(isUserOnline(conversation.id))
                                         : null
                                 }
                                 selectedConversation={selectedConversation}
                             />
                         ))}
                     {sortedConversations.length === 0 && (
-                        <div className="flex flex-col items-center justify-center py-20 text-gray-500 opacity-50">
-                            <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-4">
-                                <PencilSquareIcon className="w-8 h-8" />
+                        <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+                            <div className="w-12 h-12 bg-surface-elevated border border-border rounded-full flex items-center justify-center mb-3 text-muted">
+                                <ChatBubbleLeftRightIcon className="w-6 h-6" />
                             </div>
-                            <p className="text-sm">No conversations yet</p>
+                            <p className="text-main font-semibold text-sm mb-1">
+                                {searchTerm ? "Tidak ada percakapan ditemukan" : "Belum ada percakapan"}
+                            </p>
+                            <p className="text-xs text-muted max-w-[200px]">
+                                {searchTerm
+                                    ? `Tidak ada hasil yang cocok dengan "${searchTerm}"`
+                                    : "Mulai obrolan baru dengan kontak Anda"}
+                            </p>
+                            {!searchTerm && (
+                                <button
+                                    type="button"
+                                    onClick={() => setShowCreateGroupModal(true)}
+                                    className="mt-4 min-h-[40px] px-3.5 py-1.5 text-xs font-semibold bg-primary hover:bg-primary-600 text-white rounded-lg transition-colors flex items-center gap-1.5"
+                                >
+                                    <UserGroupIcon className="w-4 h-4" />
+                                    <span>Buat Grup Baru</span>
+                                </button>
+                            )}
                         </div>
                     )}
-                </div>
-
-                {/* User Profile Footer (Replaces Navbar) */}
-                <div className="p-4 border-t border-white/5 bg-[#05070a]/30">
-                    <Dropdown>
-                        <Dropdown.Trigger>
-                            <button className="flex items-center w-full p-2 rounded-xl hover:bg-white/5 transition-colors gap-3 group">
-                                <UserAvatar
-                                    user={user}
-                                    className="w-10 h-10 border-2 border-primary-500/50"
-                                />
-                                <div className="text-left flex-1 min-w-0">
-                                    <p className="text-sm font-bold text-white truncate group-hover:text-primary-300 transition-colors">
-                                        {user.name}
-                                    </p>
-                                    <p className="text-xs text-emerald-400 truncate flex items-center gap-1">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                                        Online
-                                    </p>
-                                </div>
-                                <div className="text-gray-500 group-hover:text-white transition-colors">
-                                    <Cog6ToothIcon className="w-5 h-5" />
-                                </div>
-                            </button>
-                        </Dropdown.Trigger>
-                        <Dropdown.Content
-                            align="left"
-                            direction="up"
-                            width="56"
-                            contentClasses="glass-panel text-white rounded-xl w-56 border border-white/10"
-                        >
-                            <Dropdown.Link
-                                href={route("profile.edit")}
-                                className="hover:bg-white/10 hover:text-primary-300 px-4 py-3 flex items-center gap-2 transition-colors"
-                            >
-                                <UserCircleIcon className="w-5 h-5" /> Profile
-                            </Dropdown.Link>
-                            <div className="h-px bg-white/10 my-1"></div>
-                            <Dropdown.Link
-                                href={route("logout")}
-                                method="post"
-                                as="button"
-                                className="hover:bg-red-500/10 hover:text-red-400 px-4 py-3 flex items-center gap-2 w-full text-left transition-colors"
-                            >
-                                <ArrowLeftOnRectangleIcon className="w-5 h-5" />{" "}
-                                Logout
-                            </Dropdown.Link>
-                        </Dropdown.Content>
-                    </Dropdown>
                 </div>
             </div>
 
             {/* Main Chat Area */}
             <div
                 className={`
-                flex-1 flex flex-col h-full relative z-10 transition-all duration-300 bg-gradient-to-br from-transparent to-black/40
+                flex-1 flex flex-col h-full min-w-0 bg-background relative z-10 transition-colors
                 ${
                     !selectedConversation && !route().current("profile.edit")
                         ? "hidden sm:flex items-center justify-center"
@@ -306,6 +323,13 @@ const ChatLayout = ({ children }) => {
                         onlineUsers: onlineUsers,
                     })}
             </div>
+
+            {/* Modal for Group Creation */}
+            <CreateGroupModal
+                show={showCreateGroupModal}
+                isOpen={showCreateGroupModal}
+                onClose={() => setShowCreateGroupModal(false)}
+            />
         </div>
     );
 };

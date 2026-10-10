@@ -55,7 +55,7 @@ const MessageAttachments = ({ attachments, attachmentClick }) => {
                                 </>
                             )}
                             {isAudio(attachment) && (
-                                <div className="w-full flex items-center justify-center bg-slate-800 rounded-lg">
+                                <div className="w-full flex items-center justify-center bg-surface-elevated border border-border rounded-lg">
                                     <CustomAudioPlayer
                                         file={attachment}
                                         showVolume={false}
@@ -63,7 +63,7 @@ const MessageAttachments = ({ attachments, attachmentClick }) => {
                                 </div>
                             )}
                             {isPDF(attachment) && (
-                                <div className="w-full h-full flex justify-center items-center bg-gray-800">
+                                <div className="w-full h-full flex justify-center items-center bg-surface-elevated border border-border rounded-lg">
                                     <iframe
                                         src={attachment.url}
                                         className="hidden"
@@ -71,7 +71,7 @@ const MessageAttachments = ({ attachments, attachmentClick }) => {
                                     <img
                                         src="/img/pdf.png"
                                         alt="PDF icon"
-                                        className="w-16 h-16"
+                                        className="w-12 h-12 object-contain"
                                     />
                                 </div>
                             )}
@@ -80,10 +80,10 @@ const MessageAttachments = ({ attachments, attachmentClick }) => {
                                     onClick={(ev) => ev.stopPropagation()}
                                     href={attachment.url}
                                     download
-                                    className="w-full h-full flex flex-col justify-center items-center bg-gray-800 p-2"
+                                    className="w-full h-full flex flex-col justify-center items-center bg-surface-elevated border border-border rounded-lg p-3 text-main hover:bg-surface-elevated/80 transition-colors"
                                 >
-                                    <PaperClipIcon className="w-10 h-10 mb-3" />
-                                    <small className="text-center text-gray-300 break-all">
+                                    <PaperClipIcon className="w-8 h-8 mb-2 text-muted" />
+                                    <small className="text-center text-xs text-muted break-all">
                                         {attachment.name}
                                     </small>
                                 </a>

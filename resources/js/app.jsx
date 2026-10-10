@@ -5,6 +5,7 @@ import { createInertiaApp } from "@inertiajs/react";
 import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers";
 import { createRoot } from "react-dom/client";
 import { EventBusProvider } from "./EventBus";
+import { ThemeProvider } from "./Contexts/ThemeContext";
 
 const appName = import.meta.env.VITE_APP_NAME || "Laravel";
 
@@ -19,12 +20,14 @@ createInertiaApp({
         const root = createRoot(el);
 
         root.render(
-            <EventBusProvider>
-                <App {...props} />
-            </EventBusProvider>
+            <ThemeProvider>
+                <EventBusProvider>
+                    <App {...props} />
+                </EventBusProvider>
+            </ThemeProvider>
         );
     },
     progress: {
-        color: "#4B5563",
+        color: "#2563EB",
     },
 });

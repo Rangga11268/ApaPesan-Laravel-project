@@ -27,37 +27,37 @@ const MessageItem = ({ message, attachmentClick, onReply, onReact }) => {
             <div className="chat-image avatar">
                 <UserAvatar
                     user={message.sender}
-                    className={`w-10 h-10 border shadow-lg ${
+                    className={`w-9 h-9 border ${
                         isCurrentUser
-                            ? "border-primary-500/50"
-                            : "border-white/10"
+                            ? "border-primary/30"
+                            : "border-border"
                     }`}
                 />
             </div>
 
-            <div className="chat-header text-xs text-gray-400 mb-1 flex items-center gap-2">
+            <div className="chat-header text-xs text-muted mb-1 flex items-center gap-2">
                 {!isCurrentUser && (
-                    <span className="font-bold text-gray-300">
-                        {message.sender.name}
+                    <span className="font-semibold text-main">
+                        {message.sender?.name}
                     </span>
                 )}
-                <time className="opacity-50 text-[10px]">
+                <time className="text-[11px] text-muted font-normal">
                     {formatMessageDateLong(message.created_at)}
                 </time>
                 {message.edited_at && (
-                    <span className="text-[10px] text-gray-500 italic">
-                        (edited)
+                    <span className="text-[10px] text-muted italic">
+                        (diedit)
                     </span>
                 )}
             </div>
 
             <div
                 className={`
-                chat-bubble relative shadow-xl backdrop-blur-md border 
+                chat-bubble relative shadow-xs border 
                 ${
                     isCurrentUser
-                        ? "bubble-user text-white border-primary-500/20"
-                        : "bubble-guest text-gray-100 border-white/5"
+                        ? "bg-primary text-white border-primary/30 rounded-2xl rounded-tr-xs"
+                        : "bg-surface-elevated text-main border-border rounded-2xl rounded-tl-xs"
                 }
             `}
             >
@@ -77,10 +77,16 @@ const MessageItem = ({ message, attachmentClick, onReply, onReact }) => {
 
                 <div
                     className={`chat-message ${
-                        isCurrentUser ? "text-white/90 pr-6" : "text-gray-200"
+                        isCurrentUser ? "text-white pr-6" : "text-main"
                     }`}
                 >
-                    <div className="chat-message-content prose prose-invert max-w-none prose-p:my-1 prose-pre:bg-black/30 prose-pre:border-white/10 text-sm leading-relaxed">
+                    <div
+                        className={`chat-message-content text-sm leading-relaxed ${
+                            isCurrentUser
+                                ? "prose prose-p:my-1 prose-p:text-white prose-a:text-white prose-a:underline"
+                                : "prose prose-p:my-1 prose-p:text-main prose-a:text-primary prose-a:underline"
+                        }`}
+                    >
                         <ReactMarkdown>{message.message}</ReactMarkdown>
                     </div>
                     <MessageAttachments

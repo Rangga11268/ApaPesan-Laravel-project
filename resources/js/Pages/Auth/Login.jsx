@@ -1,98 +1,190 @@
-import Checkbox from '@/Components/Checkbox';
-import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
-import PrimaryButton from '@/Components/PrimaryButton';
-import TextInput from '@/Components/TextInput';
-import GuestLayout from '@/Layouts/GuestLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
+import Checkbox from "@/Components/Checkbox";
+import InputError from "@/Components/InputError";
+import InputLabel from "@/Components/InputLabel";
+import PrimaryButton from "@/Components/PrimaryButton";
+import TextInput from "@/Components/TextInput";
+import GuestLayout from "@/Layouts/GuestLayout";
+import { Head, Link, useForm } from "@inertiajs/react";
 
 export default function Login({ status, canResetPassword }) {
     const { data, setData, post, processing, errors, reset } = useForm({
-        email: '',
-        password: '',
+        email: "",
+        password: "",
         remember: false,
     });
 
     const submit = (e) => {
         e.preventDefault();
 
-        post(route('login'), {
-            onFinish: () => reset('password'),
+        post(route("login"), {
+            onFinish: () => reset("password"),
         });
     };
 
     return (
         <GuestLayout>
-            <Head title="Log in" />
+            <Head title="Masuk" />
+
+            {/* Header */}
+            <div className="text-center mb-8">
+                <h2 className="text-2xl font-display font-bold text-main">
+                    Selamat Datang Kembali
+                </h2>
+                <p className="mt-2 text-muted">
+                    Masuk ke akun Anda untuk melanjutkan
+                </p>
+            </div>
 
             {status && (
-                <div className="mb-4 text-sm font-medium text-green-600">
+                <div className="mb-4 p-3 rounded-lg bg-green-50 dark:bg-green-900/20 text-sm font-medium text-green-600 dark:text-green-400">
                     {status}
                 </div>
             )}
 
-            <form onSubmit={submit}>
+            <form onSubmit={submit} className="space-y-5">
                 <div>
-                    <InputLabel htmlFor="email" value="Email" />
-
-                    <TextInput
-                        id="email"
-                        type="email"
-                        name="email"
-                        value={data.email}
-                        className="mt-1 block w-full"
-                        autoComplete="username"
-                        isFocused={true}
-                        onChange={(e) => setData('email', e.target.value)}
+                    <InputLabel
+                        htmlFor="email"
+                        value="Email"
+                        className="mb-1.5"
                     />
-
-                    <InputError message={errors.email} className="mt-2" />
+                    <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg
+                                className="h-5 w-5 text-muted"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={1.5}
+                                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                                />
+                            </svg>
+                        </div>
+                        <TextInput
+                            id="email"
+                            type="email"
+                            name="email"
+                            value={data.email}
+                            className="block w-full pl-10 pr-4"
+                            placeholder="nama@email.com"
+                            autoComplete="username"
+                            isFocused={true}
+                            onChange={(e) => setData("email", e.target.value)}
+                        />
+                    </div>
+                    <InputError message={errors.email} className="mt-1.5" />
                 </div>
 
-                <div className="mt-4">
-                    <InputLabel htmlFor="password" value="Password" />
-
-                    <TextInput
-                        id="password"
-                        type="password"
-                        name="password"
-                        value={data.password}
-                        className="mt-1 block w-full"
-                        autoComplete="current-password"
-                        onChange={(e) => setData('password', e.target.value)}
+                <div>
+                    <InputLabel
+                        htmlFor="password"
+                        value="Kata Sandi"
+                        className="mb-1.5"
                     />
-
-                    <InputError message={errors.password} className="mt-2" />
+                    <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg
+                                className="h-5 w-5 text-muted"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={1.5}
+                                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                                />
+                            </svg>
+                        </div>
+                        <TextInput
+                            id="password"
+                            type="password"
+                            name="password"
+                            value={data.password}
+                            className="block w-full pl-10 pr-4"
+                            placeholder="••••••••"
+                            autoComplete="current-password"
+                            onChange={(e) =>
+                                setData("password", e.target.value)
+                            }
+                        />
+                    </div>
+                    <InputError message={errors.password} className="mt-1.5" />
                 </div>
 
-                <div className="mt-4 block">
-                    <label className="flex items-center">
+                <div className="flex items-center justify-between">
+                    <label className="flex items-center cursor-pointer">
                         <Checkbox
                             name="remember"
                             checked={data.remember}
                             onChange={(e) =>
-                                setData('remember', e.target.checked)
+                                setData("remember", e.target.checked)
                             }
+                            className="rounded-md border-border text-primary-600 focus:ring-primary-500"
                         />
-                        <span className="ms-2 text-sm text-gray-600 dark:text-gray-400">
-                            Remember me
+                        <span className="ml-2 text-sm text-muted">
+                            Ingat saya
                         </span>
                     </label>
-                </div>
 
-                <div className="mt-4 flex items-center justify-end">
                     {canResetPassword && (
                         <Link
-                            href={route('password.request')}
-                            className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:text-gray-400 dark:hover:text-gray-100 dark:focus:ring-offset-gray-800"
+                            href={route("password.request")}
+                            className="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium"
                         >
-                            Forgot your password?
+                            Lupa kata sandi?
                         </Link>
                     )}
+                </div>
 
-                    <PrimaryButton className="ms-4" disabled={processing}>
-                        Log in
-                    </PrimaryButton>
+                <PrimaryButton
+                    type="submit"
+                    disabled={processing}
+                    className="w-full text-sm normal-case tracking-normal font-semibold shadow-primary-500/30 hover:shadow-primary-500/40"
+                >
+                    {processing ? (
+                        <span className="flex items-center justify-center gap-2">
+                            <svg
+                                className="animate-spin h-5 w-5"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                            >
+                                <circle
+                                    className="opacity-25"
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    strokeWidth="4"
+                                ></circle>
+                                <path
+                                    className="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                ></path>
+                            </svg>
+                            Memproses...
+                        </span>
+                    ) : (
+                        "Masuk"
+                    )}
+                </PrimaryButton>
+
+                <div className="text-center pt-4 border-t border-border">
+                    <p className="text-sm text-muted">
+                        Belum punya akun?{" "}
+                        <Link
+                            href={route("register")}
+                            className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-semibold"
+                        >
+                            Daftar sekarang
+                        </Link>
+                    </p>
                 </div>
             </form>
         </GuestLayout>

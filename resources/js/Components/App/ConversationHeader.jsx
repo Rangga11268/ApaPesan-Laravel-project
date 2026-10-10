@@ -1,59 +1,108 @@
-import { Link, usePage } from "@inertiajs/react";
-import { ArrowLeftIcon } from "@heroicons/react/24/outline";
+import React, { useState } from "react";
+import { Link } from "@inertiajs/react";
+import {
+    ArrowLeftIcon,
+    MagnifyingGlassIcon,
+    ArrowDownTrayIcon,
+} from "@heroicons/react/24/outline";
 import UserAvatar from "./UserAvatar";
 import GroupAvatar from "./GroupAvatar";
+import SearchModal from "./SearchModal";
+import ExportModal from "./ExportModal";
 
 const ConversationHeader = ({ selectedConversation, isOnline = false }) => {
+    const [showSearchModal, setShowSearchModal] = useState(false);
+    const [showExportModal, setShowExportModal] = useState(false);
+
+    if (!selectedConversation) {
+        return null;
+    }
+
     return (
         <>
-            {selectedConversation && (
-                <div className="p-4 flex justify-between items-center glass-light border-b border-white/5 backdrop-blur-xl sticky top-0 z-40 shadow-sm shrink-0">
-                    <div className="flex items-center gap-4">
-                        <Link
-                            href={route("dashboard")}
-                            className="inline-block sm:hidden text-gray-400 hover:text-white hover:bg-white/10 p-2 rounded-full transition-all"
-                        >
-                            <ArrowLeftIcon className="w-6 h-6" />
-                        </Link>
+            <div className="px-3 py-2.5 sm:px-5 sm:py-3.5 flex justify-between items-center bg-surface border-b border-border sticky top-0 z-40 shadow-xs shrink-0">
+                <div className="flex items-center gap-3 min-w-0">
+                    <Link
+                        href={route("dashboard")}
+                        className="min-h-[44px] min-w-[44px] inline-flex sm:hidden items-center justify-center text-muted hover:text-main hover:bg-surface-elevated rounded-lg transition-colors"
+                        aria-label="Kembali ke daftar percakapan"
+                    >
+                        <ArrowLeftIcon className="w-5 h-5" />
+                    </Link>
 
-                        <div className="relative group cursor-pointer">
-                            {/* Glow Effect behind Avatar */}
-                            <div className="absolute -inset-1 bg-gradient-to-r from-primary-500 to-accent-500 rounded-full opacity-0 group-hover:opacity-40 blur transition duration-500"></div>
-                            <div className="relative">
-                                {selectedConversation.is_user && (
-                                    <UserAvatar
-                                        user={selectedConversation}
-                                        className="w-12 h-12 border-2 border-white/10"
-                                    />
-                                )}
-                                {selectedConversation.is_group && (
-                                    <GroupAvatar />
-                                )}
-                            </div>
-                        </div>
+                    <div className="relative shrink-0">
+                        {selectedConversation.is_user && (
+                            <UserAvatar
+                                user={selectedConversation}
+                                className="w-10 h-10 border border-border"
+                            />
+                        )}
+                        {selectedConversation.is_group && <GroupAvatar />}
+                    </div>
 
-                        <div>
-                            <h3 className="font-display font-bold text-lg text-white tracking-wide drop-shadow-sm">
-                                {selectedConversation.name}
-                            </h3>
-                            <div className="flex items-center gap-2">
-                                {selectedConversation.is_group && (
-                                    <p className="text-xs text-primary-300 font-medium">
-                                        {selectedConversation.users.length}{" "}
-                                        members
-                                    </p>
-                                )}
-                                {selectedConversation.is_user && isOnline && (
-                                    <p className="text-xs text-emerald-400 flex items-center gap-1.5 font-medium tracking-wide bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                                        Online
-                                    </p>
-                                )}
-                            </div>
+                    <div className="min-w-0 flex-1">
+                        <h3 className="font-display font-bold text-base text-main truncate tracking-tight">
+                            {selectedConversation.name}
+                        </h3>
+                        <div className="flex items-center gap-2">
+                            {selectedConversation.is_group && (
+                                <p className="text-xs text-muted font-medium">
+                                    {selectedConversation.users ? selectedConversation.users.length : 0} anggota
+                                </p>
+                            )}
+                            {selectedConversation.is_user && isOnline && (
+                                <p className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 font-medium">
+                                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                    Online
+                                </p>
+                            )}
+                            {selectedConversation.is_user && !isOnline && (
+                                <p className="text-xs text-muted font-normal">
+                                    Offline
+                                </p>
+                            )}
                         </div>
                     </div>
                 </div>
-            )}
+
+                {/* Action Buttons: Search & Export */}
+                <div className="flex items-center gap-1 shrink-0">
+                    <button
+                        type="button"
+                        onClick={() => setShowSearchModal(true)}
+                        className="min-h-[44px] min-w-[44px] p-2 text-muted hover:text-main hover:bg-surface-elevated rounded-lg transition-colors flex items-center justify-center border border-transparent hover:border-border"
+                        title="Cari pesan dalam percakapan"
+                        aria-label="Cari pesan dalam percakapan"
+                    >
+                        <MagnifyingGlassIcon className="w-5 h-5" />
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={() => setShowExportModal(true)}
+                        className="min-h-[44px] min-w-[44px] p-2 text-muted hover:text-main hover:bg-surface-elevated rounded-lg transition-colors flex items-center justify-center border border-transparent hover:border-border"
+                        title="Ekspor riwayat percakapan"
+                        aria-label="Ekspor riwayat percakapan"
+                    >
+                        <ArrowDownTrayIcon className="w-5 h-5" />
+                    </button>
+                </div>
+            </div>
+
+            {/* Modals wired to header triggers */}
+            <SearchModal
+                show={showSearchModal}
+                isOpen={showSearchModal}
+                onClose={() => setShowSearchModal(false)}
+                conversation={selectedConversation}
+            />
+
+            <ExportModal
+                show={showExportModal}
+                isOpen={showExportModal}
+                onClose={() => setShowExportModal(false)}
+                conversation={selectedConversation}
+            />
         </>
     );
 };
