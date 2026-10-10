@@ -7,6 +7,8 @@ import ApplicationLogo from "@/Components/ApplicationLogo";
 import UserAvatar from "@/Components/App/UserAvatar";
 import Dropdown from "@/Components/Dropdown";
 import CreateGroupModal from "@/Components/App/CreateGroupModal";
+import StarredMessagesModal from "@/Components/App/StarredMessagesModal";
+import MentionsModal from "@/Components/App/MentionsModal";
 import { useTheme } from "@/Contexts/ThemeContext";
 import {
     ChatBubbleLeftRightIcon,
@@ -34,10 +36,13 @@ export default function AuthenticatedLayout({ children }) {
     const [isRailExpanded, setIsRailExpanded] = useState(false);
     const [showMobileDrawer, setShowMobileDrawer] = useState(false);
     const [showCreateGroupModal, setShowCreateGroupModal] = useState(false);
+    const [showStarredModal, setShowStarredModal] = useState(false);
+    const [showMentionsModal, setShowMentionsModal] = useState(false);
 
     const [showNewMessageNotification, setShowNewMessageNotification] =
         useState(false);
     const [newMessage, setNewMessage] = useState(null);
+    const [unreadCount, setUnreadCount] = useState(0);
 
     const conversations = page.props.conversation || [];
 
@@ -48,6 +53,7 @@ export default function AuthenticatedLayout({ children }) {
             if (message.sender_id === user.id) return;
             setNewMessage(message);
             setShowNewMessageNotification(true);
+            setUnreadCount((prev) => prev + 1);
             setTimeout(() => {
                 setShowNewMessageNotification(false);
                 setNewMessage(null);
@@ -169,52 +175,48 @@ export default function AuthenticatedLayout({ children }) {
                             <nav className="space-y-1">
                                 <Link
                                     href={route("dashboard")}
-                                    onClick={() => setShowMobileDrawer(false)}
-                                    className={`min-h-[44px] flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium ${
+                                    onClick={() => {
+                                        setShowMobileDrawer(false);
+                                        setUnreadCount(0);
+                                    }}
+                                    className={`min-h-[44px] flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium ${
                                         route().current("dashboard") || route().current("chat.user") || route().current("chat.group")
                                             ? "bg-primary/10 text-primary font-semibold"
                                             : "text-muted hover:text-main hover:bg-surface-elevated"
                                     }`}
                                 >
-                                    <ChatBubbleLeftRightIcon className="w-5 h-5" />
-                                    <span>Percakapan</span>
+                                    <div className="flex items-center gap-3">
+                                        <ChatBubbleLeftRightIcon className="w-5 h-5" />
+                                        <span>Percakapan</span>
+                                    </div>
+                                    {unreadCount > 0 && (
+                                        <span className="px-2 py-0.5 text-xs font-bold bg-primary text-white rounded-full">
+                                            {unreadCount}
+                                        </span>
+                                    )}
                                 </Link>
-                                <Link
-                                    href={route("starred.index")}
-                                    onClick={() => setShowMobileDrawer(false)}
-                                    className={`min-h-[44px] flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium ${
-                                        route().current("starred.index")
-                                            ? "bg-primary/10 text-primary font-semibold"
-                                            : "text-muted hover:text-main hover:bg-surface-elevated"
-                                    }`}
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowMobileDrawer(false);
+                                        setShowStarredModal(true);
+                                    }}
+                                    className="min-h-[44px] w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted hover:text-main hover:bg-surface-elevated text-left"
                                 >
                                     <StarIcon className="w-5 h-5" />
                                     <span>Pesan Berbintang</span>
-                                </Link>
-                                <Link
-                                    href={route("mentions.index")}
-                                    onClick={() => setShowMobileDrawer(false)}
-                                    className={`min-h-[44px] flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium ${
-                                        route().current("mentions.index")
-                                            ? "bg-primary/10 text-primary font-semibold"
-                                            : "text-muted hover:text-main hover:bg-surface-elevated"
-                                    }`}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowMobileDrawer(false);
+                                        setShowMentionsModal(true);
+                                    }}
+                                    className="min-h-[44px] w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted hover:text-main hover:bg-surface-elevated text-left"
                                 >
                                     <AtSymbolIcon className="w-5 h-5" />
                                     <span>Sebutan</span>
-                                </Link>
-                                <Link
-                                    href={route("pinned.index")}
-                                    onClick={() => setShowMobileDrawer(false)}
-                                    className={`min-h-[44px] flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium ${
-                                        route().current("pinned.index")
-                                            ? "bg-primary/10 text-primary font-semibold"
-                                            : "text-muted hover:text-main hover:bg-surface-elevated"
-                                    }`}
-                                >
-                                    <BookmarkSquareIcon className="w-5 h-5" />
-                                    <span>Pesan Tersemat</span>
-                                </Link>
+                                </button>
                                 <button
                                     type="button"
                                     onClick={() => {
@@ -305,69 +307,58 @@ export default function AuthenticatedLayout({ children }) {
                     {/* Percakapan */}
                     <Link
                         href={route("dashboard")}
-                        className={`min-h-[44px] w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                        onClick={() => setUnreadCount(0)}
+                        className={`min-h-[44px] w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors relative ${
                             route().current("dashboard") || route().current("chat.user") || route().current("chat.group")
                                 ? "bg-primary/10 text-primary font-semibold"
                                 : "text-muted hover:text-main hover:bg-surface-elevated"
                         } ${!isRailExpanded ? "justify-center" : ""}`}
                         title="Percakapan"
                     >
-                        <ChatBubbleLeftRightIcon className="w-5 h-5 shrink-0" />
+                        <div className="relative shrink-0">
+                            <ChatBubbleLeftRightIcon className="w-5 h-5" />
+                            {/* Dot or count on collapsed rail */}
+                            {!isRailExpanded && unreadCount > 0 && (
+                                <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-primary text-white text-[10px] font-bold rounded-full flex items-center justify-center ring-2 ring-surface">
+                                    {unreadCount}
+                                </span>
+                            )}
+                        </div>
                         {isRailExpanded && <span className="flex-1 truncate">Percakapan</span>}
-                        {conversations.length > 0 && (
-                            <span
-                                className={`px-2 py-0.5 text-xs rounded-full font-bold ${
-                                    route().current("dashboard") || route().current("chat.user") || route().current("chat.group")
-                                        ? "bg-primary text-white"
-                                        : "bg-surface-elevated text-muted border border-border"
-                                }`}
-                            >
-                                {conversations.length}
+                        {isRailExpanded && unreadCount > 0 && (
+                            <span className="px-2 py-0.5 text-xs rounded-full font-bold bg-primary text-white">
+                                {unreadCount}
                             </span>
                         )}
                     </Link>
 
-                    {/* Pesan Berbintang */}
-                    <Link
-                        href={route("starred.index")}
-                        className={`min-h-[44px] w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                            route().current("starred.index")
-                                ? "bg-primary/10 text-primary font-semibold"
-                                : "text-muted hover:text-main hover:bg-surface-elevated"
-                        } ${!isRailExpanded ? "justify-center" : ""}`}
+                    {/* Pesan Berbintang Modal Trigger */}
+                    <button
+                        type="button"
+                        onClick={() => setShowStarredModal(true)}
+                        className={`min-h-[44px] w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted hover:text-main hover:bg-surface-elevated transition-colors text-left ${
+                            !isRailExpanded ? "justify-center" : ""
+                        }`}
                         title="Pesan Berbintang"
+                        aria-label="Pesan Berbintang"
                     >
                         <StarIcon className="w-5 h-5 shrink-0" />
                         {isRailExpanded && <span className="flex-1 truncate">Pesan Berbintang</span>}
-                    </Link>
+                    </button>
 
-                    {/* Sebutan */}
-                    <Link
-                        href={route("mentions.index")}
-                        className={`min-h-[44px] w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                            route().current("mentions.index")
-                                ? "bg-primary/10 text-primary font-semibold"
-                                : "text-muted hover:text-main hover:bg-surface-elevated"
-                        } ${!isRailExpanded ? "justify-center" : ""}`}
-                        title="Sebutan"
+                    {/* Sebutan Modal Trigger */}
+                    <button
+                        type="button"
+                        onClick={() => setShowMentionsModal(true)}
+                        className={`min-h-[44px] w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted hover:text-main hover:bg-surface-elevated transition-colors text-left ${
+                            !isRailExpanded ? "justify-center" : ""
+                        }`}
+                        title="Sebutan (@)"
+                        aria-label="Sebutan (@)"
                     >
                         <AtSymbolIcon className="w-5 h-5 shrink-0" />
                         {isRailExpanded && <span className="flex-1 truncate">Sebutan</span>}
-                    </Link>
-
-                    {/* Pesan Tersemat */}
-                    <Link
-                        href={route("pinned.index")}
-                        className={`min-h-[44px] w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                            route().current("pinned.index")
-                                ? "bg-primary/10 text-primary font-semibold"
-                                : "text-muted hover:text-main hover:bg-surface-elevated"
-                        } ${!isRailExpanded ? "justify-center" : ""}`}
-                        title="Pesan Tersemat"
-                    >
-                        <BookmarkSquareIcon className="w-5 h-5 shrink-0" />
-                        {isRailExpanded && <span className="flex-1 truncate">Pesan Tersemat</span>}
-                    </Link>
+                    </button>
 
                     {/* Grup Baru Action */}
                     <button
@@ -472,6 +463,16 @@ export default function AuthenticatedLayout({ children }) {
                 show={showCreateGroupModal}
                 isOpen={showCreateGroupModal}
                 onClose={() => setShowCreateGroupModal(false)}
+            />
+
+            <StarredMessagesModal
+                show={showStarredModal}
+                onClose={() => setShowStarredModal(false)}
+            />
+
+            <MentionsModal
+                show={showMentionsModal}
+                onClose={() => setShowMentionsModal(false)}
             />
 
             <Toast />

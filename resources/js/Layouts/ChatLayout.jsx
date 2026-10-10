@@ -181,16 +181,9 @@ const ChatLayout = ({ children }) => {
                 {/* Header Area */}
                 <div className="p-3.5 sm:p-4 border-b border-border space-y-3 shrink-0">
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <h1 className="font-display font-bold text-xl sm:text-2xl text-main tracking-tight">
-                                Percakapan
-                            </h1>
-                            {localConversations.length > 0 && (
-                                <span className="px-2 py-0.5 text-xs font-semibold bg-surface-elevated border border-border text-muted rounded-full">
-                                    {localConversations.length}
-                                </span>
-                            )}
-                        </div>
+                        <h1 className="font-display font-bold text-xl sm:text-2xl text-main tracking-tight">
+                            Percakapan
+                        </h1>
                         <button
                             type="button"
                             onClick={() => setShowCreateGroupModal(true)}
