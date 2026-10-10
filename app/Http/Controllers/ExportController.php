@@ -9,9 +9,6 @@ use Illuminate\Support\Facades\Auth;
 
 class ExportController extends Controller
 {
-    /**
-     * Export chat history.
-     */
     public function export(Request $request, string $type, int $id)
     {
         $user = Auth::user();
@@ -19,7 +16,6 @@ class ExportController extends Controller
         $chatName = '';
 
         if ($type === 'user') {
-            // Export 1-on-1 conversation
             $otherUser = \App\Models\User::findOrFail($id);
             $chatName = $otherUser->name;
 
@@ -34,10 +30,8 @@ class ExportController extends Controller
                 ->orderBy('created_at')
                 ->get();
         } elseif ($type === 'group') {
-            // Export group conversation
             $group = Group::findOrFail($id);
 
-            // Authorization: user must be member of group
             $this->authorize('view', $group);
 
             $chatName = $group->name;
@@ -59,9 +53,6 @@ class ExportController extends Controller
         return $this->exportAsJson($messages, $chatName);
     }
 
-    /**
-     * Export as JSON.
-     */
     private function exportAsJson($messages, $chatName)
     {
         $data = [
@@ -87,9 +78,6 @@ class ExportController extends Controller
             ->header('Content-Disposition', 'attachment; filename="chat_' . str_replace(' ', '_', $chatName) . '_' . date('Y-m-d') . '.json"');
     }
 
-    /**
-     * Export as plain text.
-     */
     private function exportAsTxt($messages, $chatName)
     {
         $content = "Chat Export: {$chatName}\n";

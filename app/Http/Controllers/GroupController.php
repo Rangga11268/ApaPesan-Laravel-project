@@ -9,9 +9,6 @@ use Illuminate\Support\Facades\Auth;
 
 class GroupController extends Controller
 {
-    /**
-     * Store a newly created group.
-     */
     public function store(Request $request)
     {
         $request->validate([
@@ -29,12 +26,8 @@ class GroupController extends Controller
             'owner_id' => $user->id,
         ]);
 
-        // Add owner to group
         $group->users()->attach($user->id);
-
-        // Add other members
         $group->users()->attach($request->user_ids);
-
         $group->load('users');
 
         return response()->json([
@@ -43,12 +36,8 @@ class GroupController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified group.
-     */
     public function update(Request $request, Group $group)
     {
-        // Authorization via policy: only owner can update
         $this->authorize('update', $group);
 
         $request->validate([
@@ -64,12 +53,8 @@ class GroupController extends Controller
         ]);
     }
 
-    /**
-     * Remove the specified group.
-     */
     public function destroy(Group $group)
     {
-        // Authorization via policy: only owner can delete
         $this->authorize('delete', $group);
 
         $group->delete();
@@ -77,19 +62,14 @@ class GroupController extends Controller
         return response()->json(['success' => true]);
     }
 
-    /**
-     * Add a member to the group.
-     */
     public function addMember(Request $request, Group $group)
     {
-        // Authorization via policy: only owner or admin can add members
         $this->authorize('addMember', $group);
 
         $request->validate([
             'user_id' => 'required|exists:users,id',
         ]);
 
-        // Check if already a member
         if ($group->users()->where('user_id', $request->user_id)->exists()) {
             return response()->json(['message' => 'User is already a member'], 409);
         }
@@ -102,17 +82,10 @@ class GroupController extends Controller
         ]);
     }
 
-    /**
-     * Remove a member from the group.
-     */
     public function removeMember(Group $group, User $user)
     {
-        $authUser = Auth::user();
-
-        // Authorization via policy
         $this->authorize('removeMember', [$group, $user]);
 
-        // Owner cannot be removed (must delete group instead)
         if ($user->id === $group->owner_id) {
             return response()->json(['message' => 'Cannot remove the group owner'], 400);
         }
@@ -125,12 +98,8 @@ class GroupController extends Controller
         ]);
     }
 
-    /**
-     * Get available users to add to group.
-     */
     public function availableUsers(Group $group)
     {
-        // Authorization: only members of the group can view available users
         $this->authorize('viewAvailableUsers', $group);
 
         $existingUserIds = $group->users()->pluck('users.id');

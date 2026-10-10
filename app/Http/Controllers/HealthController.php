@@ -8,9 +8,6 @@ use Illuminate\Http\Request;
 
 class HealthController extends Controller
 {
-    /**
-     * Basic health check endpoint.
-     */
     public function index()
     {
         return response()->json([
@@ -19,15 +16,11 @@ class HealthController extends Controller
         ]);
     }
 
-    /**
-     * Detailed health check with all dependencies.
-     */
     public function detailed(Request $request)
     {
         $checks = [];
         $healthy = true;
 
-        // Database check
         try {
             DB::connection()->getPdo();
             $checks['database'] = [
@@ -42,7 +35,6 @@ class HealthController extends Controller
             $healthy = false;
         }
 
-        // Cache check
         try {
             $cacheKey = 'health_check_' . time();
             Cache::put($cacheKey, 'ok', 10);
@@ -64,19 +56,16 @@ class HealthController extends Controller
             $healthy = false;
         }
 
-        // Queue check
         $checks['queue'] = [
             'status' => 'ok',
             'connection' => config('queue.default'),
         ];
 
-        // Broadcasting check
         $checks['broadcasting'] = [
             'status' => 'ok',
             'driver' => config('broadcasting.default'),
         ];
 
-        // Disk space check
         $freeSpace = disk_free_space(storage_path());
         $totalSpace = disk_total_space(storage_path());
         $usedPercent = round((1 - $freeSpace / $totalSpace) * 100, 2);
@@ -91,7 +80,6 @@ class HealthController extends Controller
             $healthy = false;
         }
 
-        // Memory check
         $memoryUsage = memory_get_usage(true);
         $memoryLimit = $this->parseMemoryLimit(ini_get('memory_limit'));
         $memoryPercent = $memoryLimit > 0 ? round($memoryUsage / $memoryLimit * 100, 2) : 0;
@@ -112,9 +100,6 @@ class HealthController extends Controller
         ], $healthy ? 200 : 503);
     }
 
-    /**
-     * Parse PHP memory limit to bytes.
-     */
     private function parseMemoryLimit(string $limit): int
     {
         if ($limit === '-1') {

@@ -70,7 +70,7 @@ class Group extends Model
             ->orderBy('messages.created_at', 'desc')
             ->orderBy('groups.name');
 
-        return $query->get();
+        return $query->with('users')->get();
     }
 
     public function toConversationArray()
