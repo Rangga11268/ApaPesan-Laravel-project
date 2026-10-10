@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="public/img/brand-banner.svg" alt="ApaPesan Banner" width="100%" />
+<img src="./public/img/brand-banner.svg" alt="ApaPesan Banner" width="100%" />
 
 <br/>
 
@@ -25,7 +25,7 @@
 Aplikasi ini menggunakan identitas monogram geometris **"A" + "P"** (*ApaPesan*) yang dirancang khusus mengikuti metodologi `/logo-design` & `/logo-generator`:
 
 <div align="center">
-  <img src="public/img/brand-palette.svg" alt="ApaPesan Brand Palette & Geometry" width="100%" />
+  <img src="./public/img/brand-palette.svg" alt="ApaPesan Brand Palette & Geometry" width="100%" />
 </div>
 
 - **Monogram Geometris**: Menggabungkan huruf 'A' dan 'P' dalam proporsi optis murni (tanpa klise clip-art seperti bintang/sparkle atau robot).

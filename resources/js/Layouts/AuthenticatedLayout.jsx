@@ -438,10 +438,10 @@ export default function AuthenticatedLayout({ children }) {
                             </button>
                         </Dropdown.Trigger>
                         <Dropdown.Content
-                            align={isRailExpanded ? "left" : "right"}
+                            align="left"
                             direction="up"
                             width="56"
-                            contentClasses="bg-surface text-main border border-border rounded-xl shadow-lg p-1"
+                            contentClasses="bg-surface text-main border border-border rounded-xl shadow-xl p-1.5"
                         >
                             <Dropdown.Link
                                 href={route("profile.edit")}

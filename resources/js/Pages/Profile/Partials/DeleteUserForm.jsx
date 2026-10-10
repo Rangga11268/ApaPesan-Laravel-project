@@ -64,12 +64,12 @@ export default function DeleteUserForm({ className = "" }) {
             </DangerButton>
 
             <Modal show={confirmingUserDeletion} onClose={closeModal}>
-                <form onSubmit={deleteUser} className="p-6">
-                    <h2 className="text-xl font-display font-bold text-white mb-4">
+                <form onSubmit={deleteUser} className="p-6 bg-surface text-main rounded-2xl border border-border">
+                    <h2 className="text-xl font-display font-bold text-main mb-4">
                         Apakah Anda yakin ingin menghapus akun?
                     </h2>
 
-                    <p className="mt-1 text-sm text-gray-400 leading-relaxed">
+                    <p className="mt-1 text-sm text-muted leading-relaxed">
                         Setelah akun Anda dihapus, semua data dan informasi akan
                         dihapus secara permanen. Masukkan kata sandi untuk
                         mengkonfirmasi penghapusan akun.
@@ -91,7 +91,7 @@ export default function DeleteUserForm({ className = "" }) {
                             onChange={(e) =>
                                 setData("password", e.target.value)
                             }
-                            className="mt-1 block w-full bg-black/20 border-white/10 text-white focus:border-red-500 focus:ring-red-500"
+                            className="mt-1 block w-full"
                             isFocused
                             placeholder="Kata Sandi"
                         />

@@ -38,7 +38,7 @@ const Trigger = ({ children }) => {
 const Content = ({
     align = "right",
     width = "48",
-    contentClasses = "py-1 bg-[#0f1218]/95 backdrop-blur-xl border border-white/10 shadow-2xl",
+    contentClasses = "py-1 bg-surface border border-border shadow-xl text-main",
     direction = "down", // 'down' or 'up'
     children,
 }) => {
@@ -56,13 +56,16 @@ const Content = ({
 
     if (width === "48") {
         widthClasses = "w-48";
+    } else if (width === "56") {
+        widthClasses = "w-56";
+    } else if (width === "64") {
+        widthClasses = "w-64";
     }
 
     // Direction logic
     let directionClasses = "mt-2";
     if (direction === "up") {
         directionClasses = "bottom-full mb-2 origin-bottom";
-        // Adjust alignment origin for up direction
         if (align === "left")
             alignmentClasses =
                 "ltr:origin-bottom-left rtl:origin-bottom-right start-0";
@@ -83,12 +86,12 @@ const Content = ({
                 leaveTo="opacity-0 scale-95"
             >
                 <div
-                    className={`absolute z-50 rounded-md shadow-lg ${alignmentClasses} ${widthClasses} ${directionClasses}`}
+                    className={`absolute z-50 rounded-xl shadow-xl ${alignmentClasses} ${widthClasses} ${directionClasses}`}
                     onClick={() => setOpen(false)}
                 >
                     <div
                         className={
-                            `rounded-md ring-1 ring-black ring-opacity-5 ` +
+                            `rounded-xl border border-border ` +
                             contentClasses
                         }
                     >
@@ -105,7 +108,7 @@ const DropdownLink = ({ className = "", children, ...props }) => {
         <Link
             {...props}
             className={
-                "block w-full px-4 py-2 text-start text-sm leading-5 text-gray-300 transition duration-150 ease-in-out hover:bg-white/5 hover:text-white focus:bg-white/5 focus:outline-none " +
+                "block w-full px-4 py-2 text-start text-sm leading-5 text-main transition duration-150 ease-in-out hover:bg-surface-elevated focus:bg-surface-elevated focus:outline-none " +
                 className
             }
         >

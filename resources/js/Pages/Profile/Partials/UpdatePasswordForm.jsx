@@ -47,11 +47,11 @@ export default function UpdatePasswordForm({ className = "" }) {
     return (
         <section className={className}>
             <header>
-                <h2 className="text-xl font-display font-medium text-white">
+                <h2 className="text-xl font-display font-bold text-main">
                     Ubah Kata Sandi
                 </h2>
 
-                <p className="mt-1 text-sm text-gray-400">
+                <p className="mt-1 text-sm text-muted">
                     Pastikan akun Anda menggunakan kata sandi yang panjang dan
                     acak agar tetap aman.
                 </p>
@@ -62,7 +62,6 @@ export default function UpdatePasswordForm({ className = "" }) {
                     <InputLabel
                         htmlFor="current_password"
                         value="Kata Sandi Saat Ini"
-                        className="text-gray-300"
                     />
 
                     <TextInput
@@ -73,7 +72,7 @@ export default function UpdatePasswordForm({ className = "" }) {
                             setData("current_password", e.target.value)
                         }
                         type="password"
-                        className="mt-1 block w-full bg-black/20 border-white/10 text-white focus:border-primary-500 focus:ring-primary-500"
+                        className="mt-1 block w-full"
                         autoComplete="current-password"
                     />
 
@@ -87,7 +86,6 @@ export default function UpdatePasswordForm({ className = "" }) {
                     <InputLabel
                         htmlFor="password"
                         value="Kata Sandi Baru"
-                        className="text-gray-300"
                     />
 
                     <TextInput
@@ -96,7 +94,7 @@ export default function UpdatePasswordForm({ className = "" }) {
                         value={data.password}
                         onChange={(e) => setData("password", e.target.value)}
                         type="password"
-                        className="mt-1 block w-full bg-black/20 border-white/10 text-white focus:border-primary-500 focus:ring-primary-500"
+                        className="mt-1 block w-full"
                         autoComplete="new-password"
                     />
 
@@ -107,7 +105,6 @@ export default function UpdatePasswordForm({ className = "" }) {
                     <InputLabel
                         htmlFor="password_confirmation"
                         value="Konfirmasi Kata Sandi"
-                        className="text-gray-300"
                     />
 
                     <TextInput
@@ -117,7 +114,7 @@ export default function UpdatePasswordForm({ className = "" }) {
                             setData("password_confirmation", e.target.value)
                         }
                         type="password"
-                        className="mt-1 block w-full bg-black/20 border-white/10 text-white focus:border-primary-500 focus:ring-primary-500"
+                        className="mt-1 block w-full"
                         autoComplete="new-password"
                     />
 

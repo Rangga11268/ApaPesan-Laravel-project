@@ -98,10 +98,10 @@ export default function UpdateProfileInformation({
                     </div>
                 </div>
 
-                <h2 className="text-xl font-display font-bold text-white">
+                <h2 className="text-xl font-display font-bold text-main">
                     {user.name}
                 </h2>
-                <p className="text-sm text-gray-400">{user.email}</p>
+                <p className="text-sm text-muted">{user.email}</p>
             </header>
 
             <form onSubmit={submit} className="space-y-6">
@@ -109,12 +109,11 @@ export default function UpdateProfileInformation({
                     <InputLabel
                         htmlFor="name"
                         value="Nama"
-                        className="text-gray-300"
                     />
 
                     <TextInput
                         id="name"
-                        className="mt-1 block w-full bg-black/20 border-white/10 text-white focus:border-primary-500 focus:ring-primary-500"
+                        className="mt-1 block w-full"
                         value={data.name}
                         onChange={(e) => setData("name", e.target.value)}
                         required
@@ -129,13 +128,12 @@ export default function UpdateProfileInformation({
                     <InputLabel
                         htmlFor="email"
                         value="Email"
-                        className="text-gray-300"
                     />
 
                     <TextInput
                         id="email"
                         type="email"
-                        className="mt-1 block w-full bg-black/20 border-white/10 text-white focus:border-primary-500 focus:ring-primary-500"
+                        className="mt-1 block w-full"
                         value={data.email}
                         onChange={(e) => setData("email", e.target.value)}
                         required
