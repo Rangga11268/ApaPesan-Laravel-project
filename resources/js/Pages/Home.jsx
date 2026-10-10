@@ -17,6 +17,7 @@ function Home({
 }) {
     const [localMessages, setLocalMessages] = useState([]);
     const [noMoreMessages, setNoMoreMessages] = useState(false);
+    const [loadingMore, setLoadingMore] = useState(false);
     const [scrollFromBottom, setScrollFromBottom] = useState(0);
     const messagesCtrRef = useRef(null);
     const loadMoreIntersect = useRef(null);
@@ -186,15 +187,16 @@ function Home({
     }, []);
 
     const loadMoreMessages = useCallback(() => {
-        if (noMoreMessages) return;
+        if (noMoreMessages || loadingMore) return;
 
         const firstMessage = localMessages[0];
         if (!firstMessage) return;
 
+        setLoadingMore(true);
         axios
             .get(route("message.loadOlder", firstMessage.id))
             .then(({ data }) => {
-                if (data.data.length === 0) {
+                if (!data?.data || data.data.length === 0) {
                     setNoMoreMessages(true);
                     return;
                 }
@@ -215,8 +217,14 @@ function Home({
                     );
                     return [...uniqueNewMessages, ...prevMessages];
                 });
+            })
+            .catch((err) => {
+                console.error("Error loading older messages:", err);
+            })
+            .finally(() => {
+                setLoadingMore(false);
             });
-    }, [localMessages, noMoreMessages]);
+    }, [localMessages, noMoreMessages, loadingMore]);
 
     const onAttachmentClick = (attachments, ind) => {
         setPreviewAttachment({
@@ -243,7 +251,8 @@ function Home({
         const offEdit = on("message.edit", handleEditMessage);
 
         setLocalMessages(messages ? messages.data.reverse() : []);
-        setNoMoreMessages(false);
+        setNoMoreMessages(!messages?.data || messages.data.length < 10);
+        setLoadingMore(false);
         setReplyTo(null);
         setEditingMessage(null);
         setTypingUser(null);
@@ -454,12 +463,14 @@ function Home({
                     </div>
                 )}
 
-                {localMessages.length > 0 && (
+                {!noMoreMessages && localMessages.length > 0 && (
                     <div
                         className="h-6 flex items-center justify-center shrink-0 py-2"
                         ref={loadMoreIntersect}
                     >
-                        <div className="loading loading-spinner loading-xs text-primary"></div>
+                        {loadingMore && (
+                            <div className="loading loading-spinner loading-xs text-primary"></div>
+                        )}
                     </div>
                 )}
 

@@ -147,7 +147,11 @@ class MessageController extends Controller
             Group::updateConversationWithMessage($groupId, $message);
         }
 
-        SocketMessage::dispatch($message);
+        try {
+            SocketMessage::dispatch($message);
+        } catch (\Throwable $e) {
+            Log::warning('Broadcast failed for SocketMessage: ' . $e->getMessage());
+        }
         return new MessageResource($message);
     }
 
@@ -248,7 +252,11 @@ class MessageController extends Controller
 
         $message->loadMissing(['sender', 'attachments', 'replyTo']);
 
-        \App\Events\MessageEdited::dispatch($message);
+        try {
+            \App\Events\MessageEdited::dispatch($message);
+        } catch (\Throwable $e) {
+            Log::warning('Broadcast failed for MessageEdited: ' . $e->getMessage());
+        }
 
         return new MessageResource($message);
     }
@@ -279,12 +287,16 @@ class MessageController extends Controller
         $senderId = $firstMessage->sender_id;
         $groupId = $firstMessage->group_id;
 
-        \App\Events\MessageRead::dispatch(
-            $messages->pluck('id')->toArray(),
-            $user,
-            $senderId,
-            $groupId
-        );
+        try {
+            \App\Events\MessageRead::dispatch(
+                $messages->pluck('id')->toArray(),
+                $user,
+                $senderId,
+                $groupId
+            );
+        } catch (\Throwable $e) {
+            Log::warning('Broadcast failed for MessageRead: ' . $e->getMessage());
+        }
 
         return response()->json([
             'success' => true,

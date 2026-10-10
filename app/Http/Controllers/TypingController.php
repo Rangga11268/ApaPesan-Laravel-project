@@ -18,11 +18,15 @@ class TypingController extends Controller
             'group_id' => 'required_without:receiver_id|nullable|exists:groups,id',
         ]);
 
-        UserTyping::dispatch(
-            Auth::user(),
-            $request->receiver_id,
-            $request->group_id
-        );
+        try {
+            UserTyping::dispatch(
+                Auth::user(),
+                $request->receiver_id,
+                $request->group_id
+            );
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Broadcast failed for UserTyping: ' . $e->getMessage());
+        }
 
         return response()->json(['success' => true]);
     }

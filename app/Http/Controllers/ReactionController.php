@@ -42,7 +42,11 @@ class ReactionController extends Controller
             'emoji' => $emoji,
         ]);
 
-        MessageReacted::dispatch($message, $user, $emoji, 'added');
+        try {
+            MessageReacted::dispatch($message, $user, $emoji, 'added');
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Broadcast failed for MessageReacted (added): ' . $e->getMessage());
+        }
 
         return response()->json([
             'success' => true,
@@ -72,7 +76,11 @@ class ReactionController extends Controller
 
         $reaction->delete();
 
-        MessageReacted::dispatch($message, $user, $emoji, 'removed');
+        try {
+            MessageReacted::dispatch($message, $user, $emoji, 'removed');
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Broadcast failed for MessageReacted (removed): ' . $e->getMessage());
+        }
 
         return response()->json(['success' => true]);
     }

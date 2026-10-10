@@ -52,7 +52,7 @@ const MessageInput = ({
                     receiver_id: conversation.is_user ? conversation.id : null,
                     group_id: conversation.is_group ? conversation.id : null,
                 })
-                .catch(console.error);
+                .catch(() => {});
         }
     }, [conversation]);
 
