@@ -48,6 +48,7 @@ class UserTyping implements ShouldBroadcastNow
         } elseif ($this->receiverId) {
             $ids = collect([$this->user->id, $this->receiverId])->sort()->implode('-');
             $channels[] = new PrivateChannel('message.user.' . $ids);
+            $channels[] = new PrivateChannel('message.new.to.user.' . $this->receiverId);
         }
         
         return $channels;

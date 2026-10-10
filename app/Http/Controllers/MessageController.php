@@ -147,6 +147,8 @@ class MessageController extends Controller
             Group::updateConversationWithMessage($groupId, $message);
         }
 
+        $message->load(['sender', 'attachments', 'group', 'replyTo']);
+
         try {
             SocketMessage::dispatch($message);
         } catch (\Throwable $e) {

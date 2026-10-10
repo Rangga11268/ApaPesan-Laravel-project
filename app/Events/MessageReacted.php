@@ -60,6 +60,10 @@ class MessageReacted implements ShouldBroadcastNow
         } else {
             $ids = collect([$this->message->sender_id, $this->message->receiver_id])->sort()->implode('-');
             $channels[] = new PrivateChannel('message.user.' . $ids);
+            $targetUser = $this->user->id === $this->message->sender_id ? $this->message->receiver_id : $this->message->sender_id;
+            if ($targetUser) {
+                $channels[] = new PrivateChannel('message.new.to.user.' . $targetUser);
+            }
         }
         
         return $channels;

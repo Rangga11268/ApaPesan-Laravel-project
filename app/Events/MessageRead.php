@@ -51,6 +51,7 @@ class MessageRead implements ShouldBroadcastNow
         } elseif ($this->senderId) {
             $ids = collect([$this->reader->id, $this->senderId])->sort()->implode('-');
             $channels[] = new PrivateChannel('message.user.' . $ids);
+            $channels[] = new PrivateChannel('message.new.to.user.' . $this->senderId);
         }
         
         return $channels;

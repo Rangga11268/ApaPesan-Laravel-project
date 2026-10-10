@@ -45,12 +45,21 @@ export default function AuthenticatedLayout({ children }) {
     const [unreadCount, setUnreadCount] = useState(0);
 
     const conversations = page.props.conversation || [];
+    const userId = user?.id;
+    const groupIds = (conversations || [])
+        .filter((c) => c.is_group)
+        .map((c) => c.id)
+        .sort((a, b) => a - b)
+        .join(",");
 
     useEffect(() => {
+        if (!userId || !window.Echo) return;
+
         const handleNewMessage = (e) => {
-            const message = e.message;
+            const message = e?.message || e;
+            if (!message?.id) return;
             emit("message.created", message);
-            if (message.sender_id === user.id) return;
+            if (message.sender_id === userId) return;
             setNewMessage(message);
             setShowNewMessageNotification(true);
             setUnreadCount((prev) => prev + 1);
@@ -62,39 +71,59 @@ export default function AuthenticatedLayout({ children }) {
 
         const handleMessageDeleted = (e) => {
             emit("message.deleted", {
-                message: e.message,
-                prevMessage: e.prevMessage,
+                message: e?.message || e,
+                prevMessage: e?.prevMessage,
             });
         };
 
-        window.Echo.private(`message.new.to.user.${user.id}`).listen(
-            "SocketMessage",
-            handleNewMessage
-        );
+        const handleMessageEdited = (e) => {
+            emit("message.edited", e?.message || e);
+        };
 
-        window.Echo.private(`message.deleted.user.${user.id}`).listen(
-            "SocketMessageDeleted",
-            handleMessageDeleted
-        );
+        const handleMessageRead = (e) => {
+            emit("message.read", e);
+        };
 
+        const handleMessageReacted = (e) => {
+            emit("message.reacted", e);
+        };
+
+        const handleUserTyping = (e) => {
+            emit("user.typing", e);
+        };
+
+        const userChannel = window.Echo.private(`message.new.to.user.${userId}`)
+            .listen("SocketMessage", handleNewMessage)
+            .listen("MessageEdited", handleMessageEdited)
+            .listen("MessageRead", handleMessageRead)
+            .listen("MessageReacted", handleMessageReacted)
+            .listen("UserTyping", handleUserTyping);
+
+        const deleteChannel = window.Echo.private(`message.deleted.user.${userId}`)
+            .listen("SocketMessageDeleted", handleMessageDeleted);
+
+        const groupChannels = [];
         conversations.forEach((conv) => {
             if (conv.is_group) {
-                window.Echo.private(`message.group.${conv.id}`)
+                const groupCh = window.Echo.private(`message.group.${conv.id}`)
                     .listen("SocketMessage", handleNewMessage)
-                    .listen("SocketMessageDeleted", handleMessageDeleted);
+                    .listen("SocketMessageDeleted", handleMessageDeleted)
+                    .listen("MessageEdited", handleMessageEdited)
+                    .listen("MessageRead", handleMessageRead)
+                    .listen("MessageReacted", handleMessageReacted)
+                    .listen("UserTyping", handleUserTyping);
+                groupChannels.push(conv.id);
             }
         });
 
         return () => {
-            window.Echo.leave(`message.new.to.user.${user.id}`);
-            window.Echo.leave(`message.deleted.user.${user.id}`);
-            conversations.forEach((conv) => {
-                if (conv.is_group) {
-                    window.Echo.leave(`message.group.${conv.id}`);
-                }
+            window.Echo.leave(`message.new.to.user.${userId}`);
+            window.Echo.leave(`message.deleted.user.${userId}`);
+            groupChannels.forEach((groupId) => {
+                window.Echo.leave(`message.group.${groupId}`);
             });
         };
-    }, [user, emit, conversations]);
+    }, [userId, emit, groupIds]);
 
     return (
         <div className="h-screen w-screen flex flex-col sm:flex-row bg-background text-main overflow-hidden font-sans selection:bg-primary-500/20 relative">

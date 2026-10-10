@@ -7,6 +7,7 @@ import MessageItem from "@/Components/App/MessageItem";
 import MessageInput from "@/Components/App/MessageInput";
 import { useEventBus } from "@/EventBus";
 import axios from "axios";
+import { usePage } from "@inertiajs/react";
 import AttachmentPreviewModal from "@/Components/App/AttachmentPreviewModal";
 import TypingIndicator from "@/Components/App/TypingIndicator";
 
@@ -15,6 +16,8 @@ function Home({
     messages = null,
     onlineUsers = {},
 }) {
+    const page = usePage();
+    const currentUserId = page?.props?.auth?.user?.id;
     const [localMessages, setLocalMessages] = useState([]);
     const [noMoreMessages, setNoMoreMessages] = useState(false);
     const [loadingMore, setLoadingMore] = useState(false);
@@ -37,57 +40,58 @@ function Home({
         !!onlineUsers[selectedConversation.id];
 
     const messageCreated = (message) => {
-        if (selectedConversation) {
-            let isCurrentConversation = false;
+        if (!message?.id || !selectedConversation) return;
 
+        let isCurrentConversation = false;
+        if (
+            selectedConversation.is_group &&
+            selectedConversation.id == message.group_id
+        ) {
+            isCurrentConversation = true;
+        } else if (selectedConversation.is_user) {
             if (
-                selectedConversation.is_group &&
-                selectedConversation.id == message.group_id
+                message.receiver_id == selectedConversation.id ||
+                message.sender_id == selectedConversation.id
             ) {
                 isCurrentConversation = true;
-            } else if (selectedConversation.is_user) {
-                if (
-                    message.receiver_id == selectedConversation.id ||
-                    message.sender_id == selectedConversation.id
-                ) {
-                    isCurrentConversation = true;
-                }
             }
+        }
 
-            if (isCurrentConversation) {
-                setLocalMessages((prevMessages) => {
-                    if (prevMessages.some((m) => m.id === message.id)) {
-                        return prevMessages;
-                    }
-                    return [...prevMessages, message];
-                });
-
-                // Auto scroll to bottom smoothly
-                setTimeout(() => {
-                    if (messagesCtrRef.current) {
-                        messagesCtrRef.current.scrollTo({
-                            top: messagesCtrRef.current.scrollHeight,
-                            behavior: "smooth",
-                        });
-                    }
-                }, 100);
-
-                // Auto-mark as read if message is from other user
-                if (message.sender_id !== selectedConversation.id) {
-                    markMessagesAsRead([message.id]);
+        if (isCurrentConversation) {
+            setLocalMessages((prevMessages) => {
+                if (prevMessages.some((m) => m.id === message.id)) {
+                    return prevMessages;
                 }
+                return [...prevMessages, message];
+            });
+
+            // Auto scroll to bottom smoothly
+            setTimeout(() => {
+                if (messagesCtrRef.current) {
+                    messagesCtrRef.current.scrollTo({
+                        top: messagesCtrRef.current.scrollHeight,
+                        behavior: "smooth",
+                    });
+                }
+            }, 100);
+
+            // Auto-mark as read if message is from other user
+            if (currentUserId && message.sender_id !== currentUserId) {
+                markMessagesAsRead([message.id]);
             }
         }
     };
 
-    const messageDeleted = ({ message }) => {
+    const messageDeleted = (data) => {
+        const message = data?.message || data;
+        if (!message?.id || !selectedConversation) return;
+
         if (
-            selectedConversation &&
-            ((selectedConversation.is_group &&
+            (selectedConversation.is_group &&
                 selectedConversation.id == message.group_id) ||
-                (selectedConversation.is_user &&
-                    (selectedConversation.id == message.sender_id ||
-                        selectedConversation.id == message.receiver_id)))
+            (selectedConversation.is_user &&
+                (selectedConversation.id == message.sender_id ||
+                    selectedConversation.id == message.receiver_id))
         ) {
             setLocalMessages((prevMessages) => {
                 return prevMessages.filter((m) => m.id !== message.id);
@@ -96,7 +100,10 @@ function Home({
     };
 
     // Handle message edited event
-    const messageEdited = ({ message }) => {
+    const messageEdited = (data) => {
+        const message = data?.message || data;
+        if (!message?.id) return;
+
         setLocalMessages((prevMessages) => {
             return prevMessages.map((m) =>
                 m.id === message.id ? { ...m, ...message } : m,
@@ -105,28 +112,37 @@ function Home({
     };
 
     // Handle message read event
-    const messageReadHandler = ({ message_ids, read_at }) => {
+    const messageReadHandler = (data) => {
+        const messageIds = data?.message_ids || [];
+        const readAt = data?.read_at;
+        if (!messageIds.length) return;
+
         setLocalMessages((prevMessages) => {
             return prevMessages.map((m) =>
-                message_ids.includes(m.id) ? { ...m, read_at } : m,
+                messageIds.includes(m.id) ? { ...m, read_at: readAt } : m,
             );
         });
     };
 
     // Handle reaction event
-    const messageReactionHandler = ({ message_id, reactions }) => {
+    const messageReactionHandler = (data) => {
+        const messageId = data?.message_id;
+        const reactions = data?.reactions;
+        if (!messageId) return;
+
         setLocalMessages((prevMessages) => {
             return prevMessages.map((m) =>
-                m.id === message_id ? { ...m, reactions } : m,
+                m.id === messageId ? { ...m, reactions } : m,
             );
         });
     };
 
     // Handle typing indicator
-    const handleTyping = ({ user }) => {
-        if (user.id !== selectedConversation?.id) return;
+    const handleTyping = (data) => {
+        const typingUserObj = data?.user;
+        if (!typingUserObj || typingUserObj.id !== selectedConversation?.id) return;
 
-        setTypingUser(user.name);
+        setTypingUser(typingUserObj.name);
 
         // Clear previous timeout
         if (typingTimeoutRef.current) {
@@ -208,7 +224,7 @@ function Home({
 
                 setScrollFromBottom(tmpScrollFromBottom);
                 setLocalMessages((prevMessages) => {
-                    const newMessages = data.data.reverse();
+                    const newMessages = [...data.data].reverse();
                     const uniqueNewMessages = newMessages.filter(
                         (newMsg) =>
                             !prevMessages.some(
@@ -250,7 +266,7 @@ function Home({
         const offTyping = on("user.typing", handleTyping);
         const offEdit = on("message.edit", handleEditMessage);
 
-        setLocalMessages(messages ? messages.data.reverse() : []);
+        setLocalMessages(messages?.data ? [...messages.data].reverse() : []);
         setNoMoreMessages(!messages?.data || messages.data.length < 10);
         setLoadingMore(false);
         setReplyTo(null);
@@ -258,11 +274,11 @@ function Home({
         setTypingUser(null);
 
         // Mark visible messages as read on load
-        if (messages?.data?.length) {
+        if (messages?.data?.length && currentUserId) {
             const unreadIds = messages.data
                 .filter(
                     (m) =>
-                        !m.read_at && m.sender_id !== selectedConversation?.id,
+                        !m.read_at && m.sender_id !== currentUserId,
                 )
                 .map((m) => m.id);
             if (unreadIds.length) {
