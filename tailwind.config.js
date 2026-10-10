@@ -5,6 +5,7 @@ import typography from "@tailwindcss/typography";
 
 /** @type {import('tailwindcss').Config} */
 export default {
+    darkMode: "class",
     content: [
         "./vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php",
         "./storage/framework/views/*.php",
@@ -19,24 +20,39 @@ export default {
                 display: ["Syne", ...defaultTheme.fontFamily.sans],
             },
             colors: {
-                // Midnight Aurora Palette
-                background: "#05070a", // Deepest charcoal
-                surface: "#0f172a", // Dark blue-grey
+                background: "var(--color-bg)",
+                surface: {
+                    DEFAULT: "var(--color-surface)",
+                    elevated: "var(--color-surface-elevated)",
+                },
+                "surface-elevated": "var(--color-surface-elevated)",
+                border: {
+                    DEFAULT: "var(--color-border)",
+                    active: "var(--color-border-active)",
+                    subtle: "var(--color-border)",
+                },
+                "border-active": "var(--color-border-active)",
+                "border-subtle": "var(--color-border)",
+                "text-main": "var(--color-text-main)",
+                "text-muted": "var(--color-text-muted)",
+                main: "var(--color-text-main)",
+                muted: "var(--color-text-muted)",
+                "accent-primary": "var(--color-primary)",
                 primary: {
-                    DEFAULT: "#7c3aed", // Electric Violet
-                    50: "#f5f3ff",
-                    100: "#ede9fe",
-                    200: "#ddd6fe",
-                    300: "#c4b5fd",
-                    400: "#a78bfa",
-                    500: "#8b5cf6",
-                    600: "#7c3aed",
-                    700: "#6d28d9",
-                    800: "#5b21b6",
-                    900: "#4c1d95",
+                    DEFAULT: "var(--color-primary)",
+                    50: "#eff6ff",
+                    100: "#dbeafe",
+                    200: "#bfdbfe",
+                    300: "#93c5fd",
+                    400: "#60a5fa",
+                    500: "#3b82f6",
+                    600: "#2563eb",
+                    700: "#1d4ed8",
+                    800: "#1e40af",
+                    900: "#1e3a8a",
                 },
                 secondary: {
-                    DEFAULT: "#10b981", // Emerald Neon
+                    DEFAULT: "#10b981",
                     50: "#ecfdf5",
                     100: "#d1fae5",
                     200: "#a7f3d0",
@@ -49,18 +65,17 @@ export default {
                     900: "#064e3b",
                 },
                 accent: {
-                    // Pink/Fuchsia for highlights
-                    DEFAULT: "#d946ef",
-                    50: "#fdf4ff",
-                    100: "#fae8ff",
-                    200: "#f5d0fe",
-                    300: "#f0abfc",
-                    400: "#e879f9",
-                    500: "#d946ef",
-                    600: "#c026d3",
-                    700: "#a21caf",
-                    800: "#86198f",
-                    900: "#701a75",
+                    DEFAULT: "var(--color-primary)",
+                    50: "#eff6ff",
+                    100: "#dbeafe",
+                    200: "#bfdbfe",
+                    300: "#93c5fd",
+                    400: "#60a5fa",
+                    500: "#3b82f6",
+                    600: "#2563eb",
+                    700: "#1d4ed8",
+                    800: "#1e40af",
+                    900: "#1e3a8a",
                 },
             },
             animation: {
@@ -103,24 +118,37 @@ export default {
 
     plugins: [forms, typography, daisyui],
 
-    // daisyUI config with custom dark theme
     daisyui: {
         themes: [
             {
-                midnight: {
-                    primary: "#7c3aed",
+                light: {
+                    primary: "#2563eb",
                     secondary: "#10b981",
-                    accent: "#d946ef",
-                    neutral: "#0f172a",
-                    "base-100": "#05070a",
-                    "base-200": "#0f172a",
-                    "base-300": "#1e293b",
-                    info: "#3abff8",
-                    success: "#36d399",
-                    warning: "#fbbd23",
-                    error: "#f87272",
+                    accent: "#3b82f6",
+                    neutral: "#1e293b",
+                    "base-100": "#ffffff",
+                    "base-200": "#f8fafc",
+                    "base-300": "#f1f5f9",
+                    info: "#38bdf8",
+                    success: "#10b981",
+                    warning: "#f59e0b",
+                    error: "#ef4444",
+                },
+                dark: {
+                    primary: "#3b82f6",
+                    secondary: "#10b981",
+                    accent: "#60a5fa",
+                    neutral: "#111827",
+                    "base-100": "#0b0f17",
+                    "base-200": "#111827",
+                    "base-300": "#1f2937",
+                    info: "#38bdf8",
+                    success: "#10b981",
+                    warning: "#f59e0b",
+                    error: "#ef4444",
                 },
             },
         ],
+        darkTheme: "dark",
     },
 };

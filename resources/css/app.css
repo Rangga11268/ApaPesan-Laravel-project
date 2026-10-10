@@ -6,11 +6,25 @@
 
 @layer base {
     :root {
-        --color-bg: #05070a;
-        --color-surface: #0f1217;
-        --color-primary: #7c3aed;
-        --color-text-main: #ffffff;
-        --color-text-muted: #94a3b8;
+        --color-bg: #F8FAFC;
+        --color-surface: #FFFFFF;
+        --color-surface-elevated: #F1F5F9;
+        --color-border: #E2E8F0;
+        --color-border-active: #64748B;
+        --color-text-main: #0F172A;
+        --color-text-muted: #475569;
+        --color-primary: #2563EB;
+    }
+
+    .dark {
+        --color-bg: #0B0F17;
+        --color-surface: #111827;
+        --color-surface-elevated: #1F2937;
+        --color-border: #374151;
+        --color-border-active: #6B7280;
+        --color-text-main: #F9FAFB;
+        --color-text-muted: #9CA3AF;
+        --color-primary: #3B82F6;
     }
 
     body {
@@ -18,8 +32,6 @@
         color: var(--color-text-main);
         font-family: "Manrope", sans-serif;
         overflow: hidden; /* App interaction model */
-        /* Noble Noise Texture */
-        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
     }
 
     h1,
@@ -33,16 +45,16 @@
 }
 
 @layer components {
-    /* Glass Panels - Ultra Premium */
+    /* Grounded Surface Panels */
     .glass-panel {
-        @apply bg-[#0f1218]/60 backdrop-blur-2xl border border-white/5 shadow-2xl;
+        @apply bg-surface border border-border shadow-sm;
     }
 
     .glass-input {
-        @apply bg-white/5 border border-white/5 text-white placeholder-white/20 focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 focus:bg-white/10 transition-all duration-300 outline-none;
+        @apply bg-surface border border-border text-main placeholder-muted focus:border-border-active focus:ring-1 focus:ring-border-active transition-colors duration-200 outline-none;
     }
 
-    /* Custom Scrollbar - Minimal & Sleek */
+    /* Custom Scrollbar - Minimal & Theme-Aware */
     .custom-scrollbar::-webkit-scrollbar {
         width: 4px;
         height: 4px;
@@ -53,29 +65,33 @@
     }
 
     .custom-scrollbar::-webkit-scrollbar-thumb {
-        background: rgba(255, 255, 255, 0.1);
+        background: rgba(100, 116, 139, 0.2);
         border-radius: 20px;
     }
 
-    .custom-scrollbar:hover::-webkit-scrollbar-thumb {
-        background: rgba(255, 255, 255, 0.2);
+    .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: rgba(156, 163, 175, 0.2);
     }
 
-    /* Message Bubble Types */
+    .custom-scrollbar:hover::-webkit-scrollbar-thumb {
+        background: rgba(100, 116, 139, 0.4);
+    }
+
+    .dark .custom-scrollbar:hover::-webkit-scrollbar-thumb {
+        background: rgba(156, 163, 175, 0.4);
+    }
+
+    /* Message Bubble Types - High Contrast & Grounded */
     .bubble-user {
-        @apply bg-gradient-to-br from-primary-600 to-indigo-600 text-white shadow-lg shadow-primary-900/20 border border-white/10;
+        @apply bg-primary-600 dark:bg-primary-700 text-white shadow-sm border border-transparent;
     }
 
     .bubble-guest {
-        @apply bg-white/5 backdrop-blur-md text-gray-200 border border-white/5;
+        @apply bg-surface-elevated text-main border border-border shadow-sm;
     }
 }
 
 @layer utilities {
-    .text-glow {
-        text-shadow: 0 0 20px rgba(124, 58, 237, 0.5);
-    }
-
     .animate-enter {
         animation: enter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
@@ -94,23 +110,23 @@
 
 /* Override default selections */
 ::selection {
-    background: rgba(124, 58, 237, 0.3);
-    color: white;
+    background: rgba(37, 99, 235, 0.25);
+    color: inherit;
 }
 
 /* Markdown Styles */
 .prose {
-    @apply text-gray-300;
+    @apply text-main;
 }
 .prose p {
     @apply my-1 leading-relaxed;
 }
 .prose a {
-    @apply text-primary-400 no-underline hover:text-primary-300 transition-colors;
+    @apply text-primary-600 dark:text-primary-400 no-underline hover:underline transition-colors;
 }
 .prose code {
-    @apply text-accent-400 bg-black/30 px-1 py-0.5 rounded font-mono text-xs border border-white/5;
+    @apply text-primary-700 dark:text-primary-300 bg-surface-elevated px-1 py-0.5 rounded font-mono text-xs border border-border;
 }
 .prose pre {
-    @apply bg-black/50 border border-white/10 rounded-lg p-3 my-2;
+    @apply bg-surface-elevated border border-border rounded-lg p-3 my-2 text-main;
 }
