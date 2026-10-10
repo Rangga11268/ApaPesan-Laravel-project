@@ -17,13 +17,13 @@ class StarredMessageController extends Controller
         $user = Auth::user();
 
         $starred = StarredMessage::where('user_id', $user->id)
-            ->with(['message.sender', 'message.attachments', 'message.replyTo'])
+            ->with(['message.sender', 'message.attachments', 'message.replyTo', 'message.group'])
             ->latest()
             ->paginate(20);
 
         return response()->json([
             'success' => true,
-            'data' => $starred->through(fn($s) => new MessageResource($s->message)),
+            'data' => MessageResource::collection($starred->pluck('message')->filter()->values()),
             'pagination' => [
                 'current_page' => $starred->currentPage(),
                 'last_page' => $starred->lastPage(),

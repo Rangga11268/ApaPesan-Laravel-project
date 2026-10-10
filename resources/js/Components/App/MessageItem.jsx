@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { usePage } from "@inertiajs/react";
 import ReactMarkdown from "react-markdown";
 import UserAvatar from "./UserAvatar";
@@ -7,10 +8,32 @@ import MessageOptionsDropdown from "./MessageOptionsDropdown";
 import ReadReceipt from "./ReadReceipt";
 import ReactionDisplay from "./ReactionDisplay";
 import { QuotedMessage } from "./ReplyPreview";
+import { StarIcon as StarIconSolid } from "@heroicons/react/24/solid";
+import { useEventBus } from "@/EventBus";
 
 const MessageItem = ({ message, attachmentClick, onReply, onReact }) => {
     const currentUser = usePage().props.auth.user;
     const isCurrentUser = message.sender_id === currentUser.id;
+    const { on } = useEventBus();
+
+    const [isStarred, setIsStarred] = useState(message.is_starred || false);
+
+    useEffect(() => {
+        setIsStarred(message.is_starred || false);
+    }, [message.is_starred]);
+
+    useEffect(() => {
+        if (!on) return;
+        const unsub = on(
+            "message.starred",
+            ({ messageId, isStarred: starredState }) => {
+                if (messageId === message.id) {
+                    setIsStarred(starredState);
+                }
+            }
+        );
+        return unsub;
+    }, [message.id, on]);
 
     const handleReactionClick = (messageId, emoji) => {
         if (onReact) {
@@ -35,9 +58,9 @@ const MessageItem = ({ message, attachmentClick, onReply, onReact }) => {
                 />
             </div>
 
-            <div className="chat-header text-xs text-muted mb-1 flex items-center gap-2">
+            <div className="chat-header text-xs text-muted mb-1 flex items-center gap-1.5">
                 {!isCurrentUser && (
-                    <span className="font-semibold text-main">
+                    <span className="font-semibold text-main mr-1">
                         {message.sender?.name}
                     </span>
                 )}
@@ -47,6 +70,14 @@ const MessageItem = ({ message, attachmentClick, onReply, onReact }) => {
                 {message.edited_at && (
                     <span className="text-[10px] text-muted italic">
                         (diedit)
+                    </span>
+                )}
+                {isStarred && (
+                    <span
+                        className="inline-flex items-center text-amber-500 ml-0.5"
+                        title="Pesan Berbintang"
+                    >
+                        <StarIconSolid className="w-3.5 h-3.5 fill-amber-500" />
                     </span>
                 )}
             </div>

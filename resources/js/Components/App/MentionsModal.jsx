@@ -15,9 +15,16 @@ export default function MentionsModal({ show, onClose }) {
         axios
             .get(route("mentions.index"))
             .then((res) => {
-                if (res.data?.success && res.data?.data) {
-                    setMentions(res.data.data);
+                const raw = res.data?.data;
+                let list = [];
+                if (Array.isArray(raw)) {
+                    list = raw;
+                } else if (raw && Array.isArray(raw.data)) {
+                    list = raw.data;
+                } else if (raw && typeof raw === "object") {
+                    list = Object.values(raw);
                 }
+                setMentions(list);
             })
             .catch((err) => console.error("Error fetching mentions:", err))
             .finally(() => setLoading(false));
@@ -44,9 +51,9 @@ export default function MentionsModal({ show, onClose }) {
 
         onClose();
         const msg = mention.message;
-        if (msg.group_id) {
+        if (msg?.group_id) {
             router.visit(route("chat.group", msg.group_id));
-        } else if (msg.sender_id) {
+        } else if (msg?.sender_id) {
             router.visit(route("chat.user", msg.sender_id));
         }
     };

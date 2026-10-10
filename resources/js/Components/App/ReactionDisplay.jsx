@@ -17,18 +17,19 @@ const ReactionDisplay = ({ reactions = {}, onReactionClick, messageId }) => {
             {reactionEntries.map(([emoji, data]) => (
                 <button
                     key={emoji}
+                    type="button"
                     onClick={() =>
                         onReactionClick && onReactionClick(messageId, emoji)
                     }
                     className="
                         flex items-center gap-1 px-2 py-0.5 rounded-full
-                        bg-white/5 hover:bg-white/10 border border-white/10
-                        text-xs transition-colors group
+                        bg-surface/90 hover:bg-surface border border-border/70
+                        text-xs transition-colors group shadow-xs
                     "
                     title={data.users?.map((u) => u.name).join(", ")}
                 >
-                    <span className="text-sm">{emoji}</span>
-                    <span className="text-gray-400 group-hover:text-white">
+                    <span className="text-xs">{emoji}</span>
+                    <span className="text-[11px] font-medium text-main">
                         {data.count}
                     </span>
                 </button>

@@ -17,18 +17,33 @@ export default function MessageOptionsDropdown({
     onReply,
     isOwn = false,
 }) {
-    const { emit } = useEventBus();
+    const { emit, on } = useEventBus();
     const [isOpen, setIsOpen] = useState(false);
     const [showReactions, setShowReactions] = useState(false);
     const [isStarred, setIsStarred] = useState(message.is_starred || false);
-    const [isEditing, setIsEditing] = useState(false);
     const dropdownRef = useRef(null);
+
+    useEffect(() => {
+        setIsStarred(message.is_starred || false);
+    }, [message.is_starred]);
+
+    useEffect(() => {
+        if (!on) return;
+        const unsub = on(
+            "message.starred",
+            ({ messageId, isStarred: starredState }) => {
+                if (messageId === message.id) {
+                    setIsStarred(starredState);
+                }
+            }
+        );
+        return unsub;
+    }, [message.id, on]);
 
     const onDeleteMessage = useCallback(
         (e) => {
             e.stopPropagation();
-            if (!confirm("Are you sure you want to delete this message?"))
-                return;
+            if (!confirm("Apakah Anda yakin ingin menghapus pesan ini?")) return;
 
             const url = route("message.destroy", message.id);
 
@@ -43,7 +58,7 @@ export default function MessageOptionsDropdown({
                 })
                 .catch((err) => {
                     console.error("Error deleting message:", err);
-                    alert("Failed to delete message. Please try again.");
+                    alert("Gagal menghapus pesan. Silakan coba lagi.");
                 });
         },
         [message, emit]
@@ -81,16 +96,24 @@ export default function MessageOptionsDropdown({
                 if (isStarred) {
                     await axios.delete(route("starred.destroy", message.id));
                     setIsStarred(false);
+                    emit("message.starred", {
+                        messageId: message.id,
+                        isStarred: false,
+                    });
                 } else {
                     await axios.post(route("starred.store", message.id));
                     setIsStarred(true);
+                    emit("message.starred", {
+                        messageId: message.id,
+                        isStarred: true,
+                    });
                 }
                 setIsOpen(false);
             } catch (err) {
                 console.error("Error starring message:", err);
             }
         },
-        [message, isStarred]
+        [message, isStarred, emit]
     );
 
     const handleReaction = useCallback(async (messageId, emoji) => {
@@ -140,83 +163,95 @@ export default function MessageOptionsDropdown({
     return (
         <div className="relative inline-block text-left" ref={dropdownRef}>
             <button
+                type="button"
                 onClick={toggleDropdown}
-                className="flex justify-center items-center w-6 h-6 rounded-full hover:bg-black/20 text-white/70 hover:text-white transition-all"
+                className={`flex justify-center items-center w-6 h-6 rounded-full transition-colors ${
+                    isOwn
+                        ? "text-white/80 hover:text-white hover:bg-black/20"
+                        : "text-muted hover:text-main hover:bg-surface"
+                }`}
+                title="Opsi pesan"
+                aria-label="Opsi pesan"
             >
                 <EllipsisVerticalIcon className="h-4 w-4" />
             </button>
 
             {isOpen && (
-                <div className="absolute right-0 mt-1 w-40 rounded-xl bg-[#0f1218]/95 backdrop-blur-xl border border-white/10 shadow-lg shadow-black/50 z-50 overflow-hidden origin-top-right ring-1 ring-white/5">
+                <div className="absolute right-0 mt-1 min-w-[150px] rounded-xl bg-surface border border-border shadow-xl z-50 overflow-hidden origin-top-right p-1 animate-scale-in">
                     {showReactions ? (
-                        <div className="p-2">
+                        <div className="p-1">
                             <ReactionPicker
                                 onReaction={handleReaction}
                                 messageId={message.id}
                             />
                         </div>
                     ) : (
-                        <div className="p-1">
-                            {/* Reply - available for all messages */}
+                        <div className="space-y-0.5">
+                            {/* Balas */}
                             <button
+                                type="button"
                                 onClick={handleReply}
-                                className="group flex w-full items-center gap-2 rounded-lg px-2 py-2 text-xs font-medium text-gray-300 hover:bg-white/10 hover:text-white transition-colors"
+                                className="group flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-medium text-main hover:bg-surface-elevated transition-colors text-left"
                             >
-                                <ArrowUturnLeftIcon className="w-4 h-4" />
-                                Reply
+                                <ArrowUturnLeftIcon className="w-4 h-4 text-muted group-hover:text-main" />
+                                <span>Balas</span>
                             </button>
 
-                            {/* React */}
+                            {/* Beri Reaksi */}
                             <button
+                                type="button"
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     setShowReactions(true);
                                 }}
-                                className="group flex w-full items-center gap-2 rounded-lg px-2 py-2 text-xs font-medium text-gray-300 hover:bg-white/10 hover:text-white transition-colors"
+                                className="group flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-medium text-main hover:bg-surface-elevated transition-colors text-left"
                             >
-                                <FaceSmileIcon className="w-4 h-4" />
-                                React
+                                <FaceSmileIcon className="w-4 h-4 text-muted group-hover:text-main" />
+                                <span>Beri Reaksi</span>
                             </button>
 
-                            {/* Star/Unstar */}
+                            {/* Bintang / Hapus Bintang */}
                             <button
+                                type="button"
                                 onClick={handleStar}
-                                className="group flex w-full items-center gap-2 rounded-lg px-2 py-2 text-xs font-medium text-gray-300 hover:bg-white/10 hover:text-white transition-colors"
+                                className="group flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-medium text-main hover:bg-surface-elevated transition-colors text-left"
                             >
                                 {isStarred ? (
                                     <>
-                                        <StarIconSolid className="w-4 h-4 text-yellow-400" />
-                                        Unstar
+                                        <StarIconSolid className="w-4 h-4 text-amber-500 fill-amber-500" />
+                                        <span>Hapus Bintang</span>
                                     </>
                                 ) : (
                                     <>
-                                        <StarIcon className="w-4 h-4" />
-                                        Star
+                                        <StarIcon className="w-4 h-4 text-muted group-hover:text-amber-500" />
+                                        <span>Beri Bintang</span>
                                     </>
                                 )}
                             </button>
 
-                            {/* Edit - only for own messages */}
+                            {/* Edit (hanya pesan sendiri) */}
                             {isOwn && message.message && (
                                 <button
+                                    type="button"
                                     onClick={handleEdit}
-                                    className="group flex w-full items-center gap-2 rounded-lg px-2 py-2 text-xs font-medium text-gray-300 hover:bg-white/10 hover:text-white transition-colors"
+                                    className="group flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-medium text-main hover:bg-surface-elevated transition-colors text-left"
                                 >
-                                    <PencilIcon className="w-4 h-4" />
-                                    Edit
+                                    <PencilIcon className="w-4 h-4 text-muted group-hover:text-main" />
+                                    <span>Edit</span>
                                 </button>
                             )}
 
-                            {/* Delete - only for own messages */}
+                            {/* Hapus (hanya pesan sendiri) */}
                             {isOwn && (
                                 <>
-                                    <div className="my-1 border-t border-white/10"></div>
+                                    <div className="my-1 border-t border-border"></div>
                                     <button
+                                        type="button"
                                         onClick={onDeleteMessage}
-                                        className="group flex w-full items-center gap-2 rounded-lg px-2 py-2 text-xs font-medium text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors"
+                                        className="group flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-500/10 transition-colors text-left"
                                     >
                                         <TrashIcon className="w-4 h-4" />
-                                        Delete
+                                        <span>Hapus Pesan</span>
                                     </button>
                                 </>
                             )}
