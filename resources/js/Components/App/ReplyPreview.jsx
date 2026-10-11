@@ -1,65 +1,66 @@
 import React from "react";
 import {
     XMarkIcon,
-    DocumentIcon,
     PhotoIcon,
 } from "@heroicons/react/24/outline";
 
 /**
- * ReplyPreview shows the message being replied to in the input area.
+ * ReplyPreview shows the message being replied to above the message input field.
  */
 const ReplyPreview = ({ replyTo, onCancel }) => {
     if (!replyTo) return null;
 
     return (
-        <div className="flex items-center gap-2 px-4 py-2 bg-black/20 border-l-4 border-primary-500 animate-slide-up">
+        <div className="flex items-center justify-between gap-3 px-3.5 py-2.5 bg-surface-elevated/80 border border-border border-l-4 border-l-primary rounded-lg mb-2 animate-slide-up shadow-2xs">
             <div className="flex-1 min-w-0">
-                <p className="text-xs text-primary-400 font-medium truncate">
-                    Replying to {replyTo.sender?.name || "Unknown"}
+                <p className="text-xs font-semibold text-primary truncate">
+                    Membalas {replyTo.sender?.name || "Pengguna"}
                 </p>
-                <p className="text-sm text-gray-400 truncate">
+                <p className="text-xs text-muted truncate mt-0.5">
                     {replyTo.message || (
-                        <span className="flex items-center gap-1">
+                        <span className="inline-flex items-center gap-1">
                             {replyTo.attachments > 0 ? (
                                 <>
-                                    <PhotoIcon className="w-4 h-4" />
-                                    {replyTo.attachments} attachment
-                                    {replyTo.attachments > 1 ? "s" : ""}
+                                    <PhotoIcon className="w-3.5 h-3.5 shrink-0" />
+                                    <span>{replyTo.attachments} lampiran</span>
                                 </>
                             ) : (
-                                "Message"
+                                "Pesan"
                             )}
                         </span>
                     )}
                 </p>
             </div>
             <button
+                type="button"
                 onClick={onCancel}
-                className="p-1 rounded-full hover:bg-white/10 transition-colors"
-                title="Cancel reply"
+                className="min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg text-muted hover:text-main hover:bg-surface transition-colors shrink-0"
+                title="Batalkan balasan"
+                aria-label="Batalkan balasan"
             >
-                <XMarkIcon className="w-5 h-5 text-gray-400 hover:text-white" />
+                <XMarkIcon className="w-4 h-4" />
             </button>
         </div>
     );
 };
 
 /**
- * QuotedMessage shows the original message within a reply message bubble.
+ * QuotedMessage shows the original message inside a reply message bubble.
  */
 export const QuotedMessage = ({ replyTo }) => {
     if (!replyTo) return null;
 
     return (
-        <div className="mb-2 px-3 py-2 bg-black/30 rounded-lg border-l-2 border-primary-500/50">
-            <p className="text-xs text-primary-400 font-medium truncate">
-                {replyTo.sender?.name || "Unknown"}
+        <div className="mb-2 px-2.5 py-1.5 rounded-lg border-l-3 border-primary bg-black/10 dark:bg-black/25 text-xs">
+            <p className="font-semibold text-primary text-[11px] truncate">
+                {replyTo.sender?.name || "Pengguna"}
             </p>
-            <p className="text-xs text-gray-400 truncate">
-                {replyTo.message || `${replyTo.attachments} attachment(s)`}
+            <p className="opacity-80 truncate text-xs mt-0.5">
+                {replyTo.message || (replyTo.attachments ? `${replyTo.attachments} lampiran` : "Pesan")}
             </p>
         </div>
     );
 };
 
 export default ReplyPreview;
+

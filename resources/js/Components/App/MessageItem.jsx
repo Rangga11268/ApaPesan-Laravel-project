@@ -17,6 +17,7 @@ const MessageItem = ({ message, attachmentClick, onReply, onReact }) => {
     const { on } = useEventBus();
 
     const [isStarred, setIsStarred] = useState(message.is_starred || false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     useEffect(() => {
         setIsStarred(message.is_starred || false);
@@ -84,7 +85,7 @@ const MessageItem = ({ message, attachmentClick, onReply, onReact }) => {
 
             <div
                 className={`
-                chat-bubble relative shadow-xs border 
+                chat-bubble relative shadow-xs border overflow-visible min-w-[76px]
                 ${
                     isCurrentUser
                         ? "bg-primary text-white border-primary/30 rounded-2xl rounded-tr-xs"
@@ -92,12 +93,19 @@ const MessageItem = ({ message, attachmentClick, onReply, onReact }) => {
                 }
             `}
             >
-                {/* Options dropdown - visible on hover */}
-                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                {/* Options dropdown & quick actions toolbar - floats neatly on bubble border */}
+                <div
+                    className={`absolute top-0 -translate-y-1/2 right-2 z-20 transition-opacity duration-150 ${
+                        isMenuOpen
+                            ? "opacity-100 pointer-events-auto"
+                            : "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus-within:opacity-100"
+                    }`}
+                >
                     <MessageOptionsDropdown
                         message={message}
                         onReply={onReply}
                         isOwn={isCurrentUser}
+                        onOpenChange={setIsMenuOpen}
                     />
                 </div>
 
@@ -108,7 +116,7 @@ const MessageItem = ({ message, attachmentClick, onReply, onReact }) => {
 
                 <div
                     className={`chat-message ${
-                        isCurrentUser ? "text-white pr-6" : "text-main"
+                        isCurrentUser ? "text-white" : "text-main"
                     }`}
                 >
                     <div

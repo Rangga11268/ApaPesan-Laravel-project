@@ -16,6 +16,7 @@ export default function MessageOptionsDropdown({
     message,
     onReply,
     isOwn = false,
+    onOpenChange,
 }) {
     const { emit, on } = useEventBus();
     const [isOpen, setIsOpen] = useState(false);
@@ -40,6 +41,11 @@ export default function MessageOptionsDropdown({
         return unsub;
     }, [message.id, on]);
 
+    // Notify parent about open state so hover visibility remains locked
+    useEffect(() => {
+        onOpenChange?.(isOpen || showReactions);
+    }, [isOpen, showReactions, onOpenChange]);
+
     const onDeleteMessage = useCallback(
         (e) => {
             e.stopPropagation();
@@ -55,6 +61,7 @@ export default function MessageOptionsDropdown({
                         prevMessage: res.data.prevMessage,
                     });
                     setIsOpen(false);
+                    setShowReactions(false);
                 })
                 .catch((err) => {
                     console.error("Error deleting message:", err);
@@ -76,6 +83,7 @@ export default function MessageOptionsDropdown({
                 });
             }
             setIsOpen(false);
+            setShowReactions(false);
         },
         [message, onReply]
     );
@@ -85,6 +93,7 @@ export default function MessageOptionsDropdown({
             e.stopPropagation();
             emit("message.edit", message);
             setIsOpen(false);
+            setShowReactions(false);
         },
         [message, emit]
     );
@@ -123,7 +132,6 @@ export default function MessageOptionsDropdown({
             setIsOpen(false);
         } catch (err) {
             if (err.response?.status === 409) {
-                // Already reacted, remove it
                 await axios.delete(
                     route("reaction.destroy", { message: messageId, emoji })
                 );
@@ -139,7 +147,7 @@ export default function MessageOptionsDropdown({
         setShowReactions(false);
     }, []);
 
-    // Close dropdown when clicking outside
+    // Close dropdown & reaction picker when clicking outside
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (
@@ -151,112 +159,157 @@ export default function MessageOptionsDropdown({
             }
         };
 
-        if (isOpen) {
+        if (isOpen || showReactions) {
             document.addEventListener("mousedown", handleClickOutside);
         }
 
         return () => {
             document.removeEventListener("mousedown", handleClickOutside);
         };
-    }, [isOpen]);
+    }, [isOpen, showReactions]);
 
     return (
-        <div className="relative inline-block text-left" ref={dropdownRef}>
-            <button
-                type="button"
-                onClick={toggleDropdown}
-                className={`flex justify-center items-center w-6 h-6 rounded-full transition-colors ${
-                    isOwn
-                        ? "text-white/80 hover:text-white hover:bg-black/20"
-                        : "text-muted hover:text-main hover:bg-surface"
-                }`}
-                title="Opsi pesan"
-                aria-label="Opsi pesan"
-            >
-                <EllipsisVerticalIcon className="h-4 w-4" />
-            </button>
+        <div className="relative inline-flex items-center" ref={dropdownRef}>
+            {/* Quick action bar */}
+            <div className="flex items-center gap-0.5 p-0.5 rounded-full bg-surface border border-border shadow-xs">
+                {/* 1-click Quick Reply */}
+                <button
+                    type="button"
+                    onClick={handleReply}
+                    className="w-7 h-7 flex items-center justify-center rounded-full text-muted hover:text-main hover:bg-surface-elevated transition-colors"
+                    title="Balas pesan"
+                    aria-label="Balas pesan"
+                >
+                    <ArrowUturnLeftIcon className="w-3.5 h-3.5" />
+                </button>
 
+                {/* Quick Reaction Toggle */}
+                <button
+                    type="button"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setShowReactions((prev) => !prev);
+                        setIsOpen(false);
+                    }}
+                    className={`w-7 h-7 flex items-center justify-center rounded-full transition-colors ${
+                        showReactions
+                            ? "bg-surface-elevated text-primary"
+                            : "text-muted hover:text-main hover:bg-surface-elevated"
+                    }`}
+                    title="Beri reaksi"
+                    aria-label="Beri reaksi"
+                >
+                    <FaceSmileIcon className="w-3.5 h-3.5" />
+                </button>
+
+                {/* More Options Trigger */}
+                <button
+                    type="button"
+                    onClick={toggleDropdown}
+                    className={`w-7 h-7 flex items-center justify-center rounded-full transition-colors ${
+                        isOpen
+                            ? "bg-surface-elevated text-main"
+                            : "text-muted hover:text-main hover:bg-surface-elevated"
+                    }`}
+                    title="Opsi lainnya"
+                    aria-label="Opsi lainnya"
+                >
+                    <EllipsisVerticalIcon className="w-3.5 h-3.5" />
+                </button>
+            </div>
+
+            {/* Direct Reaction Picker Popup */}
+            {showReactions && (
+                <div
+                    className={`absolute top-full mt-1.5 z-50 animate-scale-in ${
+                        isOwn ? "right-0 origin-top-right" : "left-0 origin-top-left"
+                    }`}
+                >
+                    <ReactionPicker
+                        onReaction={handleReaction}
+                        messageId={message.id}
+                    />
+                </div>
+            )}
+
+            {/* Options Dropdown Menu */}
             {isOpen && (
-                <div className="absolute right-0 mt-1 min-w-[150px] rounded-xl bg-surface border border-border shadow-xl z-50 overflow-hidden origin-top-right p-1 animate-scale-in">
-                    {showReactions ? (
-                        <div className="p-1">
-                            <ReactionPicker
-                                onReaction={handleReaction}
-                                messageId={message.id}
-                            />
-                        </div>
-                    ) : (
-                        <div className="space-y-0.5">
-                            {/* Balas */}
-                            <button
-                                type="button"
-                                onClick={handleReply}
-                                className="group flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-medium text-main hover:bg-surface-elevated transition-colors text-left"
-                            >
-                                <ArrowUturnLeftIcon className="w-4 h-4 text-muted group-hover:text-main" />
-                                <span>Balas</span>
-                            </button>
+                <div
+                    className={`absolute top-full mt-1.5 min-w-[160px] rounded-xl bg-surface border border-border shadow-lg z-50 overflow-hidden p-1 animate-scale-in ${
+                        isOwn ? "right-0 origin-top-right" : "left-0 origin-top-left"
+                    }`}
+                >
+                    <div className="space-y-0.5">
+                        {/* Balas */}
+                        <button
+                            type="button"
+                            onClick={handleReply}
+                            className="group flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-medium text-main hover:bg-surface-elevated transition-colors text-left"
+                        >
+                            <ArrowUturnLeftIcon className="w-4 h-4 text-muted group-hover:text-main" />
+                            <span>Balas</span>
+                        </button>
 
-                            {/* Beri Reaksi */}
-                            <button
-                                type="button"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    setShowReactions(true);
-                                }}
-                                className="group flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-medium text-main hover:bg-surface-elevated transition-colors text-left"
-                            >
-                                <FaceSmileIcon className="w-4 h-4 text-muted group-hover:text-main" />
-                                <span>Beri Reaksi</span>
-                            </button>
+                        {/* Beri Reaksi */}
+                        <button
+                            type="button"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setShowReactions(true);
+                                setIsOpen(false);
+                            }}
+                            className="group flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-medium text-main hover:bg-surface-elevated transition-colors text-left"
+                        >
+                            <FaceSmileIcon className="w-4 h-4 text-muted group-hover:text-main" />
+                            <span>Beri Reaksi</span>
+                        </button>
 
-                            {/* Bintang / Hapus Bintang */}
-                            <button
-                                type="button"
-                                onClick={handleStar}
-                                className="group flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-medium text-main hover:bg-surface-elevated transition-colors text-left"
-                            >
-                                {isStarred ? (
-                                    <>
-                                        <StarIconSolid className="w-4 h-4 text-amber-500 fill-amber-500" />
-                                        <span>Hapus Bintang</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <StarIcon className="w-4 h-4 text-muted group-hover:text-amber-500" />
-                                        <span>Beri Bintang</span>
-                                    </>
-                                )}
-                            </button>
-
-                            {/* Edit (hanya pesan sendiri) */}
-                            {isOwn && message.message && (
-                                <button
-                                    type="button"
-                                    onClick={handleEdit}
-                                    className="group flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-medium text-main hover:bg-surface-elevated transition-colors text-left"
-                                >
-                                    <PencilIcon className="w-4 h-4 text-muted group-hover:text-main" />
-                                    <span>Edit</span>
-                                </button>
-                            )}
-
-                            {/* Hapus (hanya pesan sendiri) */}
-                            {isOwn && (
+                        {/* Bintang / Hapus Bintang */}
+                        <button
+                            type="button"
+                            onClick={handleStar}
+                            className="group flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-medium text-main hover:bg-surface-elevated transition-colors text-left"
+                        >
+                            {isStarred ? (
                                 <>
-                                    <div className="my-1 border-t border-border"></div>
-                                    <button
-                                        type="button"
-                                        onClick={onDeleteMessage}
-                                        className="group flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-500/10 transition-colors text-left"
-                                    >
-                                        <TrashIcon className="w-4 h-4" />
-                                        <span>Hapus Pesan</span>
-                                    </button>
+                                    <StarIconSolid className="w-4 h-4 text-amber-500 fill-amber-500" />
+                                    <span>Hapus Bintang</span>
+                                </>
+                            ) : (
+                                <>
+                                    <StarIcon className="w-4 h-4 text-muted group-hover:text-amber-500" />
+                                    <span>Beri Bintang</span>
                                 </>
                             )}
-                        </div>
-                    )}
+                        </button>
+
+                        {/* Edit (hanya pesan sendiri) */}
+                        {isOwn && message.message && (
+                            <button
+                                type="button"
+                                onClick={handleEdit}
+                                className="group flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-medium text-main hover:bg-surface-elevated transition-colors text-left"
+                            >
+                                <PencilIcon className="w-4 h-4 text-muted group-hover:text-main" />
+                                <span>Edit</span>
+                            </button>
+                        )}
+
+                        {/* Hapus (hanya pesan sendiri) */}
+                        {isOwn && (
+                            <>
+                                <div className="my-1 border-t border-border"></div>
+                                <button
+                                    type="button"
+                                    onClick={onDeleteMessage}
+                                    className="group flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-500/10 transition-colors text-left"
+                                >
+                                    <TrashIcon className="w-4 h-4" />
+                                    <span>Hapus Pesan</span>
+                                </button>
+                            </>
+                        )}
+                    </div>
                 </div>
             )}
         </div>
