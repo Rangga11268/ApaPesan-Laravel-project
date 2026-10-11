@@ -65,15 +65,15 @@ export default function UpdateProfileInformation({
                 >
                     {photoPreview ? (
                         <div
-                            className="block rounded-full w-32 h-32 bg-cover bg-no-repeat bg-center border-4 border-white/10 shadow-[0_0_20px_rgba(124,58,237,0.3)] transition-all group-hover:border-primary-500"
+                            className="block rounded-full w-32 h-32 bg-cover bg-no-repeat bg-center border-2 border-border shadow-xs transition-all group-hover:border-primary-500"
                             style={{
                                 backgroundImage: `url('${photoPreview}')`,
-                                width: "8em",
+                                width: "8rem",
                                 height: "8rem",
                             }}
                         />
                     ) : (
-                        <div className="w-full h-full rounded-full border-4 border-white/10 overflow-hidden shadow-[0_0_20px_rgba(124,58,237,0.3)] bg-black/40 flex items-center justify-center transition-all group-hover:border-primary-500">
+                        <div className="w-full h-full rounded-full border-2 border-border overflow-hidden shadow-xs bg-surface-elevated flex items-center justify-center transition-all group-hover:border-primary-500">
                             {user.avatar_url ? (
                                 <img
                                     src={user.avatar_url}
@@ -82,18 +82,18 @@ export default function UpdateProfileInformation({
                                     style={{ width: "100%", height: "100%" }}
                                 />
                             ) : (
-                                <UserCircleIcon className="w-full h-full text-gray-500 p-4" />
+                                <UserCircleIcon className="w-full h-full text-muted p-4" />
                             )}
                         </div>
                     )}
 
                     {/* Camera Overlay */}
-                    <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <CameraIcon className="w-10 h-10 text-white" />
+                    <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        <CameraIcon className="w-8 h-8 text-white" />
                     </div>
 
                     {/* Add Icon Badge */}
-                    <div className="absolute bottom-1 right-1 bg-primary-600 rounded-full p-2 border-4 border-[#0F1115]">
+                    <div className="absolute bottom-0 right-0 bg-primary-600 rounded-full p-2 border-2 border-surface shadow-xs">
                         <CameraIcon className="w-4 h-4 text-white" />
                     </div>
                 </div>
@@ -169,8 +169,7 @@ export default function UpdateProfileInformation({
 
                 <div className="flex items-center gap-4">
                     <PrimaryButton
-                        disabled={processing}
-                        className="bg-primary-600 hover:bg-primary-500 border-none glow-button"
+                        processing={processing}
                     >
                         Simpan Perubahan
                     </PrimaryButton>

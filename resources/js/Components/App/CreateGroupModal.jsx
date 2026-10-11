@@ -234,8 +234,8 @@ const CreateGroupModal = ({
                     <SecondaryButton type="button" onClick={handleClose} className="min-h-[44px]">
                         Batal
                     </SecondaryButton>
-                    <PrimaryButton type="submit" disabled={loading} className="min-h-[44px]">
-                        {loading ? "Menyimpan..." : "Buat Grup"}
+                    <PrimaryButton type="submit" loading={loading} className="min-h-[44px]">
+                        Buat Grup
                     </PrimaryButton>
                 </div>
             </form>

@@ -126,8 +126,7 @@ export default function UpdatePasswordForm({ className = "" }) {
 
                 <div className="flex items-center gap-4">
                     <PrimaryButton
-                        disabled={processing}
-                        className="bg-primary-600 hover:bg-primary-500 border-none glow-button"
+                        processing={processing}
                     >
                         Ubah Kata Sandi
                     </PrimaryButton>

@@ -18,8 +18,8 @@ const ConversationItem = ({
         selectedConversation.is_group === conversation.is_group;
 
     const activeClasses = isSelected
-        ? "border-l-4 border-primary bg-surface-elevated text-main shadow-xs"
-        : "border-l-4 border-transparent hover:bg-surface-elevated/60 text-muted hover:text-main";
+        ? "bg-surface-elevated text-main shadow-xs ring-1 ring-border-active/40 before:absolute before:left-0 before:top-2 before:bottom-2 before:w-1 before:bg-primary-500 before:rounded-r-full"
+        : "hover:bg-surface-elevated/60 text-muted hover:text-main";
 
     return (
         <Link
@@ -30,7 +30,7 @@ const ConversationItem = ({
             }
             preserveState
             className={
-                "conversation-item flex items-center gap-3 p-3 transition-colors duration-150 rounded-lg group mb-1 cursor-pointer " +
+                "relative conversation-item flex items-center gap-3 px-3 py-2.5 transition-all duration-150 rounded-xl group mb-1 cursor-pointer overflow-hidden " +
                 activeClasses +
                 (conversation.is_user &&
                 currentUser?.is_admin &&
@@ -48,10 +48,6 @@ const ConversationItem = ({
                     />
                 )}
                 {conversation.is_group && <GroupAvatar />}
-
-                {online && (
-                    <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-surface"></div>
-                )}
             </div>
 
             <div className="flex-1 min-w-0 overflow-hidden">
