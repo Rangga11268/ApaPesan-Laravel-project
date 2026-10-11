@@ -228,6 +228,48 @@ runTest('MessageInput.jsx & Home.jsx: Viewport overflow protection', () => {
     assert(inputCode.includes('max-w-[calc(100vw-32px)]'));
 });
 
+// -----------------------------------------------------------------------------
+// SUITE 4: NEW MESSAGE TOAST & CUSTOM CONFIRM/ALERT MODAL CONTRACTS
+// -----------------------------------------------------------------------------
+console.log('\n>>> [4/4] Toast Notification & Custom Dialog Verification...');
+
+runTest('NewMessageNotification.jsx: Listens to newMessageNotification and provides accessible toast', () => {
+    const code = readSource('resources/js/Components/App/NewMessageNotification.jsx');
+    assert(code.includes('on(\n            "newMessageNotification"') || code.includes('on("newMessageNotification"'), 'Must listen to newMessageNotification');
+    assert(code.includes('role="status"'), 'Toast must have role="status"');
+    assert(code.includes('aria-live="polite"'), 'Toast must have aria-live="polite"');
+    assert(code.includes('XMarkIcon'), 'Toast must provide manual dismiss button');
+});
+
+runTest('AuthenticatedLayout.jsx: Suppresses toast when viewing current chat room', () => {
+    const code = readSource('resources/js/Layouts/AuthenticatedLayout.jsx');
+    assert(code.includes('selectedConversationRef'), 'Must use selectedConversationRef to avoid stale closures');
+    assert(code.includes('emit("newMessageNotification"'), 'Must emit newMessageNotification');
+    assert(code.includes('!isCurrentChat'), 'Must guard against emitting toast for the active conversation');
+});
+
+runTest('ConfirmModal.jsx: Promise-based confirm/alert API and Headless UI Dialog', () => {
+    const code = readSource('resources/js/Components/App/ConfirmModal.jsx');
+    assert(code.includes('export const confirm'), 'Must export Promise-based confirm');
+    assert(code.includes('export const alert'), 'Must export Promise-based alert');
+    assert(code.includes('Dialog') && code.includes('DialogTitle'), 'Must use Headless UI Dialog for accessibility');
+    assert(code.includes('Transition') && code.includes('TransitionChild'), 'Must include smooth transitions');
+});
+
+runTest('MessageOptionsDropdown.jsx: Uses custom confirm and alert for delete workflow', () => {
+    const code = readSource('resources/js/Components/App/MessageOptionsDropdown.jsx');
+    assert(code.includes('import { confirm, alert } from "./ConfirmModal"'), 'Must import custom confirm/alert');
+    assert(code.includes('await confirm('), 'Must await custom confirm');
+    assert(!/window\.confirm\(/.test(code), 'Must not use window.confirm');
+});
+
+runTest('AudioRecorder.jsx: Uses custom alert for unsupported context', () => {
+    const code = readSource('resources/js/Components/App/AudioRecorder.jsx');
+    assert(code.includes('import { alert } from "./ConfirmModal"'), 'Must import custom alert');
+    assert(code.includes('await alert('), 'Must await custom alert');
+    assert(!/window\.alert\(/.test(code), 'Must not use window.alert');
+});
+
 console.log('\n================================================================');
 console.log(`SUMMARY: ${passedTests} / ${totalTests} CHECKS PASSED (${failedTests.length} FAILED)`);
 if (failedTests.length > 0) {

@@ -1,5 +1,6 @@
 import { MicrophoneIcon, StopCircleIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
+import { alert } from "./ConfirmModal";
 
 const AudioRecorder = ({ fileReady }) => {
     const [mediaRecorder, setMediaRecorder] = useState(null);
@@ -16,9 +17,12 @@ const AudioRecorder = ({ fileReady }) => {
         }
 
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            alert(
-                "Audio recording is not supported in this browser or context."
-            );
+            await alert({
+                title: "Perekaman Audio Tidak Didukung",
+                message:
+                    "Perekaman audio tidak didukung atau izin mikrofon belum diberikan pada browser ini.",
+                variant: "warning",
+            });
             return;
         }
 

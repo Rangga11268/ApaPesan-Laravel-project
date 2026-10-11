@@ -11,6 +11,7 @@ import {
 import { StarIcon as StarIconSolid } from "@heroicons/react/24/solid";
 import axios from "axios";
 import ReactionPicker from "./ReactionPicker";
+import { confirm, alert } from "./ConfirmModal";
 
 export default function MessageOptionsDropdown({
     message,
@@ -47,9 +48,20 @@ export default function MessageOptionsDropdown({
     }, [isOpen, showReactions, onOpenChange]);
 
     const onDeleteMessage = useCallback(
-        (e) => {
+        async (e) => {
             e.stopPropagation();
-            if (!confirm("Apakah Anda yakin ingin menghapus pesan ini?")) return;
+            setIsOpen(false);
+            setShowReactions(false);
+
+            const ok = await confirm({
+                title: "Hapus Pesan",
+                message:
+                    "Apakah Anda yakin ingin menghapus pesan ini? Tindakan ini tidak dapat dibatalkan.",
+                confirmText: "Hapus",
+                cancelText: "Batal",
+                variant: "danger",
+            });
+            if (!ok) return;
 
             const url = route("message.destroy", message.id);
 
@@ -60,12 +72,14 @@ export default function MessageOptionsDropdown({
                         message: res.data.message,
                         prevMessage: res.data.prevMessage,
                     });
-                    setIsOpen(false);
-                    setShowReactions(false);
                 })
                 .catch((err) => {
                     console.error("Error deleting message:", err);
-                    alert("Gagal menghapus pesan. Silakan coba lagi.");
+                    alert({
+                        title: "Gagal Menghapus Pesan",
+                        message: "Gagal menghapus pesan. Silakan coba lagi.",
+                        variant: "danger",
+                    });
                 });
         },
         [message, emit]

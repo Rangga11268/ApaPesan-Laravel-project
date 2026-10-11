@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { usePage, Link } from "@inertiajs/react";
 import Toast from "@/Components/App/Toast";
 import NewMessageNotification from "@/Components/App/NewMessageNotification";
+import ConfirmModal from "@/Components/App/ConfirmModal";
 import { useEventBus } from "@/EventBus";
 import ApplicationLogo from "@/Components/ApplicationLogo";
 import UserAvatar from "@/Components/App/UserAvatar";
@@ -38,10 +39,6 @@ export default function AuthenticatedLayout({ children }) {
     const [showCreateGroupModal, setShowCreateGroupModal] = useState(false);
     const [showStarredModal, setShowStarredModal] = useState(false);
     const [showMentionsModal, setShowMentionsModal] = useState(false);
-
-    const [showNewMessageNotification, setShowNewMessageNotification] =
-        useState(false);
-    const [newMessage, setNewMessage] = useState(null);
     const [unreadCount, setUnreadCount] = useState(0);
 
     const conversations = page.props.conversation || [];
@@ -52,6 +49,12 @@ export default function AuthenticatedLayout({ children }) {
         .sort((a, b) => a - b)
         .join(",");
 
+    // Keep active conversation reference fresh without triggering reconnection
+    const selectedConversationRef = useRef(page.props.selectedConversation);
+    useEffect(() => {
+        selectedConversationRef.current = page.props.selectedConversation;
+    }, [page.props.selectedConversation]);
+
     useEffect(() => {
         if (!userId || !window.Echo) return;
 
@@ -60,13 +63,35 @@ export default function AuthenticatedLayout({ children }) {
             if (!message?.id) return;
             emit("message.created", message);
             if (message.sender_id === userId) return;
-            setNewMessage(message);
-            setShowNewMessageNotification(true);
+
             setUnreadCount((prev) => prev + 1);
-            setTimeout(() => {
-                setShowNewMessageNotification(false);
-                setNewMessage(null);
-            }, 5000);
+
+            // Check if user is currently inside the active conversation of this message
+            const currentSelected = selectedConversationRef.current;
+            const isCurrentChat =
+                currentSelected &&
+                ((message.group_id &&
+                    currentSelected.is_group &&
+                    Number(currentSelected.id) === Number(message.group_id)) ||
+                    (!message.group_id &&
+                        currentSelected.is_user &&
+                        (Number(currentSelected.id) === Number(message.sender_id) ||
+                            Number(currentSelected.id) ===
+                                Number(message.receiver_id))));
+
+            // Only trigger toast notification if user is not in the active chat room
+            if (!isCurrentChat) {
+                let previewText = message.message;
+                if (!previewText && message.attachments && message.attachments.length > 0) {
+                    previewText = `${message.attachments.length} lampiran`;
+                }
+                emit("newMessageNotification", {
+                    message: previewText || "Pesan baru",
+                    user: message.sender,
+                    group_id: message.group_id,
+                    id: message.id,
+                });
+            }
         };
 
         const handleMessageDeleted = (e) => {
@@ -505,11 +530,8 @@ export default function AuthenticatedLayout({ children }) {
             />
 
             <Toast />
-            <NewMessageNotification
-                show={showNewMessageNotification}
-                message={newMessage}
-                onClose={() => setShowNewMessageNotification(false)}
-            />
+            <NewMessageNotification />
+            <ConfirmModal />
         </div>
     );
 }

@@ -1,6 +1,7 @@
 import ApplicationLogo from "@/Components/ApplicationLogo";
 import { useTheme } from "@/Contexts/ThemeContext";
 import { Link } from "@inertiajs/react";
+import ConfirmModal from "@/Components/App/ConfirmModal";
 
 export default function GuestLayout({ children }) {
     const { theme, toggleTheme } = useTheme();
@@ -131,6 +132,7 @@ export default function GuestLayout({ children }) {
                     </p>
                 </div>
             </div>
+            <ConfirmModal />
         </div>
     );
 }
