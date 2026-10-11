@@ -26,6 +26,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('/message/{message}', [MessageController::class, 'update'])->name('message.update');
     Route::delete('/message/{message}', [MessageController::class, 'destroy'])->name('message.destroy');
     Route::get('/message/older/{message}', [MessageController::class, 'loadOlder'])->name('message.loadOlder');
+    Route::get('/message/sync', [MessageController::class, 'sync'])->name('message.sync');
     Route::post('/message/read', [MessageController::class, 'markAsRead'])->name('message.read');
 
     // Search - with rate limiting

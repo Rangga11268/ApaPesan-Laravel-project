@@ -18,9 +18,10 @@ window.Echo = new Echo({
     enabledTransports: ["ws", "wss"],
 });
 
-// Add connection state logging
+// Add connection state logging & event broadcasting
 window.Echo.connector.pusher.connection.bind('connected', () => {
     console.log('✅ WebSocket connected successfully');
+    window.dispatchEvent(new CustomEvent('echo:connected'));
 });
 
 window.Echo.connector.pusher.connection.bind('disconnected', () => {

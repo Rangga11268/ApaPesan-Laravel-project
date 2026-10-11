@@ -19,6 +19,7 @@ function Home({
     const page = usePage();
     const currentUserId = page?.props?.auth?.user?.id;
     const [localMessages, setLocalMessages] = useState([]);
+    const localMessagesRef = useRef([]);
     const [noMoreMessages, setNoMoreMessages] = useState(false);
     const [loadingMore, setLoadingMore] = useState(false);
     const [scrollFromBottom, setScrollFromBottom] = useState(0);
@@ -27,6 +28,10 @@ function Home({
     const [showAttachmentPreview, setShowAttachmentPreview] = useState(false);
     const [previewAttachment, setPreviewAttachment] = useState({});
     const { on, emit } = useEventBus();
+
+    useEffect(() => {
+        localMessagesRef.current = localMessages;
+    }, [localMessages]);
 
     // New states for enhanced features
     const [typingUser, setTypingUser] = useState(null);
@@ -241,6 +246,58 @@ function Home({
                 setLoadingMore(false);
             });
     }, [localMessages, noMoreMessages, loadingMore]);
+
+    // Catch-up delta sync when reconnected
+    const syncMissingMessages = useCallback(async () => {
+        if (!selectedConversation || !localMessagesRef.current.length) return;
+        const lastMessage =
+            localMessagesRef.current[localMessagesRef.current.length - 1];
+        if (!lastMessage?.id) return;
+
+        try {
+            const { data } = await axios.get(route("message.sync"), {
+                params: {
+                    conversation_id: selectedConversation.id,
+                    type: selectedConversation.is_group ? "group" : "user",
+                    since_id: lastMessage.id,
+                },
+            });
+            const incoming = data?.data || [];
+            if (!incoming.length) return;
+
+            setLocalMessages((prev) => {
+                const existingIds = new Set(prev.map((m) => m.id));
+                const missing = incoming.filter((m) => !existingIds.has(m.id));
+                if (!missing.length) return prev;
+                return [...prev, ...missing];
+            });
+
+            if (currentUserId) {
+                const unreadIds = incoming
+                    .filter((m) => !m.read_at && m.sender_id !== currentUserId)
+                    .map((m) => m.id);
+                if (unreadIds.length) {
+                    markMessagesAsRead(unreadIds);
+                }
+            }
+        } catch (err) {
+            console.error("Error catching up messages on reconnect:", err);
+        }
+    }, [selectedConversation, currentUserId, markMessagesAsRead]);
+
+    useEffect(() => {
+        const handleReconnect = () => {
+            syncMissingMessages();
+        };
+
+        window.addEventListener("echo:connected", handleReconnect);
+        window.addEventListener("online", handleReconnect);
+
+        return () => {
+            window.removeEventListener("echo:connected", handleReconnect);
+            window.removeEventListener("online", handleReconnect);
+        };
+    }, [syncMissingMessages]);
 
     const onAttachmentClick = (attachments, ind) => {
         setPreviewAttachment({

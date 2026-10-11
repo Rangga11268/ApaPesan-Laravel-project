@@ -77,13 +77,13 @@ class MessageController extends Controller
         $this->authorize('view', $message);
 
         if ($message->group_id) {
-            $messages = Message::where('created_at', '<', $message->created_at)
+            $messages = Message::where('id', '<', $message->id)
                 ->where('group_id', $message->group_id)
                 ->with(self::RELATIONS)
-                ->latest()
+                ->latest('id')
                 ->paginate(10);
         } else {
-            $messages = Message::where('created_at', '<', $message->created_at)
+            $messages = Message::where('id', '<', $message->id)
                 ->where(function ($query) use ($message) {
                     $query->where('sender_id', $message->sender_id)
                         ->where('receiver_id', $message->receiver_id);
@@ -93,9 +93,56 @@ class MessageController extends Controller
                         ->where('receiver_id', $message->sender_id);
                 })
                 ->with(self::RELATIONS)
-                ->latest()
+                ->latest('id')
                 ->paginate(10);
         }
+        return MessageResource::collection($messages);
+    }
+
+    public function sync(\Illuminate\Http\Request $request)
+    {
+        $request->validate([
+            'conversation_id' => 'required|integer',
+            'type' => 'required|in:user,group',
+            'since_id' => 'required|integer',
+        ]);
+
+        $convId = (int) $request->conversation_id;
+        $type = $request->type;
+        $sinceId = (int) $request->since_id;
+        $authUser = Auth::user();
+
+        if ($type === 'group') {
+            $group = Group::findOrFail($convId);
+            $this->authorize('view', $group);
+
+            $messages = Message::where('group_id', $group->id)
+                ->where('id', '>', $sinceId)
+                ->with(self::RELATIONS)
+                ->orderBy('id', 'asc')
+                ->limit(50)
+                ->get();
+        } else {
+            $targetUser = User::findOrFail($convId);
+            if ($targetUser->blocked_at && !$authUser->is_admin) {
+                abort(403, 'This user is not available');
+            }
+
+            $messages = Message::where('id', '>', $sinceId)
+                ->where(function ($query) use ($authUser, $targetUser) {
+                    $query->where('sender_id', $authUser->id)
+                        ->where('receiver_id', $targetUser->id);
+                })
+                ->orWhere(function ($query) use ($authUser, $targetUser) {
+                    $query->where('sender_id', $targetUser->id)
+                        ->where('receiver_id', $authUser->id);
+                })
+                ->with(self::RELATIONS)
+                ->orderBy('id', 'asc')
+                ->limit(50)
+                ->get();
+        }
+
         return MessageResource::collection($messages);
     }
 
@@ -105,6 +152,16 @@ class MessageController extends Controller
         $data['sender_id'] = Auth::id();
         $receiverId  = $data['receiver_id'] ?? null;
         $groupId = $data['group_id'] ?? null;
+
+        // Idempotency guard: prevent duplicate messages on retry
+        $clientId = $data['client_id'] ?? null;
+        if ($clientId) {
+            $existing = Message::where('client_id', $clientId)->first();
+            if ($existing) {
+                $existing->load(self::RELATIONS);
+                return new MessageResource($existing);
+            }
+        }
 
         if ($groupId) {
             $group = Group::findOrFail($groupId);

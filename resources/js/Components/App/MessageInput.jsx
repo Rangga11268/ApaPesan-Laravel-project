@@ -95,6 +95,11 @@ const MessageInput = ({
             return;
         }
         const formData = new FormData();
+        const clientId =
+            typeof crypto !== "undefined" && crypto.randomUUID
+                ? crypto.randomUUID()
+                : "c_" + Date.now() + "_" + Math.random().toString(36).slice(2, 9);
+        formData.append("client_id", clientId);
         chosenFiles.forEach((file) => {
             formData.append("attachments[]", file.file);
         });
