@@ -63,15 +63,46 @@ Aplikasi ini menggunakan identitas monogram geometris **"A" + "P"** (*ApaPesan*)
 
 ---
 
-## 🏗️ Tumpukan Teknologi & Arsitektur
+## 🏗️ Tumpukan Teknologi & Arsitektur Real-Time
 
-- **Backend**: Laravel 12 (PHP 8.2+), Eloquent ORM (eager-loaded queries), Model Policies, Laravel Form Requests.
-- **Frontend**: React 18, Inertia.js v2 SPA, Tailwind CSS, DaisyUI.
-- **Real-Time Engine**: Laravel Reverb + Laravel Echo + Pusher JS.
-- **Database & Storage**: MySQL / SQLite, Laravel Public Storage Link.
-- **Audit & Kualitas**: Automated E2E verification harness (PHPUnit 100% Green, WCAG AA Mathematical Verifier, Static Antislop Scanner).
+```mermaid
+flowchart TD
+    subgraph Client Layer (SPA)
+        UI["💻 React 18 + Inertia.js v2"]
+        Echo["📡 Laravel Echo (WebSocket Client)"]
+        LocalCache["📦 Client Optimistic State / LocalStorage"]
+    end
 
----
+    subgraph Gateway & Event Broadcaster
+        Reverb["⚡ Laravel Reverb WebSocket Gateway (:8080)"]
+        PingPong["💓 30s Heartbeat (Ghost Socket Purge)"]
+    end
+
+    subgraph Backend Core
+        App["🛡️ Laravel 12 HTTP & Policy Layer"]
+        RateLimit["⏱️ Redis Tiered Rate Limiter (60/min & 30/min)"]
+    end
+
+    subgraph Data & Storage
+        DB[("🗄️ MySQL Database (Eager-Loaded Index)")]
+        Disk["📁 Local / S3 Storage (Multi-File Attachments)"]
+    end
+
+    UI -->|"Optimistic Message Render"| LocalCache
+    UI -->|"HTTP POST Message Payload"| App
+    App --> RateLimit
+    RateLimit --> DB
+    App -->|"Broadcast Message Event"| Reverb
+    Reverb --> Echo
+    Echo -->|"Instant Feed Update (<50ms)"| UI
+    Reverb --> PingPong
+    App -->|"Handle File Uploads"| Disk
+```
+
+### ⚖️ Engineering Trade-Offs (ADR Lite)
+* **Ghost Connection Pruning:** Memasang mekanisme *30-second ping/pong heartbeat* untuk memutus socket zombie (koneksi terputus tiba-tiba tanpa sinyal TCP FIN), menghemat alokasi memory server.
+* **Client Reconnection Jitter:** Klien mengimplementasikan *exponential backoff dengan jitter acak* saat reconnect, menghindari fenomena *Thundering Herd* ke server saat jaringan pulih.
+* **Inertia.js v2 vs Pure REST/GraphQL:** Memilih Inertia.js untuk mendapatkan kecepatan Single Page Application (SPA) modular tanpa overhead membangun autentikasi duplikat pada API publik.
 
 ## 🚀 Panduan Menjalankan Aplikasi
 
