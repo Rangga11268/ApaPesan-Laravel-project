@@ -39,7 +39,11 @@ export default function UserOptionsDropdown({ conversation }) {
     return (
         <div className="relative">
             <Menu as="div" className="relative inline-block text-left">
-                <Menu.Button className="flex justify-center items-center w-8 h-8 rounded-full hover:bg-gray-700 transition-colors">
+                <Menu.Button
+                    className="flex justify-center items-center w-8 h-8 rounded-full text-muted hover:text-main hover:bg-surface-elevated transition-colors"
+                    title="Opsi pengguna"
+                    aria-label="Opsi pengguna"
+                >
                     <EllipsisVerticalIcon className="h-5 w-5" />
                 </Menu.Button>
                 <Transition
@@ -51,27 +55,27 @@ export default function UserOptionsDropdown({ conversation }) {
                     leaveFrom="transform opacity-100 scale-100"
                     leaveTo="transform opacity-0 scale-95"
                 >
-                    <Menu.Items className="absolute right-0 mt-2 w-48 rounded-xl bg-[#0f1218]/95 backdrop-blur-xl border border-white/10 shadow-lg shadow-black/50 z-50 overflow-hidden origin-top-right ring-1 ring-white/5 focus:outline-none">
-                        <div className="p-1">
+                    <Menu.Items className="absolute right-0 mt-2 w-48 rounded-xl bg-surface border border-border shadow-xl z-50 overflow-hidden origin-top-right focus:outline-hidden p-1 text-main animate-scale-in">
+                        <div className="space-y-0.5">
                             <Menu.Item>
                                 {({ active }) => (
                                     <button
                                         onClick={onBlockUser}
                                         className={`${
                                             active
-                                                ? "bg-white/10 text-primary-300"
-                                                : "text-gray-300"
-                                        } group flex w-full items-center rounded-lg px-3 py-2 text-xs font-medium transition-all gap-2`}
+                                                ? "bg-surface-elevated text-main"
+                                                : "text-main"
+                                        } group flex w-full items-center rounded-lg px-3 py-2 text-xs font-medium transition-colors gap-2 text-left`}
                                     >
                                         {conversation.blocked_at ? (
                                             <>
-                                                <LockOpenIcon className="w-4 h-4 text-emerald-400" />
-                                                <span>Unblock User</span>
+                                                <LockOpenIcon className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                                                <span>Buka Blokir Pengguna</span>
                                             </>
                                         ) : (
                                             <>
-                                                <LockClosedIcon className="w-4 h-4 text-red-400" />
-                                                <span>Block User</span>
+                                                <LockClosedIcon className="w-4 h-4 text-red-600 dark:text-red-400" />
+                                                <span>Blokir Pengguna</span>
                                             </>
                                         )}
                                     </button>
@@ -84,19 +88,19 @@ export default function UserOptionsDropdown({ conversation }) {
                                         onClick={changeUserRole}
                                         className={`${
                                             active
-                                                ? "bg-white/10 text-primary-300"
-                                                : "text-gray-300"
-                                        } group flex w-full items-center rounded-lg px-3 py-2 text-xs font-medium transition-all gap-2`}
+                                                ? "bg-surface-elevated text-main"
+                                                : "text-main"
+                                        } group flex w-full items-center rounded-lg px-3 py-2 text-xs font-medium transition-colors gap-2 text-left`}
                                     >
                                         {conversation.is_admin ? (
                                             <>
-                                                <UserIcon className="w-4 h-4 text-blue-400" />
-                                                <span>Revoke Admin</span>
+                                                <UserIcon className="w-4 h-4 text-primary" />
+                                                <span>Cabut Status Admin</span>
                                             </>
                                         ) : (
                                             <>
-                                                <ShieldCheckIcon className="w-4 h-4 text-primary-400" />
-                                                <span>Make Admin</span>
+                                                <ShieldCheckIcon className="w-4 h-4 text-primary" />
+                                                <span>Jadikan Admin</span>
                                             </>
                                         )}
                                     </button>

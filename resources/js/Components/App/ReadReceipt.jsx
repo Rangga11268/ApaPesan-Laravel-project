@@ -16,27 +16,31 @@ const ReadReceipt = ({ isSent = true, isRead = false, isOwn = false }) => {
     const baseClasses = "w-4 h-4 transition-colors";
 
     if (isRead) {
-        // Double check - Blue (Read)
+        // Double check - Primary Blue (Read, WCAG AA compliant >= 4.5:1)
         return (
-            <div className="flex -space-x-2">
-                <CheckIcon className={`${baseClasses} text-primary-400`} />
-                <CheckIcon className={`${baseClasses} text-primary-400`} />
+            <div className="flex -space-x-2" title="Pesan telah dibaca">
+                <CheckIcon className={`${baseClasses} text-primary`} />
+                <CheckIcon className={`${baseClasses} text-primary`} />
             </div>
         );
     }
 
     if (isSent) {
-        // Double check - Gray (Delivered)
+        // Double check - Muted Slate (Delivered, WCAG AA compliant >= 4.5:1)
         return (
-            <div className="flex -space-x-2">
-                <CheckIcon className={`${baseClasses} text-gray-400`} />
-                <CheckIcon className={`${baseClasses} text-gray-400`} />
+            <div className="flex -space-x-2" title="Pesan terkirim">
+                <CheckIcon className={`${baseClasses} text-muted`} />
+                <CheckIcon className={`${baseClasses} text-muted`} />
             </div>
         );
     }
 
-    // Single check - Gray (Sent)
-    return <CheckIcon className={`${baseClasses} text-gray-500`} />;
+    // Single check - Muted Slate (Sent)
+    return (
+        <span title="Terkirim">
+            <CheckIcon className={`${baseClasses} text-muted`} />
+        </span>
+    );
 };
 
 export default ReadReceipt;

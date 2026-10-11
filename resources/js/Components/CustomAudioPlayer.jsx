@@ -39,7 +39,7 @@ const CustomAudioPlayer = ({ file, showVolume = true }) => {
     };
 
     return (
-        <div className="w-full flex items-center gap-2 py-2 px-3 rounded-md bg-slate-800">
+        <div className="w-full flex items-center gap-2.5 py-2 px-3 rounded-xl bg-surface border border-border shadow-2xs text-main">
             <audio
                 ref={audioRef}
                 src={file.url}
@@ -47,11 +47,16 @@ const CustomAudioPlayer = ({ file, showVolume = true }) => {
                 onLoadedMetadata={handleLoadedMetaData}
                 className="hidden"
             />
-            <button onClick={togglePlayPause}>
+            <button
+                type="button"
+                onClick={togglePlayPause}
+                className="min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg hover:bg-surface-elevated transition-colors"
+                aria-label={isPlaying ? "Jeda audio" : "Putar audio"}
+            >
                 {isPlaying ? (
-                    <PauseCircleIcon className="w-6 text-gray-400" />
+                    <PauseCircleIcon className="w-7 h-7 text-primary" />
                 ) : (
-                    <PlayCircleIcon className="w-6 text-gray-400" />
+                    <PlayCircleIcon className="w-7 h-7 text-primary" />
                 )}
             </button>
             {showVolume && (
@@ -62,11 +67,12 @@ const CustomAudioPlayer = ({ file, showVolume = true }) => {
                     step="0.01"
                     value={volume}
                     onChange={handleVolumeChange}
+                    className="accent-primary"
                 />
             )}
             <input
                 type="range"
-                className="flex-1"
+                className="flex-1 accent-primary cursor-pointer"
                 min="0"
                 max={duration}
                 step="0.01"

@@ -20,11 +20,11 @@ export default function Toast({}) {
     }, [on]);
 
     return (
-        <div className="toast toast-top toast-center min-w-[280px]">
+        <div className="toast toast-top toast-center min-w-[280px] z-50">
             {toasts.map((toast) => (
                 <div
                     key={toast.uuid}
-                    className="glass-panel bg-[#0f1218]/90 border border-white/10 py-3 px-4 text-white rounded-xl shadow-2xl backdrop-blur-xl animate-enter"
+                    className="bg-surface border border-border py-3 px-4 text-main rounded-xl shadow-lg animate-enter text-xs font-medium"
                 >
                     <span>{toast.message}</span>
                 </div>

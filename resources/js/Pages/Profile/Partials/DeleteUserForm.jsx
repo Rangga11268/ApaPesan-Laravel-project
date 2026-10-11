@@ -48,11 +48,11 @@ export default function DeleteUserForm({ className = "" }) {
     return (
         <section className={`space-y-6 ${className}`}>
             <header>
-                <h2 className="text-xl font-display font-bold text-red-400">
+                <h2 className="text-xl font-display font-bold text-red-600 dark:text-red-400">
                     Hapus Akun
                 </h2>
 
-                <p className="mt-1 text-sm text-gray-400 leading-relaxed">
+                <p className="mt-1 text-sm text-muted leading-relaxed">
                     Setelah akun Anda dihapus, semua data dan informasi akan
                     dihapus secara permanen. Sebelum menghapus akun, silakan
                     unduh data yang ingin Anda simpan.

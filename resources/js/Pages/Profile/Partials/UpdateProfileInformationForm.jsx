@@ -145,13 +145,13 @@ export default function UpdateProfileInformation({
 
                 {mustVerifyEmail && user.email_verified_at === null && (
                     <div>
-                        <p className="mt-2 text-sm text-gray-200">
+                        <p className="mt-2 text-sm text-main">
                             Email Anda belum diverifikasi.
                             <Link
                                 href={route("verification.send")}
                                 method="post"
                                 as="button"
-                                className="rounded-md text-sm text-gray-400 underline hover:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 ml-1"
+                                className="rounded-md text-sm text-primary underline hover:text-primary-hover focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ml-1"
                             >
                                 Klik di sini untuk mengirim ulang email
                                 verifikasi.
@@ -159,7 +159,7 @@ export default function UpdateProfileInformation({
                         </p>
 
                         {status === "verification-link-sent" && (
-                            <div className="mt-2 text-sm font-medium text-emerald-400">
+                            <div className="mt-2 text-sm font-medium text-emerald-600 dark:text-emerald-400">
                                 Link verifikasi baru telah dikirim ke email
                                 Anda.
                             </div>

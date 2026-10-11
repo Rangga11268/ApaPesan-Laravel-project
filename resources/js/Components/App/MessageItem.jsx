@@ -65,11 +65,11 @@ const MessageItem = ({ message, attachmentClick, onReply, onReact }) => {
                         {message.sender?.name}
                     </span>
                 )}
-                <time className="text-[11px] text-muted font-normal">
+                <time className="text-[11px] text-muted font-medium">
                     {formatMessageDateLong(message.created_at)}
                 </time>
                 {message.edited_at && (
-                    <span className="text-[10px] text-muted italic">
+                    <span className="text-[10px] text-muted font-medium italic">
                         (diedit)
                     </span>
                 )}
@@ -111,7 +111,7 @@ const MessageItem = ({ message, attachmentClick, onReply, onReact }) => {
 
                 {/* Quoted/Reply message */}
                 {message.reply_to && (
-                    <QuotedMessage replyTo={message.reply_to} />
+                    <QuotedMessage replyTo={message.reply_to} isOwn={isCurrentUser} />
                 )}
 
                 <div

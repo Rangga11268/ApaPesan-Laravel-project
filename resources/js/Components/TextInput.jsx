@@ -30,7 +30,7 @@ export default forwardRef(function TextInput(
             {...props}
             type={actualType}
             className={
-                "min-h-[44px] py-2.5 px-3 rounded-xl bg-surface text-main border border-border placeholder:text-muted/60 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 shadow-xs transition-colors duration-150 outline-none " +
+                "min-h-[44px] py-2.5 px-3 rounded-xl bg-surface text-main border border-border placeholder:text-muted focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 shadow-xs transition-colors duration-150 outline-none " +
                 (isPasswordType && showPasswordToggle ? " pr-11 " : " ") +
                 className
             }
